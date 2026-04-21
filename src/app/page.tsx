@@ -97,7 +97,7 @@ export default function Home() {
         <PrimaryButton onClick={() => setStep("participants")} className="max-w-xs">
           Let&apos;s settle up
         </PrimaryButton>
-        <p className="text-xs text-gray-400">Free to use. Sign up and Partake learns your habits over time.</p>
+        <p className="text-xs text-gray-400">Free to use. Sign up for Partake to learn your habits over time.</p>
       </main>
     );
   }
