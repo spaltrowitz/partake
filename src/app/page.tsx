@@ -153,13 +153,13 @@ export default function Home() {
 
         <PrimaryButton
           onClick={() => setStep("scan")}
-          disabled={participants.length < 2}
+          disabled={participants.length < 1}
         >
           Next: Add the receipt
         </PrimaryButton>
-        {participants.length < 2 && (
+        {participants.length < 1 && (
           <p className="text-xs text-gray-400 text-center mt-2">
-            Add at least 2 people
+            Add at least 1 person
           </p>
         )}
       </main>
