@@ -104,4 +104,4 @@ export interface ParticipantPattern {
   averageSpend?: number;
 }
 
-export type SplitMethod = "itemized" | "even" | "custom";
+export type SplitMethod = "itemized" | "even" | "percentage" | "shares" | "exact";

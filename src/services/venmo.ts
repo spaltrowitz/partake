@@ -5,17 +5,9 @@ export function requestVenmo(
 ): boolean {
   const amountStr = amount.toFixed(2);
   const encodedNote = encodeURIComponent(note);
-  const url = `venmo://paycharge?txn=request&recipients=${venmoUsername}&amount=${amountStr}&note=${encodedNote}`;
-
-  // Try to open Venmo app
-  window.location.href = url;
-
-  // Fallback: after a short delay, open Venmo web if the app didn't open
-  setTimeout(() => {
-    const webUrl = `https://venmo.com/?txn=request&recipients=${venmoUsername}&amount=${amountStr}&note=${encodedNote}`;
-    window.open(webUrl, "_blank");
-  }, 1500);
-
+  // Use web links — venmo:// deep links are blocked by mobile browsers
+  const url = `https://venmo.com/${venmoUsername}?txn=pay&amount=${amountStr}&note=${encodedNote}`;
+  window.open(url, "_blank");
   return true;
 }
 
@@ -26,7 +18,7 @@ export function getVenmoWebLink(
 ): string {
   const amountStr = amount.toFixed(2);
   const encodedNote = encodeURIComponent(note);
-  return `https://venmo.com/?txn=request&recipients=${venmoUsername}&amount=${amountStr}&note=${encodedNote}`;
+  return `https://venmo.com/${venmoUsername}?txn=pay&amount=${amountStr}&note=${encodedNote}`;
 }
 
 export function copyToClipboard(text: string): void {

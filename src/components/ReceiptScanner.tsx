@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import { parseReceiptText } from "@/services/receiptParser";
-import type { ParsedReceipt, ParsedItem } from "@/types";
+import { recognizeText } from "@/services/ocr";
+import type { ParsedReceipt } from "@/types";
 import { PrimaryButton, SecondaryButton } from "./UI";
 
 export function ReceiptScanner({
@@ -11,6 +12,7 @@ export function ReceiptScanner({
   onReceipt: (receipt: ParsedReceipt) => void;
 }) {
   const [isScanning, setIsScanning] = useState(false);
+  const [progress, setProgress] = useState("");
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -18,36 +20,24 @@ export function ReceiptScanner({
   async function handleFile(file: File) {
     setIsScanning(true);
     setError(null);
+    setProgress("Reading your receipt...");
 
     try {
-      const formData = new FormData();
-      formData.append("image", file);
+      const lines = await recognizeText(file);
 
-      const response = await fetch("/api/ocr", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (data.error) {
-        setError(data.error);
-        return;
-      }
-
-      if (data.lines && data.lines.length > 0) {
-        const receipt = parseReceiptText(data.lines);
+      if (lines.length > 0) {
+        const receipt = parseReceiptText(lines);
         onReceipt(receipt);
       } else {
         setError(
-          data.message ||
-            "Couldn't read that one. Try a clearer pic or just type it in."
+          "Couldn't read that one. Try a clearer pic or just type it in — no judgment."
         );
       }
     } catch {
       setError("Something went wrong. Try again or type it in manually.");
     } finally {
       setIsScanning(false);
+      setProgress("");
     }
   }
 
