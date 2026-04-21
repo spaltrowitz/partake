@@ -2,29 +2,48 @@
 
 **Split what you share.**
 
-Partake is an iOS app that makes splitting bills effortless. Snap a photo of your receipt, claim your items, and request payment via Venmo — all in seconds.
+Partake is a web app that makes splitting bills effortless. Scan a receipt, claim your items, and request payment via Venmo — no downloads, no sign-ups.
 
-## Why Partake?
+## How It Works
 
-Existing bill-splitting apps are frustrating: bad OCR, 4-character name limits, no support for couples or trips. Partake fixes all of that.
+1. Go to **partakeapp.com** → add who's splitting
+2. Snap a pic of the receipt → we read the items and prices
+3. Everyone claims their items → tax & tip split proportionally
+4. One tap → Venmo requests go out
+5. Nobody downloaded anything
 
 ## Key Features
 
-- 📸 **Smart Receipt Scanning** — Vision framework OCR with manual correction for accuracy
-- 👫 **Partner/Couple Mode** — Pre-group people so their items auto-combine for one payment
+- 📸 **Smart Receipt Scanning** — Google Cloud Vision OCR with manual correction
+- 👫 **Partner/Couple Mode** — Pre-group people so their items auto-combine
 - 💸 **Venmo Deep Link** — One tap to request payment with pre-filled amounts
-- 🏝️ **Trip Mode** — Track expenses across multiple meals (like Splitwise for dining)
-- 🍽️ **Toast Import** — Share a Toast Tab receipt link directly into the app
-- 👤 **Saved Profiles** — No character limits, save frequent dining companions
+- 🧠 **Smart Suggestions** — Learns your group's habits (tip %, split preferences)
+- 🔗 **Shareable Links** — Friends claim items in the browser, no download needed
 - 🎂 **Birthday Mode** — Split someone's meal across everyone else
+- 👤 **No Name Limits** — Because 4 characters is ridiculous
 
 ## Tech Stack
 
-- **Platform**: iOS 16+ (Swift, SwiftUI)
-- **Architecture**: MVVM + Repository pattern
-- **Backend**: Firebase (Auth, Firestore, Storage, Cloud Functions)
-- **OCR**: Apple Vision framework (on-device, private)
+- **Frontend**: Next.js 16, React, TypeScript, Tailwind CSS
+- **Backend**: Firebase (Auth, Firestore, Storage)
+- **OCR**: Google Cloud Vision API
 - **Payments**: Venmo deep linking
+- **Hosting**: Vercel (or Firebase Hosting)
+
+## Getting Started
+
+```bash
+npm install
+cp .env.example .env.local
+# Fill in your Firebase + Google Cloud Vision keys
+npm run dev
+```
+
+## Environment Variables
+
+See `.env.example` for required configuration:
+- Firebase project credentials
+- Google Cloud Vision API key
 
 ## Status
 
