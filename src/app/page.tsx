@@ -95,9 +95,9 @@ export default function Home() {
           No math. No stress.
         </p>
         <PrimaryButton onClick={() => setStep("participants")} className="max-w-xs">
-          Handle the check
+          Let&apos;s eat 🍕
         </PrimaryButton>
-        <p className="text-xs text-gray-400">No download. No sign-up. Just fair.</p>
+        <p className="text-xs text-gray-400">No app. No account. Just vibes.</p>
       </main>
     );
   }
