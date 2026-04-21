@@ -54,8 +54,8 @@ export function ReceiptScanner({
     <div className="flex flex-col items-center gap-6 py-8">
       {isScanning ? (
         <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#FF6B6B]" />
-          <p className="text-gray-500">Reading your receipt...</p>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#FF8A80]" />
+          <p className="text-[#8B9BB4]">Reading your receipt...</p>
         </div>
       ) : (
         <>
@@ -63,7 +63,7 @@ export function ReceiptScanner({
           <h2 className="text-xl font-semibold text-center">
             Snap a pic or pick from your photos
           </h2>
-          <p className="text-gray-500 text-center">
+          <p className="text-[#8B9BB4] text-center">
             We&apos;ll read the items and prices for you
           </p>
 
@@ -107,7 +107,7 @@ export function ReceiptScanner({
 
             <button
               onClick={handleManualEntry}
-              className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-sm text-[#8B9BB4] hover:text-[#8B9BB4] transition-colors"
             >
               Or just type it in
             </button>

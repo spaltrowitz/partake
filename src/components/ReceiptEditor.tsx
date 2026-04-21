@@ -54,7 +54,7 @@ export function ReceiptEditor({
 
       {/* Items */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-500 mb-2">Items</h3>
+        <h3 className="text-sm font-semibold text-[#8B9BB4] mb-2">Items</h3>
         <div className="flex flex-col gap-1">
           {receipt.items.map((item) => (
             <div
@@ -62,7 +62,7 @@ export function ReceiptEditor({
               className={`flex items-center justify-between p-3 rounded-lg ${
                 item.confidence < 0.7
                   ? "bg-orange-50 dark:bg-orange-950/30"
-                  : "bg-gray-50 dark:bg-gray-800/50"
+                  : "bg-[#1C2A4A]"
               }`}
             >
               <div className="flex-1">
@@ -78,7 +78,7 @@ export function ReceiptEditor({
               </span>
               <button
                 onClick={() => removeItem(item.id)}
-                className="ml-3 text-gray-400 hover:text-red-500 transition-colors"
+                className="ml-3 text-[#8B9BB4] hover:text-[#FF8A80] transition-colors"
               >
                 ✕
               </button>
@@ -92,7 +92,7 @@ export function ReceiptEditor({
               placeholder="Item name"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              className="flex-1 px-3 py-2 rounded-lg border dark:border-gray-700 bg-transparent text-sm"
+              className="flex-1 px-3 py-2 rounded-lg border border-[#1C2A4A] bg-transparent text-sm"
               onKeyDown={(e) => e.key === "Enter" && addItem()}
             />
             <input
@@ -101,13 +101,13 @@ export function ReceiptEditor({
               placeholder="0.00"
               value={newPrice}
               onChange={(e) => setNewPrice(e.target.value)}
-              className="w-20 px-3 py-2 rounded-lg border dark:border-gray-700 bg-transparent text-sm text-right"
+              className="w-20 px-3 py-2 rounded-lg border border-[#1C2A4A] bg-transparent text-sm text-right"
               onKeyDown={(e) => e.key === "Enter" && addItem()}
             />
             <button
               onClick={addItem}
               disabled={!newName || !newPrice}
-              className="text-[#FF6B6B] text-xl disabled:opacity-30"
+              className="text-[#FF8A80] text-xl disabled:opacity-30"
             >
               ⊕
             </button>
@@ -117,10 +117,10 @@ export function ReceiptEditor({
 
       {/* Tax */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-500 mb-2">
+        <h3 className="text-sm font-semibold text-[#8B9BB4] mb-2">
           Tax & Total
         </h3>
-        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+        <div className="flex items-center justify-between p-3 bg-[#1C2A4A] rounded-lg">
           <span>Tax</span>
           <div className="flex items-center gap-1">
             <span>$</span>

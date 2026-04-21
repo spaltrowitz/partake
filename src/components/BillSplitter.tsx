@@ -108,7 +108,7 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
   return (
     <div className="flex flex-col h-full">
       {/* Split method selector */}
-      <div className="flex gap-1 overflow-x-auto p-3 bg-gray-50 dark:bg-gray-900 border-b dark:border-gray-800">
+      <div className="flex gap-1 overflow-x-auto p-3 bg-[#152038] border-b border-[#1C2A4A]">
         {SPLIT_METHODS.map((method) => (
           <button
             key={method.id}
@@ -116,7 +116,7 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
             className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
               splitMethod === method.id
                 ? "gradient-bg text-white"
-                : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                : "bg-white dark:bg-gray-800 text-[#8B9BB4] dark:text-gray-300"
             }`}
           >
             {method.label}
@@ -126,7 +126,7 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
 
       {/* Participant selector (for itemized mode) */}
       {splitMethod === "itemized" && (
-        <div className="flex gap-2 overflow-x-auto p-4 bg-gray-50 dark:bg-gray-900">
+        <div className="flex gap-2 overflow-x-auto p-4 bg-[#152038]">
           {bill.participants.map((p, i) => (
             <button
               key={p.id}
@@ -151,7 +151,7 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
                 className={`text-xs truncate max-w-[64px] ${
                   selectedParticipant === p.id
                     ? "font-semibold"
-                    : "text-gray-400"
+                    : "text-[#8B9BB4]"
                 }`}
               >
                 {p.name}
@@ -167,7 +167,7 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
         {/* ITEMIZED: claim items per person */}
         {splitMethod === "itemized" && (
           <>
-            <p className="text-xs text-gray-400 mb-3">
+            <p className="text-xs text-[#8B9BB4] mb-3">
               Tap items to claim them for the selected person
             </p>
             <div className="flex flex-col gap-1">
@@ -179,8 +179,8 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
                     onClick={() => toggleClaim(item.id)}
                     className={`flex items-center justify-between p-3 rounded-lg transition-all text-left ${
                       isClaimed
-                        ? "bg-teal-50 dark:bg-teal-950/30"
-                        : "bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        ? "bg-[#0B2A2A]"
+                        : "bg-[#1C2A4A] hover:bg-[#1C2A4A]"
                     } ${isClaimed ? "pop-animation" : ""}`}
                   >
                     <div className="flex-1">
@@ -220,22 +220,22 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
         {/* EVEN: just show the equal amount */}
         {splitMethod === "even" && (
           <div className="text-center py-8">
-            <p className="text-gray-500 mb-4">Everyone pays the same</p>
+            <p className="text-[#8B9BB4] mb-4">Everyone pays the same</p>
             <p className="text-4xl font-bold gradient-text">
               ${(bill.total / bill.participants.length).toFixed(2)}
             </p>
-            <p className="text-sm text-gray-400 mt-2">each</p>
+            <p className="text-sm text-[#8B9BB4] mt-2">each</p>
           </div>
         )}
 
         {/* PERCENTAGE: slider/input per person */}
         {splitMethod === "percentage" && (
           <div className="flex flex-col gap-3">
-            <p className="text-xs text-gray-400 mb-1">
+            <p className="text-xs text-[#8B9BB4] mb-1">
               Set each person&apos;s percentage (should add up to 100%)
             </p>
             {bill.participants.map((p, i) => (
-              <div key={p.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+              <div key={p.id} className="flex items-center gap-3 p-3 bg-[#1C2A4A] rounded-lg">
                 <Avatar name={p.name} index={i} size={32} />
                 <span className="flex-1 font-medium text-sm">{p.name}</span>
                 <input
@@ -247,9 +247,9 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
                       [p.id]: parseFloat(e.target.value) || 0,
                     }))
                   }
-                  className="w-20 text-right px-2 py-1 rounded border dark:border-gray-700 bg-transparent text-sm font-bold"
+                  className="w-20 text-right px-2 py-1 rounded border border-[#1C2A4A] bg-transparent text-sm font-bold"
                 />
-                <span className="text-sm text-gray-400">%</span>
+                <span className="text-sm text-[#8B9BB4]">%</span>
                 <span className="text-sm font-semibold w-20 text-right">
                   ${(bill.total * (percentages[p.id] ?? 0) / 100).toFixed(2)}
                 </span>
@@ -267,25 +267,25 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
         {/* SHARES: weighted portions */}
         {splitMethod === "shares" && (
           <div className="flex flex-col gap-3">
-            <p className="text-xs text-gray-400 mb-1">
+            <p className="text-xs text-[#8B9BB4] mb-1">
               Give each person a number of shares — the bill divides proportionally
             </p>
             {bill.participants.map((p, i) => {
               const totalShares = Object.values(shares).reduce((s, v) => s + v, 0);
               const proportion = totalShares > 0 ? (shares[p.id] ?? 0) / totalShares : 0;
               return (
-                <div key={p.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                <div key={p.id} className="flex items-center gap-3 p-3 bg-[#1C2A4A] rounded-lg">
                   <Avatar name={p.name} index={i} size={32} />
                   <span className="flex-1 font-medium text-sm">{p.name}</span>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => setShares((prev) => ({ ...prev, [p.id]: Math.max(0, (prev[p.id] ?? 1) - 1) }))}
-                      className="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 text-sm font-bold"
+                      className="w-7 h-7 rounded-full bg-gray-200 bg-[#1C2A4A] text-sm font-bold"
                     >−</button>
                     <span className="w-8 text-center font-bold">{shares[p.id] ?? 1}</span>
                     <button
                       onClick={() => setShares((prev) => ({ ...prev, [p.id]: (prev[p.id] ?? 1) + 1 }))}
-                      className="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 text-sm font-bold"
+                      className="w-7 h-7 rounded-full bg-gray-200 bg-[#1C2A4A] text-sm font-bold"
                     >+</button>
                   </div>
                   <span className="text-sm font-semibold w-20 text-right">
@@ -300,14 +300,14 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
         {/* EXACT: enter amounts directly */}
         {splitMethod === "exact" && (
           <div className="flex flex-col gap-3">
-            <p className="text-xs text-gray-400 mb-1">
+            <p className="text-xs text-[#8B9BB4] mb-1">
               Enter each person&apos;s exact amount
             </p>
             {bill.participants.map((p, i) => (
-              <div key={p.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+              <div key={p.id} className="flex items-center gap-3 p-3 bg-[#1C2A4A] rounded-lg">
                 <Avatar name={p.name} index={i} size={32} />
                 <span className="flex-1 font-medium text-sm">{p.name}</span>
-                <span className="text-sm text-gray-400">$</span>
+                <span className="text-sm text-[#8B9BB4]">$</span>
                 <input
                   type="number"
                   step="0.01"
@@ -318,7 +318,7 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
                       [p.id]: parseFloat(e.target.value) || 0,
                     }))
                   }
-                  className="w-24 text-right px-2 py-1 rounded border dark:border-gray-700 bg-transparent text-sm font-bold"
+                  className="w-24 text-right px-2 py-1 rounded border border-[#1C2A4A] bg-transparent text-sm font-bold"
                 />
               </div>
             ))}
@@ -333,7 +333,7 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
 
         {/* Tip selector */}
         <div className="mt-6">
-          <h3 className="text-sm font-semibold text-gray-500 mb-2">Tip</h3>
+          <h3 className="text-sm font-semibold text-[#8B9BB4] mb-2">Tip</h3>
           <div className="flex gap-2">
             {TIP_OPTIONS.map((pct) => (
               <button
@@ -342,7 +342,7 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
                 className={`flex-1 py-2 rounded-full text-sm font-medium transition-colors ${
                   bill.tipPercent === pct
                     ? "gradient-bg text-white"
-                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+                    : "bg-[#1C2A4A] text-[#C4CFDE]"
                 }`}
               >
                 {pct}%
@@ -353,7 +353,7 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
       </div>
 
       {/* Bottom bar */}
-      <div className="p-4 border-t dark:border-gray-800 bg-white dark:bg-[#0a0a0a]">
+      <div className="p-4 border-t border-[#1C2A4A] bg-[#0B1426]">
         <div className="flex justify-between items-center mb-3">
           <span className="font-semibold">Total</span>
           <span className="text-xl font-bold">${bill.total.toFixed(2)}</span>
@@ -391,7 +391,7 @@ function Settlement({
         <h2 className="text-2xl font-bold">
           {bill.name || "The split"}
         </h2>
-        <p className="text-gray-500">${bill.total.toFixed(2)} total</p>
+        <p className="text-[#8B9BB4]">${bill.total.toFixed(2)} total</p>
       </div>
 
       <div className="flex flex-col gap-4">
@@ -401,7 +401,7 @@ function Settlement({
               <Avatar name={split.participantName} index={i} size={40} />
               <div className="flex-1">
                 <p className="font-semibold">{split.participantName}</p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-[#8B9BB4]">
                   {split.items.length} item{split.items.length !== 1 && "s"}
                 </p>
               </div>
@@ -411,7 +411,7 @@ function Settlement({
             </div>
 
             {/* Item breakdown */}
-            <div className="text-xs text-gray-400 space-y-1 mb-3">
+            <div className="text-xs text-[#8B9BB4] space-y-1 mb-3">
               {split.items.map((item) => (
                 <div key={item.id} className="flex justify-between">
                   <span>{item.name}</span>
@@ -422,7 +422,7 @@ function Settlement({
                   </span>
                 </div>
               ))}
-              <hr className="dark:border-gray-700" />
+              <hr className="border-[#1C2A4A]" />
               <div className="flex justify-between">
                 <span>Tax</span>
                 <span>${split.taxShare.toFixed(2)}</span>
@@ -453,7 +453,7 @@ function Settlement({
                 ) : (
                   <button
                     onClick={() => onCopy(split)}
-                    className="w-full py-2 text-sm font-medium text-[#FF6B6B] hover:bg-orange-50 dark:hover:bg-orange-950/30 rounded-lg transition-colors"
+                    className="w-full py-2 text-sm font-medium text-[#FF8A80] hover:bg-orange-50 dark:hover:bg-orange-950/30 rounded-lg transition-colors"
                   >
                     {settledIds.has(split.participantId)
                       ? "✓ Copied"
@@ -470,14 +470,14 @@ function Settlement({
       {bill.shareCode && (
         <Card className="mt-4 text-center">
           <p className="font-semibold mb-1">Share this bill</p>
-          <p className="text-xs text-gray-400 mb-2">
+          <p className="text-xs text-[#8B9BB4] mb-2">
             Friends can claim items without downloading anything
           </p>
           <button
             onClick={() =>
               copyToClipboard(`https://partakeapp.com/bill/${bill.shareCode}`)
             }
-            className="text-sm text-[#FF6B6B] bg-red-50 dark:bg-red-950/30 py-2 px-4 rounded-lg hover:bg-red-100 transition-colors"
+            className="text-sm text-[#FF8A80] bg-red-50 dark:bg-red-950/30 py-2 px-4 rounded-lg hover:bg-red-100 transition-colors"
           >
             🔗 partakeapp.com/bill/{bill.shareCode}
           </button>
@@ -492,7 +492,7 @@ function Settlement({
 
       <button
         onClick={onDone}
-        className="w-full mt-6 py-3 text-gray-500 hover:text-gray-700"
+        className="w-full mt-6 py-3 text-[#8B9BB4] hover:text-gray-700"
       >
         ← Back to bill
       </button>
