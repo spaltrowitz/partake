@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import type { ParsedReceipt, Bill, BillItem, Participant } from "@/types";
+import { useState, useEffect } from "react";
+import type { ParsedReceipt, Bill, BillItem, Participant, SavedContact } from "@/types";
 import { ReceiptScanner } from "@/components/ReceiptScanner";
 import { ReceiptEditor } from "@/components/ReceiptEditor";
 import { BillSplitter } from "@/components/BillSplitter";
 import { PrimaryButton } from "@/components/UI";
+import { Avatar } from "@/components/Avatar";
+import { getSavedContacts, saveAllParticipantsAsContacts } from "@/services/localContacts";
 
 type Step = "landing" | "participants" | "scan" | "edit" | "split";
 
@@ -17,6 +19,11 @@ export default function Home() {
   const [receipt, setReceipt] = useState<ParsedReceipt | null>(null);
   const [bill, setBill] = useState<Bill | null>(null);
   const [tipPercent] = useState(20);
+  const [savedContacts, setSavedContacts] = useState<SavedContact[]>([]);
+
+  useEffect(() => {
+    setSavedContacts(getSavedContacts());
+  }, []);
 
   function addParticipant() {
     if (!newName.trim()) return;
@@ -73,6 +80,8 @@ export default function Home() {
     };
 
     setBill(newBill);
+    // Save participants for next time
+    saveAllParticipantsAsContacts(participants);
     setStep("split");
   }
 
@@ -96,14 +105,48 @@ export default function Home() {
 
   // Participants
   if (step === "participants") {
+    const unusedContacts = savedContacts.filter(
+      (c) => !participants.some((p) => p.name.toLowerCase() === c.name.toLowerCase())
+    );
+
     return (
       <main className="min-h-screen p-6 max-w-md mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Who&apos;s splitting?</h1>
+        <h1 className="text-2xl font-bold mb-6">Who&apos;s here?</h1>
 
+        {/* Saved contacts — quick tap to add */}
+        {unusedContacts.length > 0 && (
+          <div className="mb-6">
+            <p className="text-sm text-gray-400 mb-2">Your people</p>
+            <div className="flex gap-3 overflow-x-auto pb-2">
+              {unusedContacts.map((contact, i) => (
+                <button
+                  key={contact.id}
+                  onClick={() => {
+                    setParticipants((prev) => [
+                      ...prev,
+                      {
+                        id: contact.id,
+                        name: contact.name,
+                        venmoUsername: contact.venmoUsername,
+                        isAppUser: false,
+                      },
+                    ]);
+                  }}
+                  className="flex flex-col items-center gap-1 min-w-[64px]"
+                >
+                  <Avatar name={contact.name} index={i} size={48} />
+                  <span className="text-xs truncate max-w-[64px]">{contact.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Add someone new */}
         <div className="flex flex-col gap-3 mb-6">
           <input
             type="text"
-            placeholder="Name"
+            placeholder="Add someone new"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             className="px-4 py-3 rounded-xl border dark:border-gray-700 bg-transparent"
@@ -126,6 +169,7 @@ export default function Home() {
           </button>
         </div>
 
+        {/* Current participants */}
         {participants.length > 0 && (
           <div className="mb-6">
             <p className="text-sm text-gray-400 mb-2">Splitting with</p>
