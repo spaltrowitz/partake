@@ -91,14 +91,13 @@ export default function Home() {
       <main className="min-h-screen flex flex-col items-center justify-center gap-6 p-6">
         <span className="text-7xl">🍽️</span>
         <h1 className="text-4xl font-bold gradient-text">Partake</h1>
-        <p className="text-gray-500 text-center max-w-sm">
-          You know that awkward moment when the check comes? Yeah, we fixed
-          that.
+        <p className="text-lg text-gray-500 text-center max-w-sm">
+          No math. No stress.
         </p>
         <PrimaryButton onClick={() => setStep("participants")} className="max-w-xs">
-          Split a bill
+          Handle the check
         </PrimaryButton>
-        <p className="text-xs text-gray-400">No download. No sign-up. Just split.</p>
+        <p className="text-xs text-gray-400">No download. No sign-up. Just fair.</p>
       </main>
     );
   }
