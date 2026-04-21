@@ -88,16 +88,21 @@ export default function Home() {
   // Landing
   if (step === "landing") {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center gap-6 p-6">
-        <span className="text-7xl">🍽️</span>
-        <h1 className="text-4xl font-bold gradient-text">Partake</h1>
-        <p className="text-lg text-gray-500 text-center max-w-sm">
+      <main className="min-h-screen flex flex-col items-center justify-center gap-8 p-6">
+        {/* Logo mark — overlapping circles representing people sharing */}
+        <div className="flex -space-x-3">
+          <div className="w-12 h-12 rounded-full bg-[#FF8A80] opacity-90" />
+          <div className="w-12 h-12 rounded-full bg-[#FFAB91] opacity-90" />
+          <div className="w-12 h-12 rounded-full bg-[#FFD180] opacity-90" />
+        </div>
+        <h1 className="text-5xl font-bold gradient-text tracking-tight">Partake</h1>
+        <p className="text-lg text-[#8B9BB4] text-center max-w-sm">
           No math. No stress.
         </p>
         <PrimaryButton onClick={() => setStep("participants")} className="max-w-xs">
           Let&apos;s settle up
         </PrimaryButton>
-        <p className="text-xs text-gray-400">Free to use. Sign up for Partake to learn your habits over time.</p>
+        <p className="text-xs text-[#8B9BB4]">Free to use. Sign up for Partake to learn your habits over time.</p>
       </main>
     );
   }
@@ -115,7 +120,7 @@ export default function Home() {
         {/* Saved contacts — quick tap to add */}
         {unusedContacts.length > 0 && (
           <div className="mb-6">
-            <p className="text-sm text-gray-400 mb-2">Your people</p>
+            <p className="text-sm text-[#8B9BB4] mb-2">Your people</p>
             <div className="flex gap-3 overflow-x-auto pb-2">
               {unusedContacts.map((contact, i) => (
                 <button
@@ -148,7 +153,7 @@ export default function Home() {
             placeholder="Add someone new"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
-            className="px-4 py-3 rounded-xl border dark:border-gray-700 bg-transparent"
+            className="px-4 py-3 rounded-xl border border-[#1C2A4A] bg-transparent"
             onKeyDown={(e) => e.key === "Enter" && addParticipant()}
           />
           <input
@@ -156,13 +161,13 @@ export default function Home() {
             placeholder="Venmo username (optional)"
             value={newVenmo}
             onChange={(e) => setNewVenmo(e.target.value)}
-            className="px-4 py-3 rounded-xl border dark:border-gray-700 bg-transparent text-sm"
+            className="px-4 py-3 rounded-xl border border-[#1C2A4A] bg-transparent text-sm"
             onKeyDown={(e) => e.key === "Enter" && addParticipant()}
           />
           <button
             onClick={addParticipant}
             disabled={!newName.trim()}
-            className="text-[#FF6B6B] font-semibold disabled:opacity-30"
+            className="text-[#FF8A80] font-semibold disabled:opacity-30"
           >
             + Add person
           </button>
@@ -171,20 +176,20 @@ export default function Home() {
         {/* Current participants */}
         {participants.length > 0 && (
           <div className="mb-6">
-            <p className="text-sm text-gray-400 mb-2">Splitting with</p>
+            <p className="text-sm text-[#8B9BB4] mb-2">Splitting with</p>
             <div className="flex flex-wrap gap-2">
               {participants.map((p) => (
                 <span
                   key={p.id}
-                  className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full text-sm"
+                  className="flex items-center gap-1 bg-[#1C2A4A] px-3 py-1 rounded-full text-sm"
                 >
                   {p.name}
                   {p.venmoUsername && (
-                    <span className="text-gray-400">@{p.venmoUsername}</span>
+                    <span className="text-[#8B9BB4]">@{p.venmoUsername}</span>
                   )}
                   <button
                     onClick={() => removeParticipant(p.id)}
-                    className="text-gray-400 hover:text-red-500 ml-1"
+                    className="text-[#8B9BB4] hover:text-[#FF8A80] ml-1"
                   >
                     ✕
                   </button>
@@ -201,7 +206,7 @@ export default function Home() {
           Next: Add the receipt
         </PrimaryButton>
         {participants.length < 1 && (
-          <p className="text-xs text-gray-400 text-center mt-2">
+          <p className="text-xs text-[#8B9BB4] text-center mt-2">
             Add at least 1 person
           </p>
         )}

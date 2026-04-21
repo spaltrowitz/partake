@@ -35,8 +35,8 @@ export function SecondaryButton({
   return (
     <button
       onClick={onClick}
-      className={`w-full py-3 px-6 rounded-full font-semibold border-2 border-[#FF6B6B] text-[#FF6B6B]
-        hover:bg-[#FF6B6B] hover:text-white transition-colors ${className}`}
+      className={`w-full py-3 px-6 rounded-full font-semibold border-2 border-[#FF8A80] text-[#FF8A80]
+        hover:bg-[#FF8A80] hover:text-white transition-colors ${className}`}
     >
       {children}
     </button>
@@ -45,7 +45,7 @@ export function SecondaryButton({
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`bg-white dark:bg-[#1a1a1a] rounded-xl p-4 shadow-md ${className}`}>
+    <div className={`bg-[#152038] rounded-xl p-4 shadow-md border border-[#1C2A4A] ${className}`}>
       {children}
     </div>
   );
@@ -61,7 +61,7 @@ export function SuggestionCard({
   onDismiss: () => void;
 }) {
   return (
-    <div className="flex items-center gap-2 p-3 bg-orange-50 dark:bg-orange-950/30 rounded-xl">
+    <div className="flex items-center gap-2 p-3 bg-[#1C2A4A] rounded-xl">
       <span className="text-lg">💡</span>
       <p className="text-sm flex-1">{message}</p>
       <button
@@ -70,7 +70,7 @@ export function SuggestionCard({
       >
         Sure
       </button>
-      <button onClick={onDismiss} className="text-gray-400 hover:text-gray-600">
+      <button onClick={onDismiss} className="text-[#8B9BB4] hover:text-white">
         ✕
       </button>
     </div>

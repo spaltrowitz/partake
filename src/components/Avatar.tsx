@@ -1,5 +1,5 @@
 const PARTICIPANT_COLORS = [
-  "#FF6B6B", "#4ECDC4", "#FFE66D", "#A18CD1", "#FF8E53",
+  "#FF8A80", "#4ECDC4", "#FFE66D", "#A18CD1", "#FF8E53",
   "#45B7D1", "#96E6A1", "#DDA0DD", "#F7DC6F", "#82E0AA",
 ];
 
