@@ -1,23 +1,55 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import type { Bill, BillItem, BillSplit, Participant } from "@/types";
-import { calculateSplits } from "@/services/splitCalculator";
+import type { Bill, BillItem, BillSplit, Participant, SplitMethod } from "@/types";
+import { calculateSplits, calculateEvenSplit, calculatePercentageSplit, calculateSharesSplit, calculateExactSplit } from "@/services/splitCalculator";
 import { Avatar, getParticipantColor } from "./Avatar";
 import { requestVenmo, copyToClipboard } from "@/services/venmo";
 import { Card, PrimaryButton } from "./UI";
 
 const TIP_OPTIONS = [15, 18, 20, 25];
 
+const SPLIT_METHODS: { id: SplitMethod; label: string; description: string }[] = [
+  { id: "itemized", label: "By item", description: "Everyone pays for what they got" },
+  { id: "even", label: "Equally", description: "Same amount each" },
+  { id: "percentage", label: "By %", description: "Custom percentage per person" },
+  { id: "shares", label: "By shares", description: "Weighted portions" },
+  { id: "exact", label: "Exact amounts", description: "Enter each person's amount" },
+];
+
 export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
   const [bill, setBill] = useState(initialBill);
+  const [splitMethod, setSplitMethod] = useState<SplitMethod>("itemized");
   const [selectedParticipant, setSelectedParticipant] = useState<string>(
     bill.participants[0]?.id ?? ""
   );
   const [showSettlement, setShowSettlement] = useState(false);
   const [settledIds, setSettledIds] = useState<Set<string>>(new Set());
+  const [percentages, setPercentages] = useState<Record<string, number>>(() => {
+    const even = 100 / bill.participants.length;
+    return Object.fromEntries(bill.participants.map((p) => [p.id, Math.round(even * 100) / 100]));
+  });
+  const [shares, setShares] = useState<Record<string, number>>(() =>
+    Object.fromEntries(bill.participants.map((p) => [p.id, 1]))
+  );
+  const [exactAmounts, setExactAmounts] = useState<Record<string, number>>(() =>
+    Object.fromEntries(bill.participants.map((p) => [p.id, 0]))
+  );
 
-  const splits = calculateSplits(bill);
+  const splits = (() => {
+    switch (splitMethod) {
+      case "even":
+        return calculateEvenSplit(bill);
+      case "percentage":
+        return calculatePercentageSplit(bill, percentages);
+      case "shares":
+        return calculateSharesSplit(bill, shares);
+      case "exact":
+        return calculateExactSplit(bill, exactAmounts);
+      default:
+        return calculateSplits(bill);
+    }
+  })();
 
   const toggleClaim = useCallback(
     (itemId: string) => {
@@ -75,90 +107,229 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Participant selector */}
-      <div className="flex gap-2 overflow-x-auto p-4 bg-gray-50 dark:bg-gray-900">
-        {bill.participants.map((p, i) => (
+      {/* Split method selector */}
+      <div className="flex gap-1 overflow-x-auto p-3 bg-gray-50 dark:bg-gray-900 border-b dark:border-gray-800">
+        {SPLIT_METHODS.map((method) => (
           <button
-            key={p.id}
-            onClick={() => setSelectedParticipant(p.id)}
-            className="flex flex-col items-center gap-1 min-w-[64px]"
+            key={method.id}
+            onClick={() => setSplitMethod(method.id)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+              splitMethod === method.id
+                ? "gradient-bg text-white"
+                : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+            }`}
           >
-            <div
-              className={`rounded-full transition-all ${
-                selectedParticipant === p.id
-                  ? `ring-2 ring-offset-2`
-                  : ""
-              }`}
-              style={
-                selectedParticipant === p.id
-                  ? { outlineColor: getParticipantColor(i) }
-                  : undefined
-              }
-            >
-              <Avatar name={p.name} index={i} size={48} />
-            </div>
-            <span
-              className={`text-xs truncate max-w-[64px] ${
-                selectedParticipant === p.id
-                  ? "font-semibold"
-                  : "text-gray-400"
-              }`}
-            >
-              {p.name}
-            </span>
+            {method.label}
           </button>
         ))}
       </div>
 
-      {/* Item list */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <p className="text-xs text-gray-400 mb-3">
-          Tap items to claim them
-        </p>
-        <div className="flex flex-col gap-1">
-          {bill.items.map((item) => {
-            const isClaimed = item.claimedBy.includes(selectedParticipant);
-            return (
-              <button
-                key={item.id}
-                onClick={() => toggleClaim(item.id)}
-                className={`flex items-center justify-between p-3 rounded-lg transition-all text-left ${
-                  isClaimed
-                    ? "bg-teal-50 dark:bg-teal-950/30"
-                    : "bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800"
-                } ${isClaimed ? "pop-animation" : ""}`}
+      {/* Participant selector (for itemized mode) */}
+      {splitMethod === "itemized" && (
+        <div className="flex gap-2 overflow-x-auto p-4 bg-gray-50 dark:bg-gray-900">
+          {bill.participants.map((p, i) => (
+            <button
+              key={p.id}
+              onClick={() => setSelectedParticipant(p.id)}
+              className="flex flex-col items-center gap-1 min-w-[64px]"
+            >
+              <div
+                className={`rounded-full transition-all ${
+                  selectedParticipant === p.id
+                    ? `ring-2 ring-offset-2`
+                    : ""
+                }`}
+                style={
+                  selectedParticipant === p.id
+                    ? { outlineColor: getParticipantColor(i) }
+                    : undefined
+                }
               >
-                <div className="flex-1">
-                  <p className="font-medium">{item.name}</p>
-                  {item.claimedBy.length > 0 && (
-                    <div className="flex -space-x-1 mt-1">
-                      {item.claimedBy.map((cid) => {
-                        const idx = bill.participants.findIndex(
-                          (p) => p.id === cid
-                        );
-                        return (
-                          <div
-                            key={cid}
-                            className="w-4 h-4 rounded-full border border-white"
-                            style={{
-                              backgroundColor: getParticipantColor(idx),
-                            }}
-                          />
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-                <span className="font-semibold ml-4">
-                  ${item.price.toFixed(2)}
-                </span>
-                <span className="ml-3 text-xl">
-                  {isClaimed ? "✅" : "⭕"}
-                </span>
-              </button>
-            );
-          })}
+                <Avatar name={p.name} index={i} size={48} />
+              </div>
+              <span
+                className={`text-xs truncate max-w-[64px] ${
+                  selectedParticipant === p.id
+                    ? "font-semibold"
+                    : "text-gray-400"
+                }`}
+              >
+                {p.name}
+              </span>
+            </button>
+          ))}
         </div>
+      )}
+
+      {/* Content area based on split method */}
+      <div className="flex-1 overflow-y-auto p-4">
+
+        {/* ITEMIZED: claim items per person */}
+        {splitMethod === "itemized" && (
+          <>
+            <p className="text-xs text-gray-400 mb-3">
+              Tap items to claim them for the selected person
+            </p>
+            <div className="flex flex-col gap-1">
+              {bill.items.map((item) => {
+                const isClaimed = item.claimedBy.includes(selectedParticipant);
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => toggleClaim(item.id)}
+                    className={`flex items-center justify-between p-3 rounded-lg transition-all text-left ${
+                      isClaimed
+                        ? "bg-teal-50 dark:bg-teal-950/30"
+                        : "bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    } ${isClaimed ? "pop-animation" : ""}`}
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium">{item.name}</p>
+                      {item.claimedBy.length > 0 && (
+                        <div className="flex -space-x-1 mt-1">
+                          {item.claimedBy.map((cid) => {
+                            const idx = bill.participants.findIndex(
+                              (p) => p.id === cid
+                            );
+                            return (
+                              <div
+                                key={cid}
+                                className="w-4 h-4 rounded-full border border-white"
+                                style={{
+                                  backgroundColor: getParticipantColor(idx),
+                                }}
+                              />
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                    <span className="font-semibold ml-4">
+                      ${item.price.toFixed(2)}
+                    </span>
+                    <span className="ml-3 text-xl">
+                      {isClaimed ? "✅" : "⭕"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {/* EVEN: just show the equal amount */}
+        {splitMethod === "even" && (
+          <div className="text-center py-8">
+            <p className="text-gray-500 mb-4">Everyone pays the same</p>
+            <p className="text-4xl font-bold gradient-text">
+              ${(bill.total / bill.participants.length).toFixed(2)}
+            </p>
+            <p className="text-sm text-gray-400 mt-2">each</p>
+          </div>
+        )}
+
+        {/* PERCENTAGE: slider/input per person */}
+        {splitMethod === "percentage" && (
+          <div className="flex flex-col gap-3">
+            <p className="text-xs text-gray-400 mb-1">
+              Set each person&apos;s percentage (should add up to 100%)
+            </p>
+            {bill.participants.map((p, i) => (
+              <div key={p.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                <Avatar name={p.name} index={i} size={32} />
+                <span className="flex-1 font-medium text-sm">{p.name}</span>
+                <input
+                  type="number"
+                  value={percentages[p.id] ?? 0}
+                  onChange={(e) =>
+                    setPercentages((prev) => ({
+                      ...prev,
+                      [p.id]: parseFloat(e.target.value) || 0,
+                    }))
+                  }
+                  className="w-20 text-right px-2 py-1 rounded border dark:border-gray-700 bg-transparent text-sm font-bold"
+                />
+                <span className="text-sm text-gray-400">%</span>
+                <span className="text-sm font-semibold w-20 text-right">
+                  ${(bill.total * (percentages[p.id] ?? 0) / 100).toFixed(2)}
+                </span>
+              </div>
+            ))}
+            <p className={`text-xs text-center ${
+              Math.abs(Object.values(percentages).reduce((s, v) => s + v, 0) - 100) < 0.01
+                ? "text-green-500" : "text-orange-500"
+            }`}>
+              Total: {Object.values(percentages).reduce((s, v) => s + v, 0).toFixed(1)}%
+            </p>
+          </div>
+        )}
+
+        {/* SHARES: weighted portions */}
+        {splitMethod === "shares" && (
+          <div className="flex flex-col gap-3">
+            <p className="text-xs text-gray-400 mb-1">
+              Give each person a number of shares — the bill divides proportionally
+            </p>
+            {bill.participants.map((p, i) => {
+              const totalShares = Object.values(shares).reduce((s, v) => s + v, 0);
+              const proportion = totalShares > 0 ? (shares[p.id] ?? 0) / totalShares : 0;
+              return (
+                <div key={p.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                  <Avatar name={p.name} index={i} size={32} />
+                  <span className="flex-1 font-medium text-sm">{p.name}</span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setShares((prev) => ({ ...prev, [p.id]: Math.max(0, (prev[p.id] ?? 1) - 1) }))}
+                      className="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 text-sm font-bold"
+                    >−</button>
+                    <span className="w-8 text-center font-bold">{shares[p.id] ?? 1}</span>
+                    <button
+                      onClick={() => setShares((prev) => ({ ...prev, [p.id]: (prev[p.id] ?? 1) + 1 }))}
+                      className="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-700 text-sm font-bold"
+                    >+</button>
+                  </div>
+                  <span className="text-sm font-semibold w-20 text-right">
+                    ${(bill.total * proportion).toFixed(2)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* EXACT: enter amounts directly */}
+        {splitMethod === "exact" && (
+          <div className="flex flex-col gap-3">
+            <p className="text-xs text-gray-400 mb-1">
+              Enter each person&apos;s exact amount
+            </p>
+            {bill.participants.map((p, i) => (
+              <div key={p.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                <Avatar name={p.name} index={i} size={32} />
+                <span className="flex-1 font-medium text-sm">{p.name}</span>
+                <span className="text-sm text-gray-400">$</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={exactAmounts[p.id] ?? 0}
+                  onChange={(e) =>
+                    setExactAmounts((prev) => ({
+                      ...prev,
+                      [p.id]: parseFloat(e.target.value) || 0,
+                    }))
+                  }
+                  className="w-24 text-right px-2 py-1 rounded border dark:border-gray-700 bg-transparent text-sm font-bold"
+                />
+              </div>
+            ))}
+            <p className={`text-xs text-center ${
+              Math.abs(Object.values(exactAmounts).reduce((s, v) => s + v, 0) - bill.total) < 0.01
+                ? "text-green-500" : "text-orange-500"
+            }`}>
+              Assigned: ${Object.values(exactAmounts).reduce((s, v) => s + v, 0).toFixed(2)} of ${bill.total.toFixed(2)}
+            </p>
+          </div>
+        )}
 
         {/* Tip selector */}
         <div className="mt-6">
