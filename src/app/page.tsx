@@ -20,6 +20,7 @@ export default function Home() {
   const [bill, setBill] = useState<Bill | null>(null);
   const [tipPercent] = useState(20);
   const [savedContacts, setSavedContacts] = useState<SavedContact[]>([]);
+  const [showAddForm, setShowAddForm] = useState(false);
 
   useEffect(() => {
     setSavedContacts(getSavedContacts());
@@ -114,14 +115,40 @@ export default function Home() {
     );
 
     return (
-      <main className="min-h-screen p-6 max-w-md mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Who&apos;s here?</h1>
+      <main className="min-h-screen p-6 max-w-md mx-auto flex flex-col">
+        <h1 className="text-2xl font-bold mb-6 text-center">Who&apos;s here?</h1>
+
+        {/* Current participants */}
+        {participants.length > 0 && (
+          <div className="mb-6">
+            <p className="text-sm text-[#8B9BB4] mb-2 text-center">Splitting with</p>
+            <div className="flex flex-wrap gap-2 justify-center">
+              {participants.map((p) => (
+                <span
+                  key={p.id}
+                  className="flex items-center gap-1 bg-[#1C2A4A] px-3 py-1 rounded-full text-sm"
+                >
+                  {p.name}
+                  {p.venmoUsername && (
+                    <span className="text-[#8B9BB4]">@{p.venmoUsername}</span>
+                  )}
+                  <button
+                    onClick={() => removeParticipant(p.id)}
+                    className="text-[#8B9BB4] hover:text-[#FF8A80] ml-1"
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Saved contacts — quick tap to add */}
         {unusedContacts.length > 0 && (
           <div className="mb-6">
-            <p className="text-sm text-[#8B9BB4] mb-2">Your people</p>
-            <div className="flex gap-3 overflow-x-auto pb-2">
+            <p className="text-sm text-[#8B9BB4] mb-2 text-center">Tap to add</p>
+            <div className="flex gap-3 overflow-x-auto pb-2 justify-center">
               {unusedContacts.map((contact, i) => (
                 <button
                   key={contact.id}
@@ -146,70 +173,64 @@ export default function Home() {
           </div>
         )}
 
-        {/* Add someone new */}
-        <div className="flex flex-col gap-3 mb-6">
-          <input
-            type="text"
-            placeholder="Add someone new"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            className="px-4 py-3 rounded-xl border border-[#1C2A4A] bg-transparent"
-            onKeyDown={(e) => e.key === "Enter" && addParticipant()}
-          />
-          <input
-            type="text"
-            placeholder="Venmo username (optional)"
-            value={newVenmo}
-            onChange={(e) => setNewVenmo(e.target.value)}
-            className="px-4 py-3 rounded-xl border border-[#1C2A4A] bg-transparent text-sm"
-            onKeyDown={(e) => e.key === "Enter" && addParticipant()}
-          />
-          <button
-            onClick={addParticipant}
-            disabled={!newName.trim()}
-            className="text-[#FF8A80] font-semibold disabled:opacity-30"
-          >
-            + Add person
-          </button>
-        </div>
-
-        {/* Current participants */}
-        {participants.length > 0 && (
-          <div className="mb-6">
-            <p className="text-sm text-[#8B9BB4] mb-2">Splitting with</p>
-            <div className="flex flex-wrap gap-2">
-              {participants.map((p) => (
-                <span
-                  key={p.id}
-                  className="flex items-center gap-1 bg-[#1C2A4A] px-3 py-1 rounded-full text-sm"
-                >
-                  {p.name}
-                  {p.venmoUsername && (
-                    <span className="text-[#8B9BB4]">@{p.venmoUsername}</span>
-                  )}
-                  <button
-                    onClick={() => removeParticipant(p.id)}
-                    className="text-[#8B9BB4] hover:text-[#FF8A80] ml-1"
-                  >
-                    ✕
-                  </button>
-                </span>
-              ))}
+        {/* Add new person — collapsed by default */}
+        {showAddForm ? (
+          <div className="flex flex-col gap-3 mb-6">
+            <input
+              type="text"
+              placeholder="Name"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              className="px-4 py-3 rounded-xl border border-[#1C2A4A] bg-transparent text-center"
+              autoFocus
+              onKeyDown={(e) => e.key === "Enter" && addParticipant()}
+            />
+            <input
+              type="text"
+              placeholder="Venmo username (optional)"
+              value={newVenmo}
+              onChange={(e) => setNewVenmo(e.target.value)}
+              className="px-4 py-3 rounded-xl border border-[#1C2A4A] bg-transparent text-sm text-center"
+              onKeyDown={(e) => e.key === "Enter" && addParticipant()}
+            />
+            <div className="flex gap-2 justify-center">
+              <button
+                onClick={() => { addParticipant(); setShowAddForm(false); }}
+                disabled={!newName.trim()}
+                className="text-[#FF8A80] font-semibold disabled:opacity-30"
+              >
+                Add
+              </button>
+              <button
+                onClick={() => setShowAddForm(false)}
+                className="text-[#8B9BB4]"
+              >
+                Cancel
+              </button>
             </div>
           </div>
+        ) : (
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="text-[#FF8A80] font-semibold mb-6 text-center"
+          >
+            + Add someone new
+          </button>
         )}
 
-        <PrimaryButton
-          onClick={() => setStep("scan")}
-          disabled={participants.length < 1}
-        >
-          Next: Add the receipt
-        </PrimaryButton>
-        {participants.length < 1 && (
-          <p className="text-xs text-[#8B9BB4] text-center mt-2">
-            Add at least 1 person
-          </p>
-        )}
+        <div className="mt-auto">
+          <PrimaryButton
+            onClick={() => setStep("scan")}
+            disabled={participants.length < 1}
+          >
+            Next: Add the receipt
+          </PrimaryButton>
+          {participants.length < 1 && (
+            <p className="text-xs text-[#8B9BB4] text-center mt-2">
+              Add at least 1 person
+            </p>
+          )}
+        </div>
       </main>
     );
   }
