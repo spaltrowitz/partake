@@ -115,7 +115,7 @@ export default function Home() {
     );
 
     return (
-      <main className="min-h-screen p-6 max-w-md mx-auto flex flex-col">
+      <main className="p-6 max-w-md mx-auto">
         <h1 className="text-2xl font-bold mb-6 text-center">Who&apos;s here?</h1>
 
         {/* Current participants */}
@@ -218,7 +218,7 @@ export default function Home() {
           </button>
         )}
 
-        <div className="mt-auto">
+        <div className="mt-8">
           <PrimaryButton
             onClick={() => setStep("scan")}
             disabled={participants.length < 1}
