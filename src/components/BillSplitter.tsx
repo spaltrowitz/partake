@@ -205,7 +205,8 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
                       )}
                     </div>
                     <span className="font-semibold ml-4">
-                      ${item.price.toFixed(2)}
+                      {item.quantity > 1 && <span className="text-xs text-[#8B9BB4] mr-1">{item.quantity}×</span>}
+                      ${(item.price * item.quantity).toFixed(2)}
                     </span>
                     <span className="ml-3 text-xl">
                       {isClaimed ? "✅" : "⭕"}
@@ -256,7 +257,7 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
               </div>
             ))}
             <p className={`text-xs text-center ${
-              Math.abs(Object.values(percentages).reduce((s, v) => s + v, 0) - 100) < 0.01
+              Math.abs(Object.values(percentages).reduce((s, v) => s + v, 0) - 100) < 0.1
                 ? "text-green-500" : "text-orange-500"
             }`}>
               Total: {Object.values(percentages).reduce((s, v) => s + v, 0).toFixed(1)}%
@@ -323,7 +324,7 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
               </div>
             ))}
             <p className={`text-xs text-center ${
-              Math.abs(Object.values(exactAmounts).reduce((s, v) => s + v, 0) - bill.total) < 0.01
+              Math.abs(Object.values(exactAmounts).reduce((s, v) => s + v, 0) - bill.total) < 0.1
                 ? "text-green-500" : "text-orange-500"
             }`}>
               Assigned: ${Object.values(exactAmounts).reduce((s, v) => s + v, 0).toFixed(2)} of ${bill.total.toFixed(2)}
@@ -395,10 +396,12 @@ function Settlement({
       </div>
 
       <div className="flex flex-col gap-4">
-        {splits.map((split, i) => (
+        {splits.map((split) => {
+          const originalIndex = bill.participants.findIndex((p) => p.id === split.participantId);
+          return (
           <Card key={split.participantId}>
             <div className="flex items-center gap-3 mb-3">
-              <Avatar name={split.participantName} index={i} size={40} />
+              <Avatar name={split.participantName} index={originalIndex} size={40} />
               <div className="flex-1">
                 <p className="font-semibold">{split.participantName}</p>
                 <p className="text-xs text-[#8B9BB4]">
@@ -412,16 +415,19 @@ function Settlement({
 
             {/* Item breakdown */}
             <div className="text-xs text-[#8B9BB4] space-y-1 mb-3">
-              {split.items.map((item) => (
+              {split.items.map((item) => {
+                const lineTotal = item.price * item.quantity;
+                return (
                 <div key={item.id} className="flex justify-between">
-                  <span>{item.name}</span>
+                  <span>{item.quantity > 1 ? `${item.quantity}× ` : ""}{item.name}</span>
                   <span>
                     {item.claimedBy.length > 1
-                      ? `$${(item.price / item.claimedBy.length).toFixed(2)} (split ${item.claimedBy.length} ways)`
-                      : `$${item.price.toFixed(2)}`}
+                      ? `$${(lineTotal / item.claimedBy.length).toFixed(2)} (split ${item.claimedBy.length} ways)`
+                      : `$${lineTotal.toFixed(2)}`}
                   </span>
                 </div>
-              ))}
+                );
+              })}
               <hr className="border-[#1C2A4A]" />
               <div className="flex justify-between">
                 <span>Tax</span>
@@ -463,7 +469,8 @@ function Settlement({
               </>
             )}
           </Card>
-        ))}
+          );
+        })}
       </div>
 
       {/* Share link */}
