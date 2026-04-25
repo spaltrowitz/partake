@@ -6,7 +6,7 @@ export function requestVenmo(
   const amountStr = amount.toFixed(2);
   const encodedNote = encodeURIComponent(note);
   // Use web links — venmo:// deep links are blocked by mobile browsers
-  const url = `https://venmo.com/${venmoUsername}?txn=pay&amount=${amountStr}&note=${encodedNote}`;
+  const url = `https://venmo.com/${venmoUsername}?txn=charge&amount=${amountStr}&note=${encodedNote}`;
   window.open(url, "_blank");
   return true;
 }
@@ -18,7 +18,7 @@ export function getVenmoWebLink(
 ): string {
   const amountStr = amount.toFixed(2);
   const encodedNote = encodeURIComponent(note);
-  return `https://venmo.com/${venmoUsername}?txn=pay&amount=${amountStr}&note=${encodedNote}`;
+  return `https://venmo.com/${venmoUsername}?txn=charge&amount=${amountStr}&note=${encodedNote}`;
 }
 
 export function copyToClipboard(text: string): void {
