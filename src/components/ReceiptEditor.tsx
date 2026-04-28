@@ -25,7 +25,7 @@ export function ReceiptEditor({
   function addItem() {
     if (!newName.trim() || !newPrice) return;
     const price = parseFloat(newPrice);
-    if (isNaN(price)) return;
+    if (isNaN(price) || price < 0) return;
 
     const item: ParsedItem = {
       id: crypto.randomUUID(),
@@ -124,6 +124,7 @@ export function ReceiptEditor({
           <input
             type="number"
             step="0.01"
+            min="0"
             placeholder="0.00"
             value={newPrice}
             onChange={(e) => setNewPrice(e.target.value)}

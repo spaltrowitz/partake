@@ -1,6 +1,6 @@
 import type { ParsedReceipt, ParsedItem } from "@/types";
 
-const PRICE_PATTERN = /\$?\s*(\d+\.\d{2})/;
+const PRICE_PATTERN = /\$?\s*(\d{1,3}(?:,\d{3})*\.\d{2})/;
 const SUBTOTAL_KEYWORDS = ["subtotal", "sub total", "sub-total"];
 const TAX_KEYWORDS = ["tax", "sales tax", "hst", "gst"];
 const TOTAL_KEYWORDS = ["total", "amount due", "balance due", "total due"];
@@ -64,7 +64,7 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
 function extractPrice(text: string): number | undefined {
   const match = text.match(PRICE_PATTERN);
   if (!match) return undefined;
-  return parseFloat(match[1]);
+  return parseFloat(match[1].replace(/,/g, ""));
 }
 
 function extractItemName(text: string): string {
@@ -84,5 +84,5 @@ function matchesKeywords(text: string, keywords: string[]): boolean {
 }
 
 function shouldSkip(text: string): boolean {
-  return SKIP_KEYWORDS.some((k) => text.includes(k));
+  return SKIP_KEYWORDS.some((k) => new RegExp(`\\b${k}\\b`).test(text));
 }

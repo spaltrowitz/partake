@@ -102,20 +102,28 @@ export function calculateSplits(
     .sort((a, b) => b.total - a.total);
 }
 
-// Even split: everyone pays the same
+// Even split: everyone pays the same, with remainder distributed
 export function calculateEvenSplit(bill: Bill): BillSplit[] {
-  const perPerson = Math.round((bill.total / bill.participants.length) * 100) / 100;
+  const n = bill.participants.length;
+  const basePerPerson = Math.floor((bill.total / n) * 100) / 100;
+  const totalAssigned = Math.round(basePerPerson * n * 100) / 100;
+  const remainder = Math.round((bill.total - totalAssigned) * 100) / 100;
+  const pennies = Math.round(remainder * 100);
 
-  return bill.participants.map((p) => ({
-    participantId: p.id,
-    participantName: p.name,
-    itemsSubtotal: Math.round((bill.subtotal / bill.participants.length) * 100) / 100,
-    taxShare: Math.round((bill.tax / bill.participants.length) * 100) / 100,
-    tipShare: Math.round((bill.tipAmount / bill.participants.length) * 100) / 100,
-    total: perPerson,
-    items: [],
-    venmoUsername: p.venmoUsername,
-  }));
+  return bill.participants.map((p, i) => {
+    const extra = i < pennies ? 0.01 : 0;
+    const total = Math.round((basePerPerson + extra) * 100) / 100;
+    return {
+      participantId: p.id,
+      participantName: p.name,
+      itemsSubtotal: Math.round((bill.subtotal / n) * 100) / 100,
+      taxShare: Math.round((bill.tax / n) * 100) / 100,
+      tipShare: Math.round((bill.tipAmount / n) * 100) / 100,
+      total,
+      items: [],
+      venmoUsername: p.venmoUsername,
+    };
+  });
 }
 
 // Percentage split: each person pays a custom percentage

@@ -14,11 +14,11 @@ export function Avatar({
   size?: number;
   className?: string;
 }) {
-  const parts = name.split(" ");
+  const parts = name.trim().split(" ").filter(Boolean);
   const initials =
     parts.length >= 2
       ? (parts[0][0] + parts[1][0]).toUpperCase()
-      : name.slice(0, 2).toUpperCase();
+      : (name.trim() || "?").slice(0, 2).toUpperCase();
 
   const color = PARTICIPANT_COLORS[index % PARTICIPANT_COLORS.length];
 
