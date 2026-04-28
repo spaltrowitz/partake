@@ -215,6 +215,11 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
                 );
               })}
             </div>
+            {bill.items.some((item) => item.claimedBy.length === 0) && (
+              <p className="text-xs text-orange-400 mt-3 text-center">
+                ⚠ {bill.items.filter((item) => item.claimedBy.length === 0).length} unclaimed item{bill.items.filter((item) => item.claimedBy.length === 0).length !== 1 ? "s" : ""} won&apos;t be included in the split
+              </p>
+            )}
           </>
         )}
 
@@ -281,12 +286,12 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => setShares((prev) => ({ ...prev, [p.id]: Math.max(0, (prev[p.id] ?? 1) - 1) }))}
-                      className="w-7 h-7 rounded-full bg-gray-200 bg-[#1C2A4A] text-sm font-bold"
+                      className="w-7 h-7 rounded-full bg-[#1C2A4A] text-sm font-bold"
                     >−</button>
                     <span className="w-8 text-center font-bold">{shares[p.id] ?? 1}</span>
                     <button
                       onClick={() => setShares((prev) => ({ ...prev, [p.id]: (prev[p.id] ?? 1) + 1 }))}
-                      className="w-7 h-7 rounded-full bg-gray-200 bg-[#1C2A4A] text-sm font-bold"
+                      className="w-7 h-7 rounded-full bg-[#1C2A4A] text-sm font-bold"
                     >+</button>
                   </div>
                   <span className="text-sm font-semibold w-20 text-right">

@@ -55,7 +55,7 @@ export function ReceiptScanner({
       {isScanning ? (
         <div className="flex flex-col items-center gap-4">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#FF8A80]" />
-          <p className="text-[#8B9BB4]">Reading your receipt...</p>
+          <p className="text-[#8B9BB4]">{progress || "Reading your receipt..."}</p>
         </div>
       ) : (
         <>
@@ -84,6 +84,7 @@ export function ReceiptScanner({
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) handleFile(file);
+                e.target.value = "";
               }}
             />
             <PrimaryButton onClick={() => cameraInputRef.current?.click()}>
@@ -99,6 +100,7 @@ export function ReceiptScanner({
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) handleFile(file);
+                e.target.value = "";
               }}
             />
             <SecondaryButton onClick={() => fileInputRef.current?.click()}>

@@ -28,6 +28,7 @@ export default function Home() {
 
   function addParticipant() {
     if (!newName.trim()) return;
+    if (participants.some((p) => p.name.toLowerCase() === newName.trim().toLowerCase())) return;
     const p: Participant = {
       id: crypto.randomUUID(),
       name: newName.trim(),
@@ -239,6 +240,12 @@ export default function Home() {
   if (step === "scan") {
     return (
       <main className="min-h-screen p-6 max-w-md mx-auto">
+        <button
+          onClick={() => setStep("participants")}
+          className="text-sm text-[#8B9BB4] mb-4"
+        >
+          ← Back to people
+        </button>
         <ReceiptScanner
           onReceipt={(r) => {
             setReceipt(r);
@@ -253,6 +260,12 @@ export default function Home() {
   if (step === "edit" && receipt) {
     return (
       <main className="min-h-screen p-6 max-w-md mx-auto">
+        <button
+          onClick={() => setStep("scan")}
+          className="text-sm text-[#8B9BB4] mb-4"
+        >
+          ← Re-scan or re-enter
+        </button>
         <h1 className="text-2xl font-bold mb-4">Review the receipt</h1>
         <ReceiptEditor receipt={receipt} onChange={setReceipt} />
         <div className="mt-6">
