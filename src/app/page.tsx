@@ -87,6 +87,49 @@ export default function Home() {
     setStep("split");
   }
 
+  function loadTestData() {
+    const testParticipants: Participant[] = [
+      { id: "test-1", name: "Sam", venmoUsername: "sam-test", isAppUser: false },
+      { id: "test-2", name: "Alex", venmoUsername: "alex-test", isAppUser: false },
+      { id: "test-3", name: "Jordan", isAppUser: false },
+    ];
+
+    const testItems: BillItem[] = [
+      { id: "item-1", name: "Margherita Pizza", price: 18.00, claimedBy: [], quantity: 1 },
+      { id: "item-2", name: "Caesar Salad", price: 14.00, claimedBy: [], quantity: 1 },
+      { id: "item-3", name: "Pasta Bolognese", price: 22.00, claimedBy: [], quantity: 1 },
+      { id: "item-4", name: "Garlic Bread", price: 8.00, claimedBy: [], quantity: 1 },
+      { id: "item-5", name: "Tiramisu", price: 12.00, claimedBy: [], quantity: 1 },
+      { id: "item-6", name: "Sparkling Water", price: 5.00, claimedBy: [], quantity: 2 },
+      { id: "item-7", name: "Glass of Red Wine", price: 15.00, claimedBy: [], quantity: 1 },
+    ];
+
+    const subtotal = testItems.reduce((s, i) => s + i.price * i.quantity, 0);
+    const tax = Math.round(subtotal * 0.08875 * 100) / 100; // NYC tax
+    const tipAmount = Math.round(subtotal * 0.20 * 100) / 100;
+
+    const testBill: Bill = {
+      id: crypto.randomUUID(),
+      name: "Test Dinner",
+      restaurantName: "Luca's Trattoria",
+      items: testItems,
+      subtotal,
+      tax,
+      tipAmount,
+      tipPercent: 20,
+      total: Math.round((subtotal + tax + tipAmount) * 100) / 100,
+      participants: testParticipants,
+      createdBy: "local",
+      createdAt: new Date(),
+      status: "splitting",
+      shareCode: "test01",
+    };
+
+    setParticipants(testParticipants);
+    setBill(testBill);
+    setStep("split");
+  }
+
   // Landing
   if (step === "landing") {
     return (
@@ -105,6 +148,12 @@ export default function Home() {
           Let&apos;s settle up
         </PrimaryButton>
         <p className="text-xs text-[#8B9BB4]">Free to use. Sign up for Partake to learn your habits over time.</p>
+        <button
+          onClick={loadTestData}
+          className="text-xs text-[#4A5568] hover:text-[#8B9BB4] transition-colors mt-4"
+        >
+          🧪 Test mode — skip to splitting with sample data
+        </button>
       </main>
     );
   }
