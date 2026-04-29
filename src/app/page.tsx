@@ -8,6 +8,7 @@ import { BillSplitter } from "@/components/BillSplitter";
 import { PrimaryButton } from "@/components/UI";
 import { Avatar } from "@/components/Avatar";
 import { getSavedContacts, saveAllParticipantsAsContacts } from "@/services/localContacts";
+import { getBillHistory, saveBillToHistory } from "@/services/billHistory";
 
 type Step = "landing" | "participants" | "scan" | "edit" | "split";
 
@@ -21,9 +22,11 @@ export default function Home() {
   const [tipPercent] = useState(20);
   const [savedContacts, setSavedContacts] = useState<SavedContact[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [billHistory, setBillHistory] = useState<Bill[]>([]);
 
   useEffect(() => {
     setSavedContacts(getSavedContacts());
+    setBillHistory(getBillHistory());
   }, []);
 
   function addParticipant() {
@@ -86,6 +89,7 @@ export default function Home() {
     };
 
     setBill(newBill);
+    saveBillToHistory(newBill);
     // Save participants for next time
     saveAllParticipantsAsContacts(participants);
     setStep("split");
@@ -137,7 +141,7 @@ export default function Home() {
   // Landing
   if (step === "landing") {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center gap-8 p-6">
+      <main className="min-h-screen flex flex-col items-center gap-8 p-6 pt-16">
         {/* Logo mark — overlapping circles representing people sharing */}
         <div className="flex -space-x-3">
           <div className="w-12 h-12 rounded-full bg-[#FF8A80] opacity-90" />
@@ -152,6 +156,31 @@ export default function Home() {
           Let&apos;s settle up
         </PrimaryButton>
         <p className="text-xs text-[#8B9BB4]">Free to use. Sign up for Partake to learn your habits over time.</p>
+
+        {/* Bill history */}
+        {billHistory.length > 0 && (
+          <div className="w-full max-w-md mt-4">
+            <h2 className="text-sm font-semibold text-[#8B9BB4] mb-3">Recent bills</h2>
+            <div className="flex flex-col gap-2">
+              {billHistory.slice(0, 5).map((b) => (
+                <button
+                  key={b.id}
+                  onClick={() => { setBill(b); setParticipants(b.participants); setStep("split"); }}
+                  className="flex items-center justify-between p-3 bg-[#152038] rounded-xl hover:bg-[#1C2A4A] transition-colors text-left"
+                >
+                  <div>
+                    <p className="font-medium text-sm">{b.name || "Untitled bill"}</p>
+                    <p className="text-xs text-[#8B9BB4]">
+                      {b.participants.length} people · {new Date(b.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <span className="font-bold text-sm">${b.total.toFixed(2)}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <button
           onClick={loadTestData}
           className="text-xs text-[#4A5568] hover:text-[#8B9BB4] transition-colors mt-4"

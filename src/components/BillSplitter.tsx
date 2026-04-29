@@ -25,6 +25,7 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
   );
   const [showSettlement, setShowSettlement] = useState(false);
   const [settledIds, setSettledIds] = useState<Set<string>>(new Set());
+  const [customTipMode, setCustomTipMode] = useState(false);
   const [percentages, setPercentages] = useState<Record<string, number>>(() => {
     const even = 100 / bill.participants.length;
     return Object.fromEntries(bill.participants.map((p) => [p.id, Math.round(even * 100) / 100]));
@@ -35,19 +36,38 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
   const [exactAmounts, setExactAmounts] = useState<Record<string, number>>(() =>
     Object.fromEntries(bill.participants.map((p) => [p.id, 0]))
   );
+  // Partner mode: pair two people so one pays for both
+  const [partnerPair, setPartnerPair] = useState<{ payerId: string; partnerId: string } | null>(null);
+
+  const effectiveBill = (() => {
+    if (!partnerPair) return bill;
+    // Roll partner's claimed items into payer's claims
+    const updatedItems = bill.items.map((item) => {
+      if (item.claimedBy.includes(partnerPair.partnerId)) {
+        const withoutPartner = item.claimedBy.filter((id) => id !== partnerPair.partnerId);
+        if (!withoutPartner.includes(partnerPair.payerId)) {
+          withoutPartner.push(partnerPair.payerId);
+        }
+        return { ...item, claimedBy: withoutPartner };
+      }
+      return item;
+    });
+    return { ...bill, items: updatedItems };
+  })();
 
   const splits = (() => {
+    const b = splitMethod === "itemized" ? effectiveBill : bill;
     switch (splitMethod) {
       case "even":
-        return calculateEvenSplit(bill);
+        return calculateEvenSplit(b);
       case "percentage":
-        return calculatePercentageSplit(bill, percentages);
+        return calculatePercentageSplit(b, percentages);
       case "shares":
-        return calculateSharesSplit(bill, shares);
+        return calculateSharesSplit(b, shares);
       case "exact":
-        return calculateExactSplit(bill, exactAmounts);
+        return calculateExactSplit(b, exactAmounts);
       default:
-        return calculateSplits(bill);
+        return calculateSplits(b);
     }
   })();
 
@@ -133,6 +153,62 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
           </button>
         ))}
       </div>
+
+      {/* Partner/couple mode */}
+      {bill.participants.length >= 2 && (
+        <div className="px-4 py-2 border-b border-[#1C2A4A]">
+          {partnerPair ? (
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-[#8B9BB4]">
+                👫 {bill.participants.find((p) => p.id === partnerPair.partnerId)?.name}&apos;s items → {bill.participants.find((p) => p.id === partnerPair.payerId)?.name}&apos;s tab
+              </span>
+              <button
+                onClick={() => setPartnerPair(null)}
+                className="text-xs text-[#FF8A80]"
+              >
+                Remove
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                if (bill.participants.length >= 2) {
+                  setPartnerPair({
+                    payerId: bill.participants[0].id,
+                    partnerId: bill.participants[1].id,
+                  });
+                }
+              }}
+              className="text-xs text-[#8B9BB4] hover:text-[#FF8A80] transition-colors"
+            >
+              👫 Pair as couple/partners
+            </button>
+          )}
+          {partnerPair && (
+            <div className="flex gap-2 mt-2">
+              <select
+                value={partnerPair.payerId}
+                onChange={(e) => setPartnerPair({ ...partnerPair, payerId: e.target.value })}
+                className="flex-1 text-xs bg-[#1C2A4A] rounded-lg p-2 outline-none"
+              >
+                {bill.participants.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name} pays</option>
+                ))}
+              </select>
+              <span className="text-xs text-[#8B9BB4] self-center">for</span>
+              <select
+                value={partnerPair.partnerId}
+                onChange={(e) => setPartnerPair({ ...partnerPair, partnerId: e.target.value })}
+                className="flex-1 text-xs bg-[#1C2A4A] rounded-lg p-2 outline-none"
+              >
+                {bill.participants.filter((p) => p.id !== partnerPair.payerId).map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Participant selector (for itemized mode) */}
       {splitMethod === "itemized" && (
@@ -354,9 +430,9 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
             {TIP_OPTIONS.map((pct) => (
               <button
                 key={pct}
-                onClick={() => updateTip(pct)}
+                onClick={() => { updateTip(pct); setCustomTipMode(false); }}
                 className={`flex-1 py-2 rounded-full text-sm font-medium transition-colors ${
-                  bill.tipPercent === pct
+                  bill.tipPercent === pct && !customTipMode
                     ? "gradient-bg text-white"
                     : "bg-[#1C2A4A] text-[#C4CFDE]"
                 }`}
@@ -364,7 +440,38 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
                 {pct}%
               </button>
             ))}
+            <button
+              onClick={() => setCustomTipMode(true)}
+              className={`flex-1 py-2 rounded-full text-sm font-medium transition-colors ${
+                customTipMode
+                  ? "gradient-bg text-white"
+                  : "bg-[#1C2A4A] text-[#C4CFDE]"
+              }`}
+            >
+              Other
+            </button>
           </div>
+          {customTipMode && (
+            <div className="flex items-center gap-2 mt-3 p-2 bg-[#1C2A4A] rounded-xl">
+              <input
+                type="number"
+                step="0.5"
+                min="0"
+                placeholder="Tip %"
+                defaultValue={bill.tipPercent ?? ""}
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value);
+                  if (!isNaN(val) && val >= 0) updateTip(val);
+                }}
+                className="w-20 bg-transparent text-sm text-right outline-none font-bold"
+                autoFocus
+              />
+              <span className="text-sm text-[#8B9BB4]">%</span>
+              <span className="text-xs text-[#8B9BB4] ml-auto">
+                = ${bill.tipAmount.toFixed(2)}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -496,23 +603,27 @@ function Settlement({
         })}
       </div>
 
-      {/* Share link */}
-      {bill.shareCode && (
-        <Card className="mt-4 text-center">
-          <p className="font-semibold mb-1">Share this bill</p>
-          <p className="text-xs text-[#8B9BB4] mb-2">
-            Friends can claim items without downloading anything
-          </p>
-          <button
-            onClick={() =>
-              copyToClipboard(`https://partakeapp.com/bill/${bill.shareCode}`)
+      {/* Share summary */}
+      <Card className="mt-4">
+        <button
+          onClick={() => {
+            const summary = splits
+              .filter((s) => s.total > 0)
+              .map((s) => `${s.participantName}: $${s.total.toFixed(2)}`)
+              .join("\n");
+            const text = `${bill.name || "Bill split"} — $${bill.total.toFixed(2)} total\n\n${summary}\n\nSplit with Partake`;
+
+            if (navigator.share) {
+              navigator.share({ text }).catch(() => copyToClipboard(text));
+            } else {
+              copyToClipboard(text);
             }
-            className="text-sm text-[#FF8A80] bg-red-50 dark:bg-red-950/30 py-2 px-4 rounded-lg hover:bg-red-100 transition-colors"
-          >
-            🔗 partakeapp.com/bill/{bill.shareCode}
-          </button>
-        </Card>
-      )}
+          }}
+          className="w-full py-2 text-sm font-medium text-[#FF8A80] hover:bg-[#1C2A4A] rounded-lg transition-colors flex items-center justify-center gap-2"
+        >
+          📤 Share the breakdown
+        </button>
+      </Card>
 
       {allSettled && (
         <div className="text-center mt-6 text-2xl">
