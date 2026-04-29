@@ -29,10 +29,14 @@ export default function Home() {
   function addParticipant() {
     if (!newName.trim()) return;
     if (participants.some((p) => p.name.toLowerCase() === newName.trim().toLowerCase())) return;
+    // Auto-detect payment app from username format
+    const paymentHandle = newVenmo.trim();
+    const isCashApp = paymentHandle.startsWith("$");
     const p: Participant = {
       id: crypto.randomUUID(),
       name: newName.trim(),
-      venmoUsername: newVenmo.trim() || undefined,
+      venmoUsername: !isCashApp && paymentHandle ? paymentHandle : undefined,
+      cashAppUsername: isCashApp ? paymentHandle : undefined,
       isAppUser: false,
     };
     setParticipants((prev) => [...prev, p]);
@@ -237,7 +241,7 @@ export default function Home() {
             />
             <input
               type="text"
-              placeholder="Venmo username (optional)"
+              placeholder="Venmo or $CashApp (optional)"
               value={newVenmo}
               onChange={(e) => setNewVenmo(e.target.value)}
               className="px-4 py-3 rounded-xl border border-[#1C2A4A] bg-transparent text-sm text-center"

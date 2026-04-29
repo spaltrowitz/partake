@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import type { Bill, BillItem, BillSplit, Participant, SplitMethod } from "@/types";
 import { calculateSplits, calculateEvenSplit, calculatePercentageSplit, calculateSharesSplit, calculateExactSplit } from "@/services/splitCalculator";
 import { Avatar, getParticipantColor } from "./Avatar";
-import { requestVenmo, copyToClipboard } from "@/services/venmo";
+import { requestPayment, copyToClipboard } from "@/services/venmo";
 import { Card, PrimaryButton } from "./UI";
 
 const TIP_OPTIONS = [15, 18, 20, 25];
@@ -82,10 +82,20 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
     });
   }
 
-  function handleVenmo(split: BillSplit) {
-    if (!split.venmoUsername) return;
+  function handlePayment(split: BillSplit) {
     const note = `Partake: ${bill.name || "Bill split"}`;
-    requestVenmo(split.venmoUsername, split.total, note);
+    // Try Venmo first, then Cash App
+    if (split.venmoUsername) {
+      requestPayment("venmo", split.venmoUsername, split.total, note);
+    } else {
+      // Find participant to check for Cash App
+      const participant = bill.participants.find((p) => p.id === split.participantId);
+      if (participant?.cashAppUsername) {
+        requestPayment("cashapp", participant.cashAppUsername, split.total, note);
+      } else {
+        return;
+      }
+    }
     setSettledIds((prev) => new Set([...prev, split.participantId]));
   }
 
@@ -95,7 +105,7 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
         bill={bill}
         splits={splits}
         settledIds={settledIds}
-        onVenmo={handleVenmo}
+        onPayment={handlePayment}
         onCopy={(split) => {
           copyToClipboard(split.total.toFixed(2));
           setSettledIds((prev) => new Set([...prev, split.participantId]));
@@ -377,14 +387,14 @@ function Settlement({
   bill,
   splits,
   settledIds,
-  onVenmo,
+  onPayment,
   onCopy,
   onDone,
 }: {
   bill: Bill;
   splits: BillSplit[];
   settledIds: Set<string>;
-  onVenmo: (split: BillSplit) => void;
+  onPayment: (split: BillSplit) => void;
   onCopy: (split: BillSplit) => void;
   onDone: () => void;
 }) {
@@ -447,30 +457,38 @@ function Settlement({
             {/* Payment action */}
             {split.total > 0 && (
               <>
-                {split.venmoUsername ? (
-                  <button
-                    onClick={() => onVenmo(split)}
-                    disabled={settledIds.has(split.participantId)}
-                    className={`w-full py-2 rounded-lg text-white text-sm font-medium transition-colors ${
-                      settledIds.has(split.participantId)
-                        ? "bg-[#4ECDC4]"
-                        : "bg-[#3D95CE] hover:bg-[#2d7ab3]"
-                    }`}
-                  >
-                    {settledIds.has(split.participantId)
-                      ? "✓ Requested"
-                      : "Request via Venmo"}
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => onCopy(split)}
-                    className="w-full py-2 text-sm font-medium text-[#FF8A80] hover:bg-orange-50 dark:hover:bg-orange-950/30 rounded-lg transition-colors"
-                  >
-                    {settledIds.has(split.participantId)
-                      ? "✓ Copied"
-                      : `Copy amount: $${split.total.toFixed(2)}`}
-                  </button>
-                )}
+                {(() => {
+                  const participant = bill.participants.find((p) => p.id === split.participantId);
+                  const hasVenmo = !!split.venmoUsername;
+                  const hasCashApp = !!participant?.cashAppUsername;
+                  const hasPaymentApp = hasVenmo || hasCashApp;
+                  const appLabel = hasVenmo ? "Venmo" : "Cash App";
+
+                  return hasPaymentApp ? (
+                    <button
+                      onClick={() => onPayment(split)}
+                      disabled={settledIds.has(split.participantId)}
+                      className={`w-full py-2 rounded-lg text-white text-sm font-medium transition-colors ${
+                        settledIds.has(split.participantId)
+                          ? "bg-[#4ECDC4]"
+                          : "bg-[#3D95CE] hover:bg-[#2d7ab3]"
+                      }`}
+                    >
+                      {settledIds.has(split.participantId)
+                        ? "✓ Requested"
+                        : `Request via ${appLabel}`}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => onCopy(split)}
+                      className="w-full py-2 text-sm font-medium text-[#FF8A80] hover:bg-[#1C2A4A] rounded-lg transition-colors"
+                    >
+                      {settledIds.has(split.participantId)
+                        ? "✓ Copied"
+                        : `Copy amount: $${split.total.toFixed(2)}`}
+                    </button>
+                  );
+                })()}
               </>
             )}
           </Card>

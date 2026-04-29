@@ -14,6 +14,7 @@ export interface SavedContact {
   id: string;
   name: string;
   venmoUsername?: string;
+  cashAppUsername?: string;
   createdBy: string;
 }
 
@@ -57,6 +58,7 @@ export interface Participant {
   id: string;
   name: string;
   venmoUsername?: string;
+  cashAppUsername?: string;
   isAppUser: boolean;
 }
 
