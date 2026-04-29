@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import type { ParsedReceipt, ParsedItem } from "@/types";
+import { suggestTaxRate } from "@/services/taxRate";
 
 export function ReceiptEditor({
   receipt,
@@ -13,6 +14,8 @@ export function ReceiptEditor({
   const [newName, setNewName] = useState("");
   const [newPrice, setNewPrice] = useState("");
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const [suggestedRate, setSuggestedRate] = useState<{ rate: number; jurisdiction: string } | null>(null);
+  const [taxRateLoaded, setTaxRateLoaded] = useState(false);
   const isManualEntry = receipt.items.length === 0 && !receipt.restaurantName;
 
   // Auto-focus the first input on manual entry
@@ -21,6 +24,16 @@ export function ReceiptEditor({
       nameInputRef.current.focus();
     }
   }, [isManualEntry]);
+
+  // Auto-suggest tax rate for manual entry (no receipt = no tax line)
+  useEffect(() => {
+    if (isManualEntry && !taxRateLoaded) {
+      suggestTaxRate().then((result) => {
+        if (result) setSuggestedRate(result);
+        setTaxRateLoaded(true);
+      });
+    }
+  }, [isManualEntry, taxRateLoaded]);
 
   function addItem() {
     if (!newName.trim() || !newPrice) return;
@@ -169,6 +182,22 @@ export function ReceiptEditor({
               />
             </div>
           </div>
+
+          {/* Tax rate suggestion */}
+          {suggestedRate && receipt.tax === undefined && (
+            <button
+              onClick={() => {
+                const taxAmount = Math.round(subtotal * suggestedRate.rate) / 100;
+                onChange({ ...receipt, tax: Math.round(taxAmount * 100) / 100 });
+              }}
+              className="flex items-center justify-between p-2 rounded-lg text-xs text-[#8B9BB4] hover:bg-[#1C2A4A] transition-colors"
+            >
+              <span>💡 Use {suggestedRate.rate}% ({suggestedRate.jurisdiction})?</span>
+              <span className="text-[#FF8A80] font-semibold ml-2">
+                +${(Math.round(subtotal * suggestedRate.rate) / 100).toFixed(2)}
+              </span>
+            </button>
+          )}
 
           <div className="flex items-center justify-between px-1 pt-1">
             <span className="font-semibold">Total</span>
