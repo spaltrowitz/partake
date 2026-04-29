@@ -48,3 +48,8 @@ See `.env.example` for required configuration:
 ## Status
 
 🚧 In development
+
+---
+
+🍕 [Cover my share](https://spaltrowitz.github.io/#support)
+
