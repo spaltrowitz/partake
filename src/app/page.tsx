@@ -7,8 +7,11 @@ import { ReceiptEditor } from "@/components/ReceiptEditor";
 import { BillSplitter } from "@/components/BillSplitter";
 import { PrimaryButton } from "@/components/UI";
 import { Avatar } from "@/components/Avatar";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { getSavedContacts, saveAllParticipantsAsContacts } from "@/services/localContacts";
 import { getBillHistory, saveBillToHistory } from "@/services/billHistory";
+import { useAuthContext } from "@/components/AuthProvider";
+import { saveBill } from "@/services/firestore";
 
 type Step = "landing" | "participants" | "scan" | "edit" | "split";
 
@@ -23,6 +26,7 @@ export default function Home() {
   const [savedContacts, setSavedContacts] = useState<SavedContact[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [billHistory, setBillHistory] = useState<Bill[]>([]);
+  const { user } = useAuthContext();
 
   useEffect(() => {
     setSavedContacts(getSavedContacts());
@@ -82,7 +86,7 @@ export default function Home() {
       tipPercent,
       total: Math.round((subtotal + tax + tipAmount) * 100) / 100,
       participants,
-      createdBy: "local",
+      createdBy: user?.uid ?? "local",
       createdAt: new Date(),
       status: "splitting",
       shareCode,
@@ -90,7 +94,7 @@ export default function Home() {
 
     setBill(newBill);
     saveBillToHistory(newBill);
-    // Save participants for next time
+    saveBill(newBill).catch(() => {});
     saveAllParticipantsAsContacts(participants);
     setStep("split");
   }
@@ -156,6 +160,12 @@ export default function Home() {
           Let&apos;s settle up
         </PrimaryButton>
         <p className="text-xs text-[#8B9BB4]">Free to use. Sign up for Partake to learn your habits over time.</p>
+
+        {billHistory.length === 0 && (
+          <div className="text-center mt-4">
+            <p className="text-sm text-[#8B9BB4]">No bills yet. Go eat something 🍕</p>
+          </div>
+        )}
 
         {/* Bill history */}
         {billHistory.length > 0 && (
@@ -328,12 +338,14 @@ export default function Home() {
         >
           ← Back to people
         </button>
-        <ReceiptScanner
-          onReceipt={(r) => {
-            setReceipt(r);
-            setStep("edit");
-          }}
-        />
+        <ErrorBoundary>
+          <ReceiptScanner
+            onReceipt={(r) => {
+              setReceipt(r);
+              setStep("edit");
+            }}
+          />
+        </ErrorBoundary>
       </main>
     );
   }
@@ -366,7 +378,9 @@ export default function Home() {
   if (step === "split" && bill) {
     return (
       <main className="min-h-screen max-w-md mx-auto">
-        <BillSplitter bill={bill} />
+        <ErrorBoundary>
+          <BillSplitter bill={bill} />
+        </ErrorBoundary>
       </main>
     );
   }
