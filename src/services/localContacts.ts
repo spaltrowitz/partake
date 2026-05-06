@@ -15,7 +15,7 @@ export function getSavedContacts(): SavedContact[] {
 export function addSavedContact(contact: SavedContact): void {
   const contacts = getSavedContacts();
   // Don't add duplicates by name
-  if (contacts.some((c) => c.name.toLowerCase() === contact.name.toLowerCase())) return;
+  if (contacts.some((c) => c.name.trim().toLowerCase() === contact.name.trim().toLowerCase())) return;
   contacts.push(contact);
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(contacts));

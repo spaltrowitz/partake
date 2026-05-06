@@ -26,7 +26,7 @@ export default function Home() {
   const [savedContacts, setSavedContacts] = useState<SavedContact[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [billHistory, setBillHistory] = useState<Bill[]>([]);
-  const { user } = useAuthContext();
+  const { user, loading: authLoading } = useAuthContext();
 
   useEffect(() => {
     setSavedContacts(getSavedContacts());
@@ -94,7 +94,7 @@ export default function Home() {
 
     setBill(newBill);
     saveBillToHistory(newBill);
-    saveBill(newBill).catch(() => {});
+    saveBill(newBill).catch((err) => console.warn("Cloud sync failed:", err));
     saveAllParticipantsAsContacts(participants);
     setStep("split");
   }
@@ -365,7 +365,7 @@ export default function Home() {
         <div className="mt-6">
           <PrimaryButton
             onClick={createBill}
-            disabled={receipt.items.length === 0}
+            disabled={receipt.items.length === 0 || authLoading}
           >
             Looks good — start splitting
           </PrimaryButton>

@@ -120,6 +120,7 @@ export function ReceiptEditor({
             placeholder={receipt.items.length === 0 ? "e.g. Margherita Pizza" : "Next item"}
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
+            maxLength={80}
             className="flex-1 bg-transparent text-sm outline-none placeholder:text-[#4A5568]"
             onKeyDown={(e) => {
               if (e.key === "Enter") {

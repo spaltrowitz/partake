@@ -25,10 +25,13 @@ export async function suggestTaxRate(): Promise<TaxRateResult | null> {
     const { latitude, longitude } = position.coords;
 
     // Reverse geocode to get state/city (free OpenStreetMap API)
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
     const geoRes = await fetch(
       `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=10`,
-      { headers: { "User-Agent": "Partake-App" } }
+      { headers: { "User-Agent": "Partake-App" }, signal: controller.signal }
     );
+    clearTimeout(timeout);
     const geoData = await geoRes.json();
 
     const state = geoData.address?.state;

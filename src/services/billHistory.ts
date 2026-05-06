@@ -18,7 +18,9 @@ export function saveBillToHistory(bill: Bill): void {
 export function getBillHistory(): Bill[] {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
+    if (!data) return [];
+    const bills = JSON.parse(data) as Bill[];
+    return bills.map((b) => ({ ...b, createdAt: new Date(b.createdAt) }));
   } catch {
     return [];
   }

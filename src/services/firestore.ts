@@ -12,20 +12,29 @@ import {
   deleteDoc,
   type Unsubscribe,
 } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, firebaseConfigured } from "@/lib/firebase";
 import type { Bill, AppUser, SavedContact, PartnerGroup } from "@/types";
+
+function ensureDb() {
+  if (!firebaseConfigured) {
+    throw new Error("Firebase not configured");
+  }
+}
 
 // Bills
 export async function saveBill(bill: Bill): Promise<void> {
+  ensureDb();
   await setDoc(doc(db, "bills", bill.id), bill);
 }
 
 export async function getBill(id: string): Promise<Bill | null> {
+  ensureDb();
   const snap = await getDoc(doc(db, "bills", id));
   return snap.exists() ? (snap.data() as Bill) : null;
 }
 
 export async function getBillByShareCode(code: string): Promise<Bill | null> {
+  ensureDb();
   const q = query(
     collection(db, "bills"),
     where("shareCode", "==", code),
@@ -36,6 +45,7 @@ export async function getBillByShareCode(code: string): Promise<Bill | null> {
 }
 
 export async function getUserBills(userId: string): Promise<Bill[]> {
+  ensureDb();
   const q = query(
     collection(db, "bills"),
     where("createdBy", "==", userId),
@@ -49,6 +59,7 @@ export function listenToBill(
   id: string,
   callback: (bill: Bill | null) => void
 ): Unsubscribe {
+  ensureDb();
   return onSnapshot(doc(db, "bills", id), (snap) => {
     callback(snap.exists() ? (snap.data() as Bill) : null);
   });
@@ -56,10 +67,12 @@ export function listenToBill(
 
 // Users
 export async function saveUser(user: AppUser): Promise<void> {
+  ensureDb();
   await setDoc(doc(db, "users", user.id), user);
 }
 
 export async function getUser(id: string): Promise<AppUser | null> {
+  ensureDb();
   const snap = await getDoc(doc(db, "users", id));
   return snap.exists() ? (snap.data() as AppUser) : null;
 }
@@ -69,6 +82,7 @@ export async function saveContact(
   userId: string,
   contact: SavedContact
 ): Promise<void> {
+  ensureDb();
   await setDoc(
     doc(db, "users", userId, "contacts", contact.id),
     contact
@@ -76,6 +90,7 @@ export async function saveContact(
 }
 
 export async function getContacts(userId: string): Promise<SavedContact[]> {
+  ensureDb();
   const snap = await getDocs(collection(db, "users", userId, "contacts"));
   return snap.docs.map((d) => d.data() as SavedContact);
 }
@@ -84,6 +99,7 @@ export async function deleteContact(
   userId: string,
   contactId: string
 ): Promise<void> {
+  ensureDb();
   await deleteDoc(doc(db, "users", userId, "contacts", contactId));
 }
 
@@ -92,6 +108,7 @@ export async function savePartnerGroup(
   userId: string,
   group: PartnerGroup
 ): Promise<void> {
+  ensureDb();
   await setDoc(
     doc(db, "users", userId, "partnerGroups", group.id),
     group
@@ -101,6 +118,7 @@ export async function savePartnerGroup(
 export async function getPartnerGroups(
   userId: string
 ): Promise<PartnerGroup[]> {
+  ensureDb();
   const snap = await getDocs(
     collection(db, "users", userId, "partnerGroups")
   );
