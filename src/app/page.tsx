@@ -49,6 +49,9 @@ export default function Home() {
     setParticipants((prev) => [...prev, p]);
     setNewName("");
     setNewVenmo("");
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
   }
 
   function removeParticipant(id: string) {
@@ -145,7 +148,7 @@ export default function Home() {
   // Landing
   if (step === "landing") {
     return (
-      <main className="min-h-screen flex flex-col items-center gap-8 p-6 pt-16">
+      <main className="min-h-dvh flex flex-col items-center gap-8 p-6 pt-16">
         {/* Logo mark — overlapping circles representing people sharing */}
         <div className="flex -space-x-3">
           <div className="w-12 h-12 rounded-full bg-[#FF8A80] opacity-90" />
@@ -227,7 +230,7 @@ export default function Home() {
                   )}
                   <button
                     onClick={() => removeParticipant(p.id)}
-                    className="text-[#8B9BB4] hover:text-[#FF8A80] ml-1"
+                    className="text-[#8B9BB4] hover:text-[#FF8A80] ml-1 p-2 -mr-2"
                   >
                     ✕
                   </button>
@@ -331,7 +334,7 @@ export default function Home() {
   // Scan
   if (step === "scan") {
     return (
-      <main className="min-h-screen p-6 max-w-md mx-auto">
+      <main className="min-h-dvh p-6 max-w-md mx-auto">
         <button
           onClick={() => setStep("participants")}
           className="text-sm text-[#8B9BB4] mb-4"
@@ -353,7 +356,7 @@ export default function Home() {
   // Edit receipt
   if (step === "edit" && receipt) {
     return (
-      <main className="min-h-screen p-6 max-w-md mx-auto">
+      <main className="min-h-dvh p-6 max-w-md mx-auto">
         <button
           onClick={() => setStep("scan")}
           className="text-sm text-[#8B9BB4] mb-4"
@@ -377,7 +380,7 @@ export default function Home() {
   // Split
   if (step === "split" && bill) {
     return (
-      <main className="min-h-screen max-w-md mx-auto">
+      <main className="min-h-dvh max-w-md mx-auto">
         <ErrorBoundary>
           <BillSplitter bill={bill} />
         </ErrorBoundary>

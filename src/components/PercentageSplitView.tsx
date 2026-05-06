@@ -27,6 +27,7 @@ export function PercentageSplitView({
           <span className="flex-1 font-medium text-sm">{p.name}</span>
           <input
             type="number"
+            inputMode="decimal"
             value={percentages[p.id] ?? 0}
             onChange={(e) => onChangePercentage(p.id, parseFloat(e.target.value) || 0)}
             className="w-20 text-right px-2 py-1 rounded border border-[#1C2A4A] bg-transparent text-sm font-bold"

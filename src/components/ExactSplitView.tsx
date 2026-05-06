@@ -28,6 +28,7 @@ export function ExactSplitView({
           <span className="text-sm text-[#8B9BB4]">$</span>
           <input
             type="number"
+            inputMode="decimal"
             step="0.01"
             min="0"
             value={exactAmounts[p.id] ?? 0}

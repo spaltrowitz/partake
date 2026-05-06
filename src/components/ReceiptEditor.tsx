@@ -137,6 +137,7 @@ export function ReceiptEditor({
           <span className="text-[#8B9BB4] text-sm">$</span>
           <input
             type="number"
+            inputMode="decimal"
             step="0.01"
             min="0"
             placeholder="0.00"
@@ -175,6 +176,7 @@ export function ReceiptEditor({
               <span className="text-sm text-[#8B9BB4]">$</span>
               <input
                 type="number"
+                inputMode="decimal"
                 step="0.01"
                 value={receipt.tax ?? ""}
                 onChange={(e) => updateTax(e.target.value)}

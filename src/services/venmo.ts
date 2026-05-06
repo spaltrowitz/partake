@@ -8,7 +8,10 @@ export function requestPayment(
 ): boolean {
   const url = getPaymentLink(app, username, amount, note);
   if (!url) return false;
-  window.open(url, "_blank");
+  const newWindow = window.open(url, "_blank");
+  if (!newWindow) {
+    window.location.href = url;
+  }
   return true;
 }
 

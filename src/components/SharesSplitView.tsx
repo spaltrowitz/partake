@@ -30,12 +30,12 @@ export function SharesSplitView({
             <div className="flex items-center gap-1">
               <button
                 onClick={() => onChangeShares(p.id, Math.max(0, (shares[p.id] ?? 1) - 1))}
-                className="w-7 h-7 rounded-full bg-[#1C2A4A] text-sm font-bold"
+                className="w-11 h-11 rounded-full bg-[#1C2A4A] text-sm font-bold"
               >−</button>
               <span className="w-8 text-center font-bold">{shares[p.id] ?? 1}</span>
               <button
                 onClick={() => onChangeShares(p.id, (shares[p.id] ?? 1) + 1)}
-                className="w-7 h-7 rounded-full bg-[#1C2A4A] text-sm font-bold"
+                className="w-11 h-11 rounded-full bg-[#1C2A4A] text-sm font-bold"
               >+</button>
             </div>
             <span className="text-sm font-semibold w-20 text-right">

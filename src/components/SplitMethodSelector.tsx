@@ -23,10 +23,10 @@ export function SplitMethodSelector({
         <button
           key={method.id}
           onClick={() => onSelect(method.id)}
-          className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+          className={`px-4 py-2.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
             splitMethod === method.id
               ? "gradient-bg text-white"
-              : "bg-white dark:bg-gray-800 text-[#8B9BB4] dark:text-gray-300"
+              : "bg-[#1C2A4A] text-[#8B9BB4]"
           }`}
         >
           {method.label}

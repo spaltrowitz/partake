@@ -23,7 +23,7 @@ export function TipSelector({
           <button
             key={pct}
             onClick={() => onSelectTip(pct)}
-            className={`flex-1 py-2 rounded-full text-sm font-medium transition-colors ${
+            className={`flex-1 py-3 rounded-full text-sm font-medium transition-colors ${
               tipPercent === pct && !customTipMode
                 ? "gradient-bg text-white"
                 : "bg-[#1C2A4A] text-[#C4CFDE]"
@@ -34,7 +34,7 @@ export function TipSelector({
         ))}
         <button
           onClick={onEnableCustom}
-          className={`flex-1 py-2 rounded-full text-sm font-medium transition-colors ${
+          className={`flex-1 py-3 rounded-full text-sm font-medium transition-colors ${
             customTipMode
               ? "gradient-bg text-white"
               : "bg-[#1C2A4A] text-[#C4CFDE]"
@@ -47,6 +47,7 @@ export function TipSelector({
         <div className="flex items-center gap-2 mt-3 p-2 bg-[#1C2A4A] rounded-xl">
           <input
             type="number"
+            inputMode="decimal"
             step="0.5"
             min="0"
             placeholder="Tip %"

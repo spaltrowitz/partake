@@ -131,7 +131,7 @@ function SharedBillContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col p-4 max-w-lg mx-auto w-full">
+      <div className="min-h-dvh flex flex-col p-4 max-w-lg mx-auto w-full">
         <div className="skeleton h-8 w-48 mx-auto mb-2 mt-8" />
         <div className="skeleton h-5 w-32 mx-auto mb-6" />
         <div className="flex flex-col gap-3">
@@ -145,7 +145,7 @@ function SharedBillContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="min-h-dvh flex items-center justify-center p-4">
         <Card className="max-w-sm text-center">
           <p className="text-2xl mb-2">😕</p>
           <p className="text-[#8B9BB4]">{error}</p>
@@ -159,7 +159,7 @@ function SharedBillContent() {
   const owes = calculateOwes(bill);
 
   return (
-    <div className="min-h-screen flex flex-col p-4 max-w-lg mx-auto w-full">
+    <div className="min-h-dvh flex flex-col p-4 max-w-lg mx-auto w-full">
       {/* Header */}
       <div className="text-center mb-6 mt-4">
         {bill.restaurantName && (
@@ -297,7 +297,7 @@ export default function SharedBillPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex flex-col p-4 max-w-lg mx-auto w-full">
+        <div className="min-h-dvh flex flex-col p-4 max-w-lg mx-auto w-full">
           <div className="skeleton h-8 w-48 mx-auto mb-2 mt-8" />
           <div className="skeleton h-5 w-32 mx-auto mb-6" />
           <div className="flex flex-col gap-3">

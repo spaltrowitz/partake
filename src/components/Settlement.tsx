@@ -59,7 +59,7 @@ export function Settlement({
     splits.filter((s) => s.total > 0).every((s) => settledIds.has(s.participantId));
 
   return (
-    <div className="p-4 overflow-y-auto">
+    <div className="p-4 pb-safe overflow-y-auto">
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold">
           {bill.name || "The split"}
