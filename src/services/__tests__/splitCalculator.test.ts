@@ -224,15 +224,14 @@ describe("calculatePercentageSplit", () => {
 
   it("handles percentages not summing to 100 proportionally", () => {
     const bill = makeBill({ total: 100, subtotal: 80, tax: 8, tipAmount: 12 });
-    // 30 + 20 = 50, each gets their fraction of 100
+    // 30 + 20 = 50, normalized: alice=60%, bob=40% of total
     const splits = calculatePercentageSplit(bill, { p1: 30, p2: 20 });
 
     const alice = splits.find((s) => s.participantId === "p1")!;
     const bob = splits.find((s) => s.participantId === "p2")!;
 
-    // 30% of 100 = 30, 20% of 100 = 20 (the function uses raw percentage / 100)
-    expect(alice.total).toBeCloseTo(30, 2);
-    expect(bob.total).toBeCloseTo(20, 2);
+    expect(alice.total).toBeCloseTo(60, 2);
+    expect(bob.total).toBeCloseTo(40, 2);
   });
 });
 

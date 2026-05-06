@@ -80,12 +80,15 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
         if (nextPrice !== undefined && /^\$?\s*[\d,]+\.\d{2}\s*$/.test(nextLine)) {
           const name = cleanItemName(text);
           if (name && !isMetadataLine(lower)) {
+            const qty = extractQuantity(text);
+            // Receipt prices are line totals, so divide by quantity for per-unit price
+            const unitPrice = qty > 1 ? Math.round((nextPrice / qty) * 100) / 100 : nextPrice;
             items.push({
               id: crypto.randomUUID(),
               name,
-              price: nextPrice,
+              price: unitPrice,
               confidence: 0.8, // lower confidence for multi-line
-              quantity: extractQuantity(text),
+              quantity: qty,
             });
             i++; // skip the price line
           }
@@ -117,12 +120,16 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
         // Skip $0.00 items (complimentary sides, included items)
         if (price === 0) continue;
 
+        const qty = extractQuantity(text);
+        // Receipt prices are line totals, so divide by quantity for per-unit price
+        const unitPrice = qty > 1 ? Math.round((price / qty) * 100) / 100 : price;
+
         items.push({
           id: crypto.randomUUID(),
           name,
-          price,
+          price: unitPrice,
           confidence: 1.0,
-          quantity: extractQuantity(text),
+          quantity: qty,
         });
       }
     }

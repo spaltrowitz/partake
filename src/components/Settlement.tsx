@@ -15,7 +15,8 @@ function ShareLinkButton({ shareCode, billName }: { shareCode: string; billName:
     const text = `Claim your items on "${billName || "our bill"}"`;
 
     if (navigator.share) {
-      navigator.share({ text, url }).catch(() => {
+      navigator.share({ text, url }).catch((err) => {
+        if (err?.name === "AbortError") return; // User cancelled
         copyToClipboard(url);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
@@ -163,7 +164,10 @@ export function Settlement({
             const text = `${bill.name || "Bill split"} — $${bill.total.toFixed(2)} total\n\n${summary}\n\nSplit with Partake`;
 
             if (navigator.share) {
-              navigator.share({ text }).catch(() => copyToClipboard(text));
+              navigator.share({ text }).catch((err) => {
+                if (err?.name === "AbortError") return; // User cancelled
+                copyToClipboard(text);
+              });
             } else {
               copyToClipboard(text);
             }

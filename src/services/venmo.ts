@@ -23,11 +23,11 @@ export function getPaymentLink(
 
   switch (app) {
     case "venmo":
-      return `https://venmo.com/${username}?txn=charge&amount=${amountStr}&note=${encodedNote}`;
+      return `https://venmo.com/${encodeURIComponent(username)}?txn=charge&amount=${amountStr}&note=${encodedNote}`;
     case "cashapp":
       // Cash App uses $cashtag format
-      const cashtag = username.startsWith("$") ? username : `$${username}`;
-      return `https://cash.app/${cashtag}/${amountStr}`;
+      const cashtag = username.startsWith("$") ? username.slice(1) : username;
+      return `https://cash.app/$${encodeURIComponent(cashtag)}/${amountStr}`;
     case "zelle":
       // Zelle doesn't have web deep links — fall back to copy
       return null;
@@ -44,6 +44,24 @@ export function getPaymentAppLabel(app: PaymentApp): string {
   }
 }
 
-export function copyToClipboard(text: string): void {
-  navigator.clipboard.writeText(text);
+export async function copyToClipboard(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // Fallback for insecure contexts
+    try {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }

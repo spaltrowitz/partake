@@ -46,7 +46,13 @@ export function PartnerPairSelector({
         <div className="flex gap-2 mt-2">
           <select
             value={partnerPair.payerId}
-            onChange={(e) => onSetPartnerPair({ ...partnerPair, payerId: e.target.value })}
+            onChange={(e) => {
+              const newPayerId = e.target.value;
+              const newPartnerId = partnerPair.partnerId === newPayerId
+                ? participants.find((p) => p.id !== newPayerId)?.id ?? partnerPair.partnerId
+                : partnerPair.partnerId;
+              onSetPartnerPair({ payerId: newPayerId, partnerId: newPartnerId });
+            }}
             className="flex-1 text-xs bg-[#1C2A4A] rounded-lg p-2 outline-none"
           >
             {participants.map((p) => (

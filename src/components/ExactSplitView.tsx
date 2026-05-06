@@ -29,8 +29,9 @@ export function ExactSplitView({
           <input
             type="number"
             step="0.01"
+            min="0"
             value={exactAmounts[p.id] ?? 0}
-            onChange={(e) => onChangeAmount(p.id, parseFloat(e.target.value) || 0)}
+            onChange={(e) => onChangeAmount(p.id, Math.max(0, parseFloat(e.target.value) || 0))}
             className="w-24 text-right px-2 py-1 rounded border border-[#1C2A4A] bg-transparent text-sm font-bold"
           />
         </div>

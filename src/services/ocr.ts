@@ -2,12 +2,11 @@ import Tesseract from "tesseract.js";
 
 const OCR_TIMEOUT_MS = 30000; // 30 seconds max
 const MIN_CONFIDENCE = 30; // Tesseract confidence threshold (0-100)
-const VALID_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+const VALID_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export async function recognizeText(imageFile: File): Promise<string[]> {
-  // Validate file type
-  if (!VALID_IMAGE_TYPES.some((t) => imageFile.type.startsWith(t.split("/")[0]))) {
-    throw new Error("Please upload an image file (JPG, PNG, or HEIC).");
+  if (!VALID_IMAGE_TYPES.includes(imageFile.type)) {
+    throw new Error("Please upload a JPG, PNG, or WebP image. HEIC isn't supported yet — try screenshotting the receipt first.");
   }
 
   const imageUrl = URL.createObjectURL(imageFile);

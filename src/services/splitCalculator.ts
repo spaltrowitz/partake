@@ -34,11 +34,12 @@ export function calculateSplits(
       for (const other of others) {
         itemTotals[other.id].subtotal += perPerson;
       }
-      itemTotals[bill.birthdayPersonId] = {
-        subtotal: 0,
-        items: birthdayTotal.items,
-      };
     }
+    // Always zero out birthday person regardless of others count
+    itemTotals[bill.birthdayPersonId] = {
+      subtotal: 0,
+      items: birthdayTotal.items,
+    };
   }
 
   // Partner groups: roll up to payer
@@ -67,13 +68,16 @@ export function calculateSplits(
   );
 
   if (totalItemsSubtotal === 0) {
+    const n = bill.participants.length;
+    const evenTax = Math.round((bill.tax / n) * 100) / 100;
+    const evenTip = Math.round((bill.tipAmount / n) * 100) / 100;
     return bill.participants.map((p) => ({
       participantId: p.id,
       participantName: p.name,
       itemsSubtotal: 0,
-      taxShare: 0,
-      tipShare: 0,
-      total: 0,
+      taxShare: evenTax,
+      tipShare: evenTip,
+      total: Math.round((evenTax + evenTip) * 100) / 100,
       items: [],
       venmoUsername: p.venmoUsername,
     }));
@@ -131,9 +135,12 @@ export function calculatePercentageSplit(
   bill: Bill,
   percentages: Record<string, number>
 ): BillSplit[] {
+  const totalPct = Object.values(percentages).reduce((s, v) => s + v, 0);
+
   return bill.participants
     .map((p) => {
-      const pct = (percentages[p.id] ?? 0) / 100;
+      // Normalize so percentages always sum to 100%
+      const pct = totalPct > 0 ? (percentages[p.id] ?? 0) / totalPct : 0;
       return {
         participantId: p.id,
         participantName: p.name,

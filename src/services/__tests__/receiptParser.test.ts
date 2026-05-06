@@ -50,7 +50,7 @@ describe("parseReceiptText", () => {
   it("parses quantity prefix", () => {
     const lines = [
       "Bar",
-      "2x Beer $8.00",
+      "2x Beer $16.00",
     ];
 
     const result = parseReceiptText(lines);
