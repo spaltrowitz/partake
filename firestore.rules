@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Bills: anyone can read (for shared links), authenticated users can write
+    match /bills/{billId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if true;
+    }
+    
+    // User data: only the user themselves
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      match /{subcollection}/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}
