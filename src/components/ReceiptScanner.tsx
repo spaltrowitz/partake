@@ -5,6 +5,7 @@ import { parseReceiptText } from "@/services/receiptParser";
 import { recognizeText } from "@/services/ocr";
 import type { ParsedReceipt } from "@/types";
 import { PrimaryButton, SecondaryButton } from "./UI";
+import { ReceiptSkeleton } from "./Skeleton";
 
 export function ReceiptScanner({
   onReceipt,
@@ -53,9 +54,9 @@ export function ReceiptScanner({
   return (
     <div className="flex flex-col items-center gap-6 py-8">
       {isScanning ? (
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#FF8A80]" />
-          <p className="text-[#8B9BB4]">{progress || "Reading your receipt..."}</p>
+        <div className="flex flex-col items-center gap-4 w-full">
+          <ReceiptSkeleton />
+          <p className="text-[#8B9BB4] text-sm">{progress || "Reading your receipt..."}</p>
         </div>
       ) : (
         <>
@@ -68,9 +69,14 @@ export function ReceiptScanner({
           </p>
 
           {error && (
-            <p className="text-sm text-orange-600 bg-orange-50 dark:bg-orange-950/30 p-3 rounded-lg text-center">
-              {error}
-            </p>
+            <div className="flex flex-col items-center gap-3">
+              <p className="text-sm text-orange-600 bg-orange-50 dark:bg-orange-950/30 p-3 rounded-lg text-center">
+                {error}
+              </p>
+              <SecondaryButton onClick={handleManualEntry}>
+                Type it in instead
+              </SecondaryButton>
+            </div>
           )}
 
           <div className="w-full max-w-xs flex flex-col gap-3">

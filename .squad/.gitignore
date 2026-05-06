@@ -1,0 +1,7 @@
+# Squad session logs (can be large, regenerated each session)
+log/*.md
+!log/.gitkeep
+
+# Don't track decision inbox (transient, merged by Scribe)  
+decisions/inbox/*.md
+!decisions/inbox/.gitkeep
