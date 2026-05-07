@@ -20,7 +20,7 @@ const SKIP_KEYWORDS = [
   "payment id", "application id", "application label", "device id",
   "card reader", "emv chip", "suggested additional tip",
   "tip percentages", "dine in", "ordered:", "join us",
-  "happy hour", "lunch", "bbpos",
+  "happy hour", "lunch", "bbpos", "sale", "approved",
 ];
 const SERVICE_CHARGE_KEYWORDS = ["service charge", "auto gratuity", "auto-gratuity", "autograt"];
 const DISCOUNT_KEYWORDS = ["discount", "coupon", "promo", "off", "comp"];
@@ -61,7 +61,8 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
   }
 
   // Handle multi-line items: if a line has no price, peek at next line
-  let pendingKeyword: string | null = null; // Track keyword labels separated from their prices
+  // Use a queue for keyword labels that appear on separate lines from their prices
+  const pendingKeywords: string[] = [];
   
   for (let i = 0; i < lines.length; i++) {
     const text = lines[i].trim();
@@ -74,7 +75,6 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
     const negMatch = text.match(NEGATIVE_PRICE_PATTERN);
     if (negMatch && matchesAny(lower, DISCOUNT_KEYWORDS)) {
       discount = (discount ?? 0) + parseFloat(negMatch[1].replace(/,/g, ""));
-      pendingKeyword = null;
       continue;
     }
 
@@ -83,21 +83,25 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
     // Line has no price — could be a keyword label or item name
     if (price === undefined) {
       // Check if this is a keyword label (subtotal, tax, tip, total)
-      if (matchesAny(lower, SUBTOTAL_KEYWORDS)) { pendingKeyword = "subtotal"; continue; }
-      if (matchesAny(lower, TAX_KEYWORDS)) { pendingKeyword = "tax"; continue; }
-      if (matchesAny(lower, TIP_KEYWORDS)) { pendingKeyword = "tip"; continue; }
-      if (matchesAny(lower, TOTAL_KEYWORDS)) { pendingKeyword = "total"; continue; }
-      if (matchesAny(lower, SERVICE_CHARGE_KEYWORDS)) { pendingKeyword = "service"; continue; }
-      if (matchesAny(lower, DISCOUNT_KEYWORDS)) { pendingKeyword = "discount"; continue; }
+      if (matchesAny(lower, SUBTOTAL_KEYWORDS)) { pendingKeywords.push("subtotal"); continue; }
+      if (matchesAny(lower, TAX_KEYWORDS)) { pendingKeywords.push("tax"); continue; }
+      if (matchesAny(lower, TIP_KEYWORDS)) { pendingKeywords.push("tip"); continue; }
+      if (matchesAny(lower, TOTAL_KEYWORDS)) { pendingKeywords.push("total"); continue; }
+      if (matchesAny(lower, SERVICE_CHARGE_KEYWORDS)) { pendingKeywords.push("service"); continue; }
+      if (matchesAny(lower, DISCOUNT_KEYWORDS)) { pendingKeywords.push("discount"); continue; }
 
-      // Not a keyword — check if next line is a standalone price (multi-line item)
+      // Not a keyword — but if we have pending keywords, skip non-keyword lines
+      // (handles gaps between keyword labels and their prices)
+      if (pendingKeywords.length > 0) continue;
+
+      // Check if next line is a standalone price (multi-line item)
       if (i + 1 < lines.length) {
         const nextLine = lines[i + 1].trim();
         const nextPrice = extractPrice(nextLine);
         // Next line is ONLY a price (no letters except $ sign)
         if (nextPrice !== undefined && /^\$?\s*[\d,]+\.\d{2}\s*$/.test(nextLine)) {
           const name = cleanItemName(text);
-          if (name && !isMetadataLine(lower)) {
+          if (name && !isMetadataLine(lower) && !shouldSkip(lower)) {
             const qty = extractQuantity(text);
             const unitPrice = qty > 1 ? Math.round((nextPrice / qty) * 100) / 100 : nextPrice;
             items.push({
@@ -108,7 +112,6 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
               quantity: qty,
             });
             i++; // skip the price line
-            pendingKeyword = null;
           }
         }
       }
@@ -116,10 +119,11 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
     }
 
     // Line HAS a price — check if it belongs to a pending keyword
-    if (pendingKeyword) {
+    if (pendingKeywords.length > 0) {
       const isStandalonePrice = /^\$?\s*[\d,]+\.\d{2}\s*$/.test(text);
       if (isStandalonePrice) {
-        switch (pendingKeyword) {
+        const kw = pendingKeywords.shift()!;
+        switch (kw) {
           case "subtotal": subtotal = price; break;
           case "tax": tax = price; break;
           case "tip": tip = price; break;
@@ -127,15 +131,17 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
           case "service": tax = (tax ?? 0) + price; break;
           case "discount": discount = (discount ?? 0) + price; break;
         }
-        pendingKeyword = null;
         continue;
       }
-      // Price line has text too — not a standalone price, reset pending
-      pendingKeyword = null;
+      // Price line has text too — not a standalone price, clear queue
+      pendingKeywords.length = 0;
     }
 
     // Skip payment/metadata lines
     if (shouldSkip(lower)) continue;
+
+    // Skip lines that contain tip suggestion patterns like "+2%: (Tip $2.40 Total $133.08)"
+    if (/^\+?\d+%/.test(text)) continue;
 
     // Categorize by keywords
     if (matchesAny(lower, SUBTOTAL_KEYWORDS)) {
