@@ -20,10 +20,10 @@ const SKIP_KEYWORDS = [
   "payment id", "application id", "application label", "device id",
   "card reader", "emv chip", "suggested additional tip",
   "tip percentages", "dine in", "ordered:", "join us",
-  "happy hour", "lunch", "bbpos", "sale", "approved",
+  "happy hour", "lunch", "bbpos", "approved",
 ];
 const SERVICE_CHARGE_KEYWORDS = ["service charge", "auto gratuity", "auto-gratuity", "autograt"];
-const DISCOUNT_KEYWORDS = ["discount", "coupon", "promo", "off", "comp"];
+const DISCOUNT_KEYWORDS = ["discount", "coupon", "promo", "% off", "comp"];
 
 // Quantity patterns: "2x ", "2 x ", "qty 2", "2) ", or bare "2 " at start followed by a word
 const QUANTITY_PATTERNS = [
@@ -131,19 +131,55 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
     if (pendingKeywords.length > 0) {
       const isStandalonePrice = /^\$?\s*[\d,]+\.\d{2}\s*$/.test(text);
       if (isStandalonePrice) {
-        const kw = pendingKeywords.shift()!;
-        switch (kw) {
-          case "subtotal": subtotal = price; break;
-          case "tax": tax = price; break;
-          case "tip": tip = price; break;
-          case "total": total = price; break;
-          case "service": tax = (tax ?? 0) + price; break;
-          case "discount": discount = (discount ?? 0) + price; break;
+        // Collect ALL consecutive standalone prices from here
+        const allPrices: number[] = [price];
+        let lookAhead = i + 1;
+        while (lookAhead < lines.length) {
+          const nextText = lines[lookAhead].trim();
+          if (!nextText || shouldSkip(nextText.toLowerCase())) { lookAhead++; continue; }
+          const nextPrice = extractPrice(nextText);
+          if (nextPrice !== undefined && /^\$?\s*[\d,]+\.\d{2}\s*$/.test(nextText)) {
+            allPrices.push(nextPrice);
+            lookAhead++;
+          } else {
+            break;
+          }
         }
+
+        const kwCount = pendingKeywords.length;
+        if (allPrices.length >= kwCount) {
+          // Take the LAST kwCount prices (keyword values come after item prices)
+          const kwPrices = allPrices.slice(allPrices.length - kwCount);
+          const itemPrices = allPrices.slice(0, allPrices.length - kwCount);
+
+          // Assign keyword values
+          for (let k = 0; k < kwCount; k++) {
+            const kw = pendingKeywords[k];
+            const kPrice = kwPrices[k];
+            switch (kw) {
+              case "subtotal": subtotal = kPrice; break;
+              case "tax": tax = (tax ?? 0) + kPrice; break;
+              case "tip": tip = kPrice; break;
+              case "total": total = kPrice; break;
+              case "service": tax = (tax ?? 0) + kPrice; break;
+              case "discount": discount = (discount ?? 0) + kPrice; break;
+            }
+          }
+
+          // Remaining prices are item prices — add them as unnamed items
+          // (they'll be matched with orphan item names in post-parse recovery)
+          // For now, skip them — post-parse recovery handles this case
+          i = lookAhead - 1;
+          pendingKeywords.length = 0;
+          continue;
+        }
+
+        // Not enough prices — clear queue and process normally
+        pendingKeywords.length = 0;
+      } else {
+        // Non-standalone-price line — skip while searching for keyword prices
         continue;
       }
-      // Price line has text too — not a standalone price, clear queue
-      pendingKeywords.length = 0;
     }
 
     // Skip payment/metadata lines
@@ -152,8 +188,10 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
     // Categorize by keywords
     if (matchesAny(lower, SUBTOTAL_KEYWORDS)) {
       subtotal = price;
+    } else if (matchesAny(lower, SERVICE_CHARGE_KEYWORDS)) {
+      tax = (tax ?? 0) + price;
     } else if (matchesAny(lower, TAX_KEYWORDS)) {
-      tax = price;
+      tax = (tax ?? 0) + price;
     } else if (matchesAny(lower, TIP_KEYWORDS)) {
       tip = price;
     } else if (matchesAny(lower, TOTAL_KEYWORDS)) {
@@ -177,6 +215,86 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
           confidence: 1.0,
           quantity: qty,
         });
+      }
+    }
+  }
+
+  // Post-parse recovery: if we have subtotal/total but no items,
+  // the receipt likely has items and prices in separate columns.
+  // Find item-name lines (before keywords) and standalone prices (after keywords),
+  // then pair them in order.
+  if (items.length === 0 && (subtotal || total)) {
+    const itemNames: { name: string; qty: number }[] = [];
+    const orphanPrices: number[] = [];
+    let seenKeyword = false;
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      const lower = trimmed.toLowerCase();
+
+      if (matchesAny(lower, [...SUBTOTAL_KEYWORDS, ...TAX_KEYWORDS, ...TIP_KEYWORDS, ...TOTAL_KEYWORDS])) {
+        seenKeyword = true;
+        continue;
+      }
+      if (shouldSkip(lower)) continue;
+      if (/^\+?\d+%/.test(trimmed)) continue;
+      if (/tip/i.test(trimmed) && /total/i.test(trimmed) && /\$/.test(trimmed)) continue;
+      if (/tip percentages/i.test(trimmed)) continue;
+
+      const price = extractPrice(trimmed);
+      const isStandalonePrice = price !== undefined && /^\$?\s*[\d,]+\.\d{2}\s*$/.test(trimmed);
+
+      if (!seenKeyword && price === undefined) {
+        // Potential item name (before keyword section)
+        const name = cleanItemName(trimmed);
+        if (name && !isMetadataLine(lower) && name.length > 1) {
+          itemNames.push({ name, qty: extractQuantity(trimmed) });
+        }
+      } else if (isStandalonePrice && price !== undefined) {
+        // Standalone price — could be item price or keyword value
+        // Skip if it matches a known keyword value
+        if (price !== subtotal && price !== tax && price !== tip && price !== total) {
+          orphanPrices.push(price);
+        }
+      }
+    }
+
+    // Pair names with prices in order
+    const pairCount = Math.min(itemNames.length, orphanPrices.length);
+    for (let i = 0; i < pairCount; i++) {
+      const { name, qty } = itemNames[i];
+      const price = orphanPrices[i];
+      const unitPrice = qty > 1 ? Math.round((price / qty) * 100) / 100 : price;
+      items.push({
+        id: crypto.randomUUID(),
+        name,
+        price: unitPrice,
+        confidence: 0.7,
+        quantity: qty,
+      });
+    }
+  }
+
+  // Fix restaurant name if it's clearly not a restaurant (e.g., Pokémon card text)
+  if (restaurantName && items.length > 0) {
+    // Check if any item name looks more like a restaurant name
+    const knownNonRestaurant = /pokemon|jigglypuff|pikachu|charizard|yugioh|magic.the/i;
+    if (knownNonRestaurant.test(restaurantName)) {
+      // Try to find a better restaurant name from lines near "server:" or address
+      for (let i = 0; i < lines.length; i++) {
+        const lower = lines[i].trim().toLowerCase();
+        if (lower.includes("server:") || lower.includes("check #") || /\d{5}/.test(lower)) {
+          // Look 1-3 lines before for the restaurant name
+          for (let j = Math.max(0, i - 3); j < i; j++) {
+            const candidate = lines[j].trim();
+            if (candidate && !knownNonRestaurant.test(candidate) && !extractPrice(candidate) && candidate.length > 2) {
+              restaurantName = candidate;
+              break;
+            }
+          }
+          break;
+        }
       }
     }
   }
