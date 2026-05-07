@@ -1,0 +1,77 @@
+TERMS OF SERVICE
+Partake
+Last Updated: May 7, 2026
+
+1. ACCEPTANCE OF TERMS
+By accessing or using the Partake web application ("Partake," "we," "us," or "our") at partakeapp.com, you agree to these Terms of Service. If you do not agree, please do not use the application.
+
+2. SERVICE DESCRIPTION
+Partake is a free bill-splitting tool that helps groups divide restaurant bills fairly. Features include:
+• Scanning receipts using your camera to extract items and prices
+• Splitting bills among participants with flexible assignment
+• Calculating tax based on your approximate location
+• Generating payment request links for Venmo and Cash App
+• Sharing bills via unique links
+
+3. USER ACCOUNTS
+• Partake uses anonymous authentication by default — no account creation is required.
+• You may use all features without providing any personal information.
+• Bill data is associated with an anonymous session identifier.
+
+4. ACCURACY OF CALCULATIONS
+• Partake uses optical character recognition (OCR) to parse receipts. OCR results may contain errors.
+• You are responsible for verifying all parsed items, prices, and calculated amounts before settling payments.
+• Tax rates are approximations based on state averages from Tax Foundation data. Actual tax rates may vary by locality.
+• We are not responsible for any financial discrepancies resulting from OCR errors, incorrect tax calculations, or rounding differences.
+
+5. PAYMENT SERVICES
+• Partake generates deep links to Venmo and Cash App for convenience. We do not process, facilitate, or guarantee any payments.
+• All payment transactions occur entirely within Venmo, Cash App, or Zelle and are governed by those services' terms.
+• We are not a payment processor and bear no responsibility for failed, disputed, or incorrect payments.
+• We do not receive any transaction fees or commissions from payment services.
+
+6. USER CONTENT
+• "User Content" includes receipt images, bill details, contact names, and payment handles you provide.
+• Receipt images are processed for text extraction and stored in your bill history.
+• You represent that you have the right to upload any receipt images you scan.
+• You agree not to use the service for any fraudulent or unlawful purpose.
+
+7. SHARED BILLS
+• Bills shared via unique links are accessible to anyone with the link.
+• You are responsible for sharing bill links only with intended recipients.
+• We do not verify the identity of users accessing shared bills.
+
+8. ACCEPTABLE USE
+You agree not to:
+• Use the service for fraudulent billing or financial deception
+• Upload images that do not represent genuine receipts
+• Attempt to gain unauthorized access to other users' bills or data
+• Scrape, crawl, or automated-harvest data from the application
+• Use the service for any unlawful purpose
+
+9. INTELLECTUAL PROPERTY
+The Partake application, including its design, code, and algorithms, is owned by us.
+
+10. LIMITATION OF LIABILITY
+PARTAKE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED. TO THE FULLEST EXTENT PERMITTED BY LAW, WE SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES ARISING FROM YOUR USE OF THE SERVICE, INCLUDING BUT NOT LIMITED TO:
+• Errors in OCR parsing of receipts
+• Incorrect tax rate calculations
+• Payment disputes between bill participants
+• Loss of bill data or history
+• Service interruptions or downtime
+
+11. TERMINATION
+We reserve the right to suspend or restrict access to the service at any time for violation of these Terms, without prior notice.
+
+12. THIRD-PARTY SERVICES
+Partake integrates with third-party services (Firebase, Google Cloud Vision, OpenStreetMap, Venmo, Cash App). Your use of these services is subject to their respective terms of service.
+
+13. CHANGES TO TERMS
+We may update these Terms of Service from time to time. Changes will be posted on this page with an updated "Last Updated" date. Your continued use of the service after changes constitutes acceptance of the modified terms.
+
+14. GOVERNING LAW
+These Terms shall be governed by the laws of the State of New York, without regard to conflict of law provisions.
+
+15. CONTACT US
+For questions about these Terms of Service, contact:
+Email: sharipaltrowitz@gmail.com
