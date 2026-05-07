@@ -68,8 +68,10 @@ export default function Home() {
       quantity: p.quantity,
     }));
 
-    const subtotal =
+    const rawSubtotal =
       receipt.subtotal ?? items.reduce((s, i) => s + i.price * i.quantity, 0);
+    const discount = receipt.discount ?? 0;
+    const subtotal = Math.max(0, rawSubtotal - discount);
     const tax = receipt.tax ?? 0;
     const tipAmount = receipt.tip ?? Math.round(subtotal * tipPercent) / 100;
 

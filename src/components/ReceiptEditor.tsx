@@ -202,10 +202,34 @@ export function ReceiptEditor({
             </button>
           )}
 
+          {/* Discount */}
+          <div className="flex items-center justify-between p-3 bg-[#F5EDE3] rounded-xl">
+            <div className="flex flex-col">
+              <span className="text-sm">Discount</span>
+              <span className="text-xs text-[#9C8E80]">Birthday, app deal, promo, etc.</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-sm text-[#9C8E80]">−$</span>
+              <input
+                type="number"
+                inputMode="decimal"
+                step="0.01"
+                min="0"
+                value={receipt.discount ?? ""}
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value);
+                  onChange({ ...receipt, discount: isNaN(val) || val <= 0 ? undefined : val });
+                }}
+                placeholder="0.00"
+                className="w-16 text-right bg-transparent font-bold text-sm outline-none placeholder:text-[#C4B5A6] placeholder:font-normal"
+              />
+            </div>
+          </div>
+
           <div className="flex items-center justify-between px-1 pt-1">
             <span className="font-semibold">Total</span>
             <span className="text-lg font-bold gradient-text">
-              ${(subtotal + (receipt.tax ?? 0)).toFixed(2)}
+              ${(subtotal - (receipt.discount ?? 0) + (receipt.tax ?? 0)).toFixed(2)}
             </span>
           </div>
         </div>

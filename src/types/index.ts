@@ -79,6 +79,7 @@ export interface ParsedReceipt {
   items: ParsedItem[];
   tax?: number;
   tip?: number;
+  discount?: number;
   subtotal?: number;
   total?: number;
   restaurantName?: string;
