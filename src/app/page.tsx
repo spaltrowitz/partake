@@ -10,6 +10,8 @@ import { Avatar } from "@/components/Avatar";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { getSavedContacts, saveAllParticipantsAsContacts } from "@/services/localContacts";
 import { getBillHistory, saveBillToHistory } from "@/services/billHistory";
+import { getUserProfile, saveUserProfile } from "@/services/userProfile";
+import type { UserProfile } from "@/services/userProfile";
 import { useAuthContext } from "@/components/AuthProvider";
 import { saveBill } from "@/services/firestore";
 
@@ -27,18 +29,34 @@ export default function Home() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [billHistory, setBillHistory] = useState<Bill[]>([]);
   const [showRescanConfirm, setShowRescanConfirm] = useState(false);
+  const [myProfile, setMyProfile] = useState<UserProfile | null>(null);
   const { user, loading: authLoading } = useAuthContext();
 
   useEffect(() => {
     setSavedContacts(getSavedContacts());
     setBillHistory(getBillHistory());
+    setMyProfile(getUserProfile());
   }, []);
+
+  useEffect(() => {
+    if (step === "participants" && myProfile && !participants.some(p => p.name.toLowerCase() === myProfile.name.toLowerCase())) {
+      const paymentHandle = (myProfile.venmoUsername || myProfile.cashAppUsername || "").replace(/^@/, "");
+      const isCashApp = paymentHandle.startsWith("$");
+      setParticipants(prev => [{
+        id: crypto.randomUUID(),
+        name: myProfile.name,
+        venmoUsername: !isCashApp && paymentHandle ? paymentHandle : undefined,
+        cashAppUsername: isCashApp ? paymentHandle : undefined,
+        isAppUser: true,
+      }, ...prev]);
+    }
+  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function addParticipant() {
     if (!newName.trim()) return;
     if (participants.some((p) => p.name.toLowerCase() === newName.trim().toLowerCase())) return;
     // Auto-detect payment app from username format
-    const paymentHandle = newVenmo.trim();
+    const paymentHandle = newVenmo.trim().replace(/^@/, "");
     const isCashApp = paymentHandle.startsWith("$");
     const p: Participant = {
       id: crypto.randomUUID(),
@@ -221,6 +239,52 @@ export default function Home() {
 
   // Participants
   if (step === "participants") {
+    if (!myProfile) {
+      return (
+        <main className="p-6 max-w-md mx-auto">
+          <h1 className="text-2xl font-bold mb-2 text-center">First, who are you?</h1>
+          <p className="text-sm text-[#9C8E80] text-center mb-6">We&apos;ll remember you for next time</p>
+          <div className="flex flex-col gap-3 mb-6">
+            <input
+              type="text"
+              placeholder="Your name"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              className="px-4 py-3 rounded-xl border border-[#F5EDE3] bg-transparent text-center"
+              autoFocus
+            />
+            <input
+              type="text"
+              placeholder="Venmo or $CashApp (optional)"
+              value={newVenmo}
+              onChange={(e) => setNewVenmo(e.target.value)}
+              className="px-4 py-3 rounded-xl border border-[#F5EDE3] bg-transparent text-sm text-center"
+            />
+            <PrimaryButton
+              onClick={() => {
+                if (!newName.trim()) return;
+                const handle = newVenmo.trim();
+                const isCashApp = handle.startsWith("$");
+                const profile: UserProfile = {
+                  name: newName.trim(),
+                  venmoUsername: !isCashApp && handle ? handle : undefined,
+                  cashAppUsername: isCashApp ? handle : undefined,
+                };
+                saveUserProfile(profile);
+                setMyProfile(profile);
+                setNewName("");
+                setNewVenmo("");
+              }}
+              disabled={!newName.trim()}
+            >
+              That&apos;s me
+            </PrimaryButton>
+          </div>
+          <button onClick={() => setStep("edit")} className="text-sm text-[#9C8E80]">← Back to receipt</button>
+        </main>
+      );
+    }
+
     const unusedContacts = savedContacts.filter(
       (c) => !participants.some((p) => p.name.toLowerCase() === c.name.toLowerCase())
     );
@@ -240,8 +304,19 @@ export default function Home() {
                   className="flex items-center gap-1 bg-[#F5EDE3] px-3 py-1 rounded-full text-sm"
                 >
                   {p.name}
+                  {myProfile && p.name.toLowerCase() === myProfile.name.toLowerCase() && (
+                    <span className="text-xs text-[#9C8E80]">(you)</span>
+                  )}
                   {p.venmoUsername && (
-                    <span className="text-[#9C8E80]">@{p.venmoUsername}</span>
+                    <a
+                      href={`https://venmo.com/${p.venmoUsername.replace(/^@/, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#9C8E80] hover:text-[#E8613C] text-xs"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      @{p.venmoUsername.replace(/^@/, "")} ↗
+                    </a>
                   )}
                   <button
                     onClick={() => removeParticipant(p.id)}
@@ -287,9 +362,10 @@ export default function Home() {
         {/* Add new person — collapsed by default */}
         {showAddForm ? (
           <div className="flex flex-col gap-3 mb-6">
+            <p className="text-sm font-semibold text-center">Add a friend</p>
             <input
               type="text"
-              placeholder="Name"
+              placeholder="Their name"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               className="px-4 py-3 rounded-xl border border-[#F5EDE3] bg-transparent text-center"
@@ -325,7 +401,7 @@ export default function Home() {
             onClick={() => setShowAddForm(true)}
             className="text-[#E8613C] font-semibold mb-6 text-center"
           >
-            + Add someone new
+            + Add another person
           </button>
         )}
 
