@@ -24,28 +24,31 @@ async function convertToJpeg(file: File): Promise<File> {
 }
 
 export async function recognizeText(imageFile: File): Promise<string[]> {
-  let file = imageFile;
-  
-  // Convert HEIC to JPEG (common on iOS/macOS)
-  if (isHEIC(imageFile)) {
-    try {
-      file = await convertToJpeg(imageFile);
-    } catch {
-      throw new Error("Couldn't process this image format. Try taking a screenshot of the receipt instead.");
-    }
-  } else if (!VALID_IMAGE_TYPES.includes(imageFile.type) && imageFile.type !== "") {
-    throw new Error("Please upload a JPG, PNG, or WebP image.");
+  const heic = isHEIC(imageFile);
+
+  if (!heic && !VALID_IMAGE_TYPES.includes(imageFile.type) && imageFile.type !== "") {
+    throw new Error("Please upload a JPG, PNG, WebP, or HEIC image.");
   }
 
-  // Try server-side Google Cloud Vision first
+  // Try server-side Google Cloud Vision first (supports all formats including HEIC)
   try {
-    const lines = await recognizeWithVision(file);
+    const lines = await recognizeWithVision(imageFile);
     if (lines.length > 0) return lines;
   } catch {
     // Fall through to Tesseract
   }
 
-  return recognizeWithTesseract(file);
+  // Tesseract fallback — needs JPEG/PNG, so convert HEIC first
+  if (heic) {
+    try {
+      const converted = await convertToJpeg(imageFile);
+      return recognizeWithTesseract(converted);
+    } catch {
+      throw new Error("Couldn't process this HEIC image. Try taking a screenshot of the receipt instead.");
+    }
+  }
+
+  return recognizeWithTesseract(imageFile);
 }
 
 async function recognizeWithVision(imageFile: File): Promise<string[]> {
