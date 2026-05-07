@@ -102,10 +102,13 @@ export function ReceiptEditor({
           >
             <div className="flex items-center gap-3 flex-1">
               <span className="text-xs text-[#9C8E80] w-5">{index + 1}</span>
-              <span className="font-medium">{item.name}</span>
+              <span className="font-medium">
+                {item.quantity > 1 && <span className="text-[#9C8E80]">{item.quantity}× </span>}
+                {item.name}
+              </span>
             </div>
             <span className="font-bold text-[#F4A261] ml-3">
-              ${item.price.toFixed(2)}
+              ${(item.price * item.quantity).toFixed(2)}
             </span>
             <button
               onClick={() => removeItem(item.id)}

@@ -72,10 +72,13 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
     if (!text || /^[\-=*_~.#]{3,}$/.test(text)) continue;
 
     // Skip suggested tip lines early — before any keyword matching
-    // Handles "+2%: (Tip $2.40 Total $133.08)" and "Tip percentages are based on..."
     if (/^\+?\d+%/.test(text)) continue;
     if (/tip percentages/i.test(text)) continue;
     if (/price before taxes/i.test(text)) continue;
+    // Lines containing BOTH "tip" and "total" with dollar amounts are suggestion lines
+    if (/tip/i.test(text) && /total/i.test(text) && /\$/.test(text)) continue;
+    // Lines with parenthesized tip amounts like "(Tip $2.40 Total $133.08)"
+    if (/\(tip\s+\$/i.test(text)) continue;
 
     // Check for negative prices (discounts)
     const negMatch = text.match(NEGATIVE_PRICE_PATTERN);
