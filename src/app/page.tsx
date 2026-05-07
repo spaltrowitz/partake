@@ -26,6 +26,7 @@ export default function Home() {
   const [savedContacts, setSavedContacts] = useState<SavedContact[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [billHistory, setBillHistory] = useState<Bill[]>([]);
+  const [showRescanConfirm, setShowRescanConfirm] = useState(false);
   const { user, loading: authLoading } = useAuthContext();
 
   useEffect(() => {
@@ -368,13 +369,36 @@ export default function Home() {
       <main className="min-h-dvh p-6 max-w-md mx-auto">
         <button
           onClick={() => {
-            if (receipt.items.length > 0 && !confirm("Re-scanning will replace your current items. Are you sure?")) return;
-            setStep("scan");
+            if (receipt.items.length > 0) {
+              setShowRescanConfirm(true);
+            } else {
+              setStep("scan");
+            }
           }}
           className="text-sm text-[#9C8E80] mb-4"
         >
           ← Re-scan or re-enter
         </button>
+
+        {showRescanConfirm && (
+          <div className="mb-4 p-4 bg-[#F5EDE3] rounded-xl flex flex-col gap-3">
+            <p className="text-sm font-medium">This will replace your current items. Continue?</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowRescanConfirm(false); setStep("scan"); }}
+                className="flex-1 py-2 rounded-full text-white font-semibold gradient-bg text-sm"
+              >
+                Yes, re-scan
+              </button>
+              <button
+                onClick={() => setShowRescanConfirm(false)}
+                className="flex-1 py-2 rounded-full border border-[#E8DDD0] text-sm font-medium text-[#9C8E80]"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
         <h1 className="text-2xl font-bold mb-4">Review the receipt</h1>
         <ReceiptEditor receipt={receipt} onChange={setReceipt} />
         <div className="mt-6">
