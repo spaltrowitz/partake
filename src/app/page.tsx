@@ -71,7 +71,7 @@ export default function Home() {
     const subtotal =
       receipt.subtotal ?? items.reduce((s, i) => s + i.price * i.quantity, 0);
     const tax = receipt.tax ?? 0;
-    const tipAmount = Math.round(subtotal * tipPercent) / 100;
+    const tipAmount = receipt.tip ?? Math.round(subtotal * tipPercent) / 100;
 
     const chars = "abcdefghjkmnpqrstuvwxyz23456789";
     const shareCode = Array.from({ length: 6 }, () =>

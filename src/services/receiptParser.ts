@@ -36,6 +36,7 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
   let tax: number | undefined;
   let subtotal: number | undefined;
   let total: number | undefined;
+  let tip: number | undefined;
   let restaurantName: string | undefined;
   let discount: number | undefined;
 
@@ -106,7 +107,7 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
     } else if (matchesAny(lower, TAX_KEYWORDS)) {
       tax = price;
     } else if (matchesAny(lower, TIP_KEYWORDS)) {
-      continue; // tip is on the receipt but we let user set their own
+      tip = price;
     } else if (matchesAny(lower, TOTAL_KEYWORDS)) {
       total = price;
     } else if (matchesAny(lower, SERVICE_CHARGE_KEYWORDS)) {
@@ -135,7 +136,7 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
     }
   }
 
-  return { items, tax, subtotal, total, restaurantName };
+  return { items, tax, tip, subtotal, total, restaurantName };
 }
 
 function extractPrice(text: string): number | undefined {

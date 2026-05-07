@@ -78,6 +78,7 @@ export interface BillSplit {
 export interface ParsedReceipt {
   items: ParsedItem[];
   tax?: number;
+  tip?: number;
   subtotal?: number;
   total?: number;
   restaurantName?: string;
