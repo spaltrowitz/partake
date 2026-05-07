@@ -199,12 +199,14 @@ export default function Home() {
           </div>
         )}
 
-        <button
-          onClick={loadTestData}
-          className="text-xs text-[#C4B5A6] hover:text-[#9C8E80] transition-colors mt-4"
-        >
-          🧪 Test mode — skip to splitting with sample data
-        </button>
+        {process.env.NODE_ENV === "development" && (
+          <button
+            onClick={loadTestData}
+            className="text-xs text-[#C4B5A6] hover:text-[#9C8E80] transition-colors mt-4"
+          >
+            🧪 Test mode — skip to splitting with sample data
+          </button>
+        )}
 
         <footer className="mt-8 pt-4 border-t border-[#E8DFD4] w-full max-w-md text-center">
           <div className="flex justify-center gap-4 text-xs text-[#C4B5A6]">
