@@ -1,4 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
+import { initializeApp, getApps, cert } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
+
+// Initialize Firebase Admin for server-side logging
+function getDb() {
+  try {
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+    if (!projectId) return null;
+    if (getApps().length === 0) {
+      initializeApp({ projectId });
+    }
+    return getFirestore();
+  } catch {
+    return null;
+  }
+}
 
 export async function POST(req: NextRequest) {
   const apiKey = process.env.GOOGLE_CLOUD_VISION_API_KEY;
@@ -45,6 +61,18 @@ export async function POST(req: NextRequest) {
       .split("\n")
       .map((line: string) => line.trim())
       .filter((line: string) => line.length > 1);
+
+    // Log OCR result for debugging (fire-and-forget)
+    const db = getDb();
+    if (db) {
+      db.collection("ocr_logs").add({
+        rawText: fullText,
+        lineCount: lines.length,
+        fileType: file.type,
+        fileSize: file.size,
+        timestamp: new Date(),
+      }).catch(() => {});
+    }
 
     return NextResponse.json({ lines });
   } catch (error) {

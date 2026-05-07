@@ -119,13 +119,13 @@ export function ReceiptEditor({
           </div>
         ))}
 
-        {/* Add item input — always visible, looks like the next row */}
+        {/* Add item input */}
         <div className="flex items-center gap-2 p-3 rounded-xl border-2 border-dashed border-[#F5EDE3] focus-within:border-[#E8613C] transition-colors">
-          <span className="text-xs text-[#9C8E80] w-5">{receipt.items.length + 1}</span>
+          <span className="text-xs text-[#E8613C]">+</span>
           <input
             ref={nameInputRef}
             type="text"
-            placeholder={receipt.items.length === 0 ? "e.g. Margherita Pizza" : "Next item"}
+            placeholder={receipt.items.length === 0 ? "e.g. Margherita Pizza" : "Add missing item"}
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             maxLength={80}
@@ -135,8 +135,7 @@ export function ReceiptEditor({
                 if (newName && newPrice) {
                   addItem();
                 } else if (newName && !newPrice) {
-                  // Tab to price field
-                  const priceInput = e.currentTarget.parentElement?.querySelector('input[type="number"]') as HTMLInputElement;
+                  const priceInput = e.currentTarget.parentElement?.querySelector('input[type="text"][inputmode="decimal"]') as HTMLInputElement;
                   priceInput?.focus();
                 }
               }
@@ -144,22 +143,20 @@ export function ReceiptEditor({
           />
           <span className="text-[#9C8E80] text-sm">$</span>
           <input
-            type="number"
+            type="text"
             inputMode="decimal"
-            step="0.01"
-            min="0"
             placeholder="0.00"
             value={newPrice}
-            onChange={(e) => setNewPrice(e.target.value)}
+            onChange={(e) => setNewPrice(e.target.value.replace(/[^0-9.]/g, ""))}
             className="w-16 bg-transparent text-sm text-right outline-none font-bold placeholder:text-[#C4B5A6] placeholder:font-normal"
             onKeyDown={(e) => e.key === "Enter" && addItem()}
           />
           <button
             onClick={addItem}
             disabled={!newName.trim() || !newPrice}
-            className="text-[#E8613C] font-bold text-lg disabled:opacity-20 transition-opacity"
+            className="text-[#E8613C] font-bold text-sm disabled:opacity-20 transition-opacity px-2 py-1"
           >
-            +
+            Add
           </button>
         </div>
 
