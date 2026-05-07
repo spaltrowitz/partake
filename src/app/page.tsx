@@ -365,7 +365,10 @@ export default function Home() {
     return (
       <main className="min-h-dvh p-6 max-w-md mx-auto">
         <button
-          onClick={() => setStep("scan")}
+          onClick={() => {
+            if (receipt.items.length > 0 && !confirm("Re-scanning will replace your current items. Are you sure?")) return;
+            setStep("scan");
+          }}
           className="text-sm text-[#9C8E80] mb-4"
         >
           ← Re-scan or re-enter
