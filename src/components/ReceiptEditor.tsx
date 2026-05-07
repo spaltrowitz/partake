@@ -186,7 +186,7 @@ export function ReceiptEditor({
                 type="number"
                 inputMode="decimal"
                 step="0.01"
-                value={receipt.tax ?? ""}
+                value={receipt.tax != null ? receipt.tax.toFixed(2) : ""}
                 onChange={(e) => updateTax(e.target.value)}
                 placeholder="0.00"
                 className="w-16 text-right bg-transparent font-bold text-sm outline-none placeholder:text-[#C4B5A6] placeholder:font-normal"
@@ -223,7 +223,7 @@ export function ReceiptEditor({
                 inputMode="decimal"
                 step="0.01"
                 min="0"
-                value={receipt.tip ?? ""}
+                value={receipt.tip != null ? receipt.tip.toFixed(2) : ""}
                 onChange={(e) => updateTip(e.target.value)}
                 placeholder="0.00"
                 className="w-16 text-right bg-transparent font-bold text-sm outline-none placeholder:text-[#C4B5A6] placeholder:font-normal"
@@ -244,7 +244,7 @@ export function ReceiptEditor({
                 inputMode="decimal"
                 step="0.01"
                 min="0"
-                value={receipt.discount ?? ""}
+                value={receipt.discount != null ? receipt.discount.toFixed(2) : ""}
                 onChange={(e) => {
                   const val = parseFloat(e.target.value);
                   onChange({ ...receipt, discount: isNaN(val) || val <= 0 ? undefined : val });
