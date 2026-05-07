@@ -67,6 +67,11 @@ export function ReceiptEditor({
     onChange({ ...receipt, tax: isNaN(tax) ? undefined : tax });
   }
 
+  function updateTip(value: string) {
+    const tip = parseFloat(value);
+    onChange({ ...receipt, tip: isNaN(tip) ? undefined : tip });
+  }
+
   const subtotal = receipt.items.reduce((s, i) => s + i.price * i.quantity, 0);
 
   return (
@@ -202,11 +207,32 @@ export function ReceiptEditor({
             </button>
           )}
 
+          {/* Tip */}
+          <div className="flex items-center justify-between p-3 bg-[#F5EDE3] rounded-xl">
+            <div className="flex flex-col">
+              <span className="text-sm">Tip</span>
+              <span className="text-xs text-[#9C8E80]">Adjust on split screen if needed</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-sm text-[#9C8E80]">$</span>
+              <input
+                type="number"
+                inputMode="decimal"
+                step="0.01"
+                min="0"
+                value={receipt.tip ?? ""}
+                onChange={(e) => updateTip(e.target.value)}
+                placeholder="0.00"
+                className="w-16 text-right bg-transparent font-bold text-sm outline-none placeholder:text-[#C4B5A6] placeholder:font-normal"
+              />
+            </div>
+          </div>
+
           {/* Discount */}
           <div className="flex items-center justify-between p-3 bg-[#F5EDE3] rounded-xl">
             <div className="flex flex-col">
               <span className="text-sm">Discount</span>
-              <span className="text-xs text-[#9C8E80]">Birthday, app deal, promo, etc.</span>
+              <span className="text-xs text-[#9C8E80]">Birthday, coupon, comp, etc.</span>
             </div>
             <div className="flex items-center gap-1">
               <span className="text-sm text-[#9C8E80]">−$</span>
@@ -229,7 +255,7 @@ export function ReceiptEditor({
           <div className="flex items-center justify-between px-1 pt-1">
             <span className="font-semibold">Total</span>
             <span className="text-lg font-bold gradient-text">
-              ${(subtotal - (receipt.discount ?? 0) + (receipt.tax ?? 0)).toFixed(2)}
+              ${(subtotal - (receipt.discount ?? 0) + (receipt.tax ?? 0) + (receipt.tip ?? 0)).toFixed(2)}
             </span>
           </div>
         </div>
