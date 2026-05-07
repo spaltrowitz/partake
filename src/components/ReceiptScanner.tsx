@@ -84,8 +84,9 @@ export function ReceiptScanner({
             <input
               ref={cameraInputRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
               capture="environment"
+              multiple={false}
               className="hidden"
               onChange={(e) => {
                 const file = e.target.files?.[0];
@@ -101,7 +102,8 @@ export function ReceiptScanner({
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+              multiple={false}
               className="hidden"
               onChange={(e) => {
                 const file = e.target.files?.[0];
