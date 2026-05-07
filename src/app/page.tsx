@@ -205,6 +205,14 @@ export default function Home() {
         >
           🧪 Test mode — skip to splitting with sample data
         </button>
+
+        <footer className="mt-8 pt-4 border-t border-[#E8DFD4] w-full max-w-md text-center">
+          <div className="flex justify-center gap-4 text-xs text-[#C4B5A6]">
+            <a href="/privacy" className="hover:text-[#9C8E80] transition-colors">Privacy</a>
+            <span>·</span>
+            <a href="/terms" className="hover:text-[#9C8E80] transition-colors">Terms</a>
+          </div>
+        </footer>
       </main>
     );
   }
