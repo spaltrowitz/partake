@@ -286,7 +286,13 @@ export default function Home() {
 
     return (
       <main className="p-6 max-w-md mx-auto">
-        <h1 className="text-2xl font-bold mb-6 text-center">Who&apos;s here?</h1>
+        <button
+          onClick={() => setStep("edit")}
+          className="text-sm text-[#9C8E80] mb-4"
+        >
+          ← Back to receipt
+        </button>
+        <h1 className="text-2xl font-bold mb-6 text-center">Who&apos;s splitting?</h1>
 
         {/* Current participants */}
         {participants.length > 0 && (
@@ -399,13 +405,6 @@ export default function Home() {
             + Add another person
           </button>
         )}
-
-        <button
-          onClick={() => setStep("edit")}
-          className="text-sm text-[#9C8E80] mb-4"
-        >
-          ← Back to receipt
-        </button>
 
         <div className="mt-8">
           <PrimaryButton
