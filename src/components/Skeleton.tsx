@@ -6,14 +6,14 @@ export function ReceiptSkeleton() {
       
       {/* Items */}
       {[...Array(5)].map((_, i) => (
-        <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-[#1C2A4A]">
+        <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-[#F5EDE3]">
           <div className="skeleton h-4 w-32" />
           <div className="skeleton h-4 w-16" />
         </div>
       ))}
       
       {/* Totals */}
-      <div className="border-t border-[#1C2A4A] pt-3 flex flex-col gap-2">
+      <div className="border-t border-[#F5EDE3] pt-3 flex flex-col gap-2">
         <div className="flex justify-between">
           <div className="skeleton h-4 w-20" />
           <div className="skeleton h-4 w-16" />
@@ -32,7 +32,7 @@ export function BillHistorySkeleton() {
   return (
     <div className="flex flex-col gap-2" role="status" aria-label="Loading bills">
       {[...Array(3)].map((_, i) => (
-        <div key={i} className="flex items-center justify-between p-3 bg-[#152038] rounded-xl">
+        <div key={i} className="flex items-center justify-between p-3 bg-[#FFFFFF] rounded-xl">
           <div className="flex flex-col gap-1">
             <div className="skeleton h-4 w-28" />
             <div className="skeleton h-3 w-20" />

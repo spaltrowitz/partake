@@ -14,15 +14,15 @@ export function PartnerPairSelector({
   if (participants.length < 2) return null;
 
   return (
-    <div className="px-4 py-2 border-b border-[#1C2A4A]">
+    <div className="px-4 py-2 border-b border-[#F5EDE3]">
       {partnerPair ? (
         <div className="flex items-center justify-between">
-          <span className="text-xs text-[#8B9BB4]">
+          <span className="text-xs text-[#9C8E80]">
             👫 {participants.find((p) => p.id === partnerPair.partnerId)?.name}&apos;s items → {participants.find((p) => p.id === partnerPair.payerId)?.name}&apos;s tab
           </span>
           <button
             onClick={() => onSetPartnerPair(null)}
-            className="text-xs text-[#FF8A80]"
+            className="text-xs text-[#E8613C]"
           >
             Remove
           </button>
@@ -37,7 +37,7 @@ export function PartnerPairSelector({
               });
             }
           }}
-          className="text-xs text-[#8B9BB4] hover:text-[#FF8A80] transition-colors"
+          className="text-xs text-[#9C8E80] hover:text-[#E8613C] transition-colors"
         >
           👫 Pair as couple/partners
         </button>
@@ -53,17 +53,17 @@ export function PartnerPairSelector({
                 : partnerPair.partnerId;
               onSetPartnerPair({ payerId: newPayerId, partnerId: newPartnerId });
             }}
-            className="flex-1 text-xs bg-[#1C2A4A] rounded-lg p-2 outline-none"
+            className="flex-1 text-xs bg-[#F5EDE3] rounded-lg p-2 outline-none"
           >
             {participants.map((p) => (
               <option key={p.id} value={p.id}>{p.name} pays</option>
             ))}
           </select>
-          <span className="text-xs text-[#8B9BB4] self-center">for</span>
+          <span className="text-xs text-[#9C8E80] self-center">for</span>
           <select
             value={partnerPair.partnerId}
             onChange={(e) => onSetPartnerPair({ ...partnerPair, partnerId: e.target.value })}
-            className="flex-1 text-xs bg-[#1C2A4A] rounded-lg p-2 outline-none"
+            className="flex-1 text-xs bg-[#F5EDE3] rounded-lg p-2 outline-none"
           >
             {participants.filter((p) => p.id !== partnerPair.payerId).map((p) => (
               <option key={p.id} value={p.id}>{p.name}</option>

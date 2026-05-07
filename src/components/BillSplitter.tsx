@@ -193,7 +193,7 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
         />
       </div>
 
-      <div className="px-4 pt-4 pb-safe border-t border-[#1C2A4A] bg-[#0B1426]">
+      <div className="px-4 pt-4 pb-safe border-t border-[#F5EDE3] bg-[#FBF8F4]">
         <div className="flex justify-between items-center mb-3">
           <span className="font-semibold">Total</span>
           <span className="text-xl font-bold">${bill.total.toFixed(2)}</span>

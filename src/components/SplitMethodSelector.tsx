@@ -18,7 +18,7 @@ export function SplitMethodSelector({
   onSelect: (method: SplitMethod) => void;
 }) {
   return (
-    <div className="flex gap-1 overflow-x-auto p-3 bg-[#152038] border-b border-[#1C2A4A]">
+    <div className="flex gap-1 overflow-x-auto p-3 bg-[#FFFFFF] border-b border-[#F5EDE3]">
       {SPLIT_METHODS.map((method) => (
         <button
           key={method.id}
@@ -26,7 +26,7 @@ export function SplitMethodSelector({
           className={`px-4 py-2.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
             splitMethod === method.id
               ? "gradient-bg text-white"
-              : "bg-[#1C2A4A] text-[#8B9BB4]"
+              : "bg-[#F5EDE3] text-[#9C8E80]"
           }`}
         >
           {method.label}

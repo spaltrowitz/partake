@@ -13,7 +13,7 @@ export function ItemizedParticipantBar({
   onSelectParticipant: (id: string) => void;
 }) {
   return (
-    <div className="flex gap-2 overflow-x-auto p-4 bg-[#152038]">
+    <div className="flex gap-2 overflow-x-auto p-4 bg-[#FFFFFF]">
       {participants.map((p, i) => (
         <button
           key={p.id}
@@ -38,7 +38,7 @@ export function ItemizedParticipantBar({
             className={`text-xs truncate max-w-[64px] ${
               selectedParticipant === p.id
                 ? "font-semibold"
-                : "text-[#8B9BB4]"
+                : "text-[#9C8E80]"
             }`}
           >
             {p.name}
@@ -62,7 +62,7 @@ export function ItemizedView({
 }) {
   return (
     <>
-      <p className="text-xs text-[#8B9BB4] mb-3">
+      <p className="text-xs text-[#9C8E80] mb-3">
         Tap items to claim them for the selected person
       </p>
       <div className="flex flex-col gap-1">
@@ -74,8 +74,8 @@ export function ItemizedView({
               onClick={() => onToggleClaim(item.id)}
               className={`flex items-center justify-between p-3 rounded-lg transition-all text-left ${
                 isClaimed
-                  ? "bg-[#0B2A2A]"
-                  : "bg-[#1C2A4A] hover:bg-[#1C2A4A]"
+                  ? "bg-[#E8F5E9]"
+                  : "bg-[#F5EDE3] hover:bg-[#F5EDE3]"
               } ${isClaimed ? "pop-animation" : ""}`}
             >
               <div className="flex-1">
@@ -89,7 +89,7 @@ export function ItemizedView({
                       return (
                         <div
                           key={cid}
-                          className="w-4 h-4 rounded-full border border-white"
+                          className="w-4 h-4 rounded-full border border-[#F5EDE3]"
                           style={{
                             backgroundColor: getParticipantColor(idx),
                           }}
@@ -100,7 +100,7 @@ export function ItemizedView({
                 )}
               </div>
               <span className="font-semibold ml-4">
-                {item.quantity > 1 && <span className="text-xs text-[#8B9BB4] mr-1">{item.quantity}×</span>}
+                {item.quantity > 1 && <span className="text-xs text-[#9C8E80] mr-1">{item.quantity}×</span>}
                 ${(item.price * item.quantity).toFixed(2)}
               </span>
               <span className="ml-3 text-xl">

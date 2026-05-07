@@ -18,11 +18,11 @@ export function PercentageSplitView({
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-xs text-[#8B9BB4] mb-1">
+      <p className="text-xs text-[#9C8E80] mb-1">
         Set each person&apos;s percentage (should add up to 100%)
       </p>
       {participants.map((p, i) => (
-        <div key={p.id} className="flex items-center gap-3 p-3 bg-[#1C2A4A] rounded-lg">
+        <div key={p.id} className="flex items-center gap-3 p-3 bg-[#F5EDE3] rounded-lg">
           <Avatar name={p.name} index={i} size={32} />
           <span className="flex-1 font-medium text-sm">{p.name}</span>
           <input
@@ -30,9 +30,9 @@ export function PercentageSplitView({
             inputMode="decimal"
             value={percentages[p.id] ?? 0}
             onChange={(e) => onChangePercentage(p.id, parseFloat(e.target.value) || 0)}
-            className="w-20 text-right px-2 py-1 rounded border border-[#1C2A4A] bg-transparent text-sm font-bold"
+            className="w-20 text-right px-2 py-1 rounded border border-[#F5EDE3] bg-transparent text-sm font-bold"
           />
-          <span className="text-sm text-[#8B9BB4]">%</span>
+          <span className="text-sm text-[#9C8E80]">%</span>
           <span className="text-sm font-semibold w-20 text-right">
             ${(total * (percentages[p.id] ?? 0) / 100).toFixed(2)}
           </span>

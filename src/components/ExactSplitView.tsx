@@ -18,14 +18,14 @@ export function ExactSplitView({
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-xs text-[#8B9BB4] mb-1">
+      <p className="text-xs text-[#9C8E80] mb-1">
         Enter each person&apos;s exact amount
       </p>
       {participants.map((p, i) => (
-        <div key={p.id} className="flex items-center gap-3 p-3 bg-[#1C2A4A] rounded-lg">
+        <div key={p.id} className="flex items-center gap-3 p-3 bg-[#F5EDE3] rounded-lg">
           <Avatar name={p.name} index={i} size={32} />
           <span className="flex-1 font-medium text-sm">{p.name}</span>
-          <span className="text-sm text-[#8B9BB4]">$</span>
+          <span className="text-sm text-[#9C8E80]">$</span>
           <input
             type="number"
             inputMode="decimal"
@@ -33,7 +33,7 @@ export function ExactSplitView({
             min="0"
             value={exactAmounts[p.id] ?? 0}
             onChange={(e) => onChangeAmount(p.id, Math.max(0, parseFloat(e.target.value) || 0))}
-            className="w-24 text-right px-2 py-1 rounded border border-[#1C2A4A] bg-transparent text-sm font-bold"
+            className="w-24 text-right px-2 py-1 rounded border border-[#F5EDE3] bg-transparent text-sm font-bold"
           />
         </div>
       ))}

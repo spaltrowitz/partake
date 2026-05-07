@@ -1,6 +1,6 @@
 const PARTICIPANT_COLORS = [
-  "#FF8A80", "#4ECDC4", "#FFE66D", "#A18CD1", "#FF8E53",
-  "#45B7D1", "#96E6A1", "#DDA0DD", "#F7DC6F", "#82E0AA",
+  "#E8613C", "#2E7D32", "#1976D2", "#7B1FA2", "#F4A261",
+  "#00897B", "#C62828", "#5C6BC0", "#EF6C00", "#2E86AB",
 ];
 
 export function Avatar({

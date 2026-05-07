@@ -32,7 +32,7 @@ function ShareLinkButton({ shareCode, billName }: { shareCode: string; billName:
     <Card className="mt-2">
       <button
         onClick={handleShare}
-        className="w-full py-2 text-sm font-medium text-[#4ECDC4] hover:bg-[#1C2A4A] rounded-lg transition-colors flex items-center justify-center gap-2"
+        className="w-full py-2 text-sm font-medium text-[#2E7D32] hover:bg-[#F5EDE3] rounded-lg transition-colors flex items-center justify-center gap-2"
       >
         {copied ? "✓ Link copied!" : "🔗 Share bill link"}
       </button>
@@ -64,7 +64,7 @@ export function Settlement({
         <h2 className="text-2xl font-bold">
           {bill.name || "The split"}
         </h2>
-        <p className="text-[#8B9BB4]">${bill.total.toFixed(2)} total</p>
+        <p className="text-[#9C8E80]">${bill.total.toFixed(2)} total</p>
       </div>
 
       <div className="flex flex-col gap-4">
@@ -76,7 +76,7 @@ export function Settlement({
               <Avatar name={split.participantName} index={originalIndex} size={40} />
               <div className="flex-1">
                 <p className="font-semibold">{split.participantName}</p>
-                <p className="text-xs text-[#8B9BB4]">
+                <p className="text-xs text-[#9C8E80]">
                   {split.items.length} item{split.items.length !== 1 && "s"}
                 </p>
               </div>
@@ -86,7 +86,7 @@ export function Settlement({
             </div>
 
             {/* Item breakdown */}
-            <div className="text-xs text-[#8B9BB4] space-y-1 mb-3">
+            <div className="text-xs text-[#9C8E80] space-y-1 mb-3">
               {split.items.map((item) => {
                 const lineTotal = item.price * item.quantity;
                 return (
@@ -100,7 +100,7 @@ export function Settlement({
                 </div>
                 );
               })}
-              <hr className="border-[#1C2A4A]" />
+              <hr className="border-[#F5EDE3]" />
               <div className="flex justify-between">
                 <span>Tax</span>
                 <span>${split.taxShare.toFixed(2)}</span>
@@ -127,8 +127,8 @@ export function Settlement({
                       disabled={settledIds.has(split.participantId)}
                       className={`w-full py-2 rounded-lg text-white text-sm font-medium transition-colors ${
                         settledIds.has(split.participantId)
-                          ? "bg-[#4ECDC4]"
-                          : "bg-[#3D95CE] hover:bg-[#2d7ab3]"
+                          ? "bg-[#2E7D32]"
+                          : "bg-[#1976D2] hover:bg-[#1565C0]"
                       }`}
                     >
                       {settledIds.has(split.participantId)
@@ -138,7 +138,7 @@ export function Settlement({
                   ) : (
                     <button
                       onClick={() => onCopy(split)}
-                      className="w-full py-2 text-sm font-medium text-[#FF8A80] hover:bg-[#1C2A4A] rounded-lg transition-colors"
+                      className="w-full py-2 text-sm font-medium text-[#E8613C] hover:bg-[#F5EDE3] rounded-lg transition-colors"
                     >
                       {settledIds.has(split.participantId)
                         ? "✓ Copied"
@@ -172,7 +172,7 @@ export function Settlement({
               copyToClipboard(text);
             }
           }}
-          className="w-full py-2 text-sm font-medium text-[#FF8A80] hover:bg-[#1C2A4A] rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full py-2 text-sm font-medium text-[#E8613C] hover:bg-[#F5EDE3] rounded-lg transition-colors flex items-center justify-center gap-2"
         >
           📤 Share the breakdown
         </button>
@@ -191,7 +191,7 @@ export function Settlement({
 
       <button
         onClick={onDone}
-        className="w-full mt-6 py-3 text-[#8B9BB4] hover:text-gray-700"
+        className="w-full mt-6 py-3 text-[#9C8E80] hover:text-[#2D2319]"
       >
         ← Back to bill
       </button>

@@ -17,7 +17,7 @@ export function TipSelector({
 }) {
   return (
     <div className="mt-6">
-      <h3 className="text-sm font-semibold text-[#8B9BB4] mb-2">Tip</h3>
+      <h3 className="text-sm font-semibold text-[#9C8E80] mb-2">Tip</h3>
       <div className="flex gap-2">
         {TIP_OPTIONS.map((pct) => (
           <button
@@ -26,7 +26,7 @@ export function TipSelector({
             className={`flex-1 py-3 rounded-full text-sm font-medium transition-colors ${
               tipPercent === pct && !customTipMode
                 ? "gradient-bg text-white"
-                : "bg-[#1C2A4A] text-[#C4CFDE]"
+                : "bg-[#F5EDE3] text-[#6B5D4F]"
             }`}
           >
             {pct}%
@@ -37,14 +37,14 @@ export function TipSelector({
           className={`flex-1 py-3 rounded-full text-sm font-medium transition-colors ${
             customTipMode
               ? "gradient-bg text-white"
-              : "bg-[#1C2A4A] text-[#C4CFDE]"
+              : "bg-[#F5EDE3] text-[#6B5D4F]"
           }`}
         >
           Other
         </button>
       </div>
       {customTipMode && (
-        <div className="flex items-center gap-2 mt-3 p-2 bg-[#1C2A4A] rounded-xl">
+        <div className="flex items-center gap-2 mt-3 p-2 bg-[#F5EDE3] rounded-xl">
           <input
             type="number"
             inputMode="decimal"
@@ -59,8 +59,8 @@ export function TipSelector({
             className="w-20 bg-transparent text-sm text-right outline-none font-bold"
             autoFocus
           />
-          <span className="text-sm text-[#8B9BB4]">%</span>
-          <span className="text-xs text-[#8B9BB4] ml-auto">
+          <span className="text-sm text-[#9C8E80]">%</span>
+          <span className="text-xs text-[#9C8E80] ml-auto">
             = ${tipAmount.toFixed(2)}
           </span>
         </div>

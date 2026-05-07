@@ -56,7 +56,7 @@ export function ReceiptScanner({
       {isScanning ? (
         <div className="flex flex-col items-center gap-4 w-full">
           <ReceiptSkeleton />
-          <p className="text-[#8B9BB4] text-sm">{progress || "Reading your receipt..."}</p>
+          <p className="text-[#9C8E80] text-sm">{progress || "Reading your receipt..."}</p>
         </div>
       ) : (
         <>
@@ -64,13 +64,13 @@ export function ReceiptScanner({
           <h2 className="text-xl font-semibold text-center">
             Snap a pic or pick from your photos
           </h2>
-          <p className="text-[#8B9BB4] text-center">
+          <p className="text-[#9C8E80] text-center">
             We&apos;ll read the items and prices for you
           </p>
 
           {error && (
             <div className="flex flex-col items-center gap-3">
-              <p className="text-sm text-orange-600 bg-orange-50 dark:bg-orange-950/30 p-3 rounded-lg text-center">
+              <p className="text-sm text-orange-600 bg-orange-50 p-3 rounded-lg text-center">
                 {error}
               </p>
               <SecondaryButton onClick={handleManualEntry}>
@@ -115,7 +115,7 @@ export function ReceiptScanner({
 
             <button
               onClick={handleManualEntry}
-              className="text-sm text-[#8B9BB4] hover:text-[#8B9BB4] transition-colors"
+              className="text-sm text-[#9C8E80] hover:text-[#9C8E80] transition-colors"
             >
               Or just type it in
             </button>

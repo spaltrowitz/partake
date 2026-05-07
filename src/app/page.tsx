@@ -151,39 +151,39 @@ export default function Home() {
       <main className="min-h-dvh flex flex-col items-center gap-8 p-6 pt-16">
         {/* Logo mark — overlapping circles representing people sharing */}
         <div className="flex -space-x-3">
-          <div className="w-12 h-12 rounded-full bg-[#FF8A80] opacity-90" />
-          <div className="w-12 h-12 rounded-full bg-[#FFAB91] opacity-90" />
-          <div className="w-12 h-12 rounded-full bg-[#FFD180] opacity-90" />
+          <div className="w-12 h-12 rounded-full bg-[#E8613C] opacity-90" />
+          <div className="w-12 h-12 rounded-full bg-[#F4A261] opacity-90" />
+          <div className="w-12 h-12 rounded-full bg-[#FFD6A5] opacity-90" />
         </div>
         <h1 className="text-5xl font-bold gradient-text tracking-tight">Partake</h1>
-        <p className="text-lg text-[#8B9BB4] text-center max-w-sm">
+        <p className="text-lg text-[#9C8E80] text-center max-w-sm">
           No math. No stress.
         </p>
-        <PrimaryButton onClick={() => setStep("participants")} className="max-w-xs">
-          Let&apos;s settle up
+        <PrimaryButton onClick={() => setStep("scan")} className="max-w-xs">
+          Scan the receipt
         </PrimaryButton>
-        <p className="text-xs text-[#8B9BB4]">Free to use. Sign up for Partake to learn your habits over time.</p>
+        <p className="text-xs text-[#9C8E80]">Free to use. Sign up for Partake to learn your habits over time.</p>
 
         {billHistory.length === 0 && (
           <div className="text-center mt-4">
-            <p className="text-sm text-[#8B9BB4]">No bills yet. Go eat something 🍕</p>
+            <p className="text-sm text-[#9C8E80]">No bills yet. Go eat something 🍕</p>
           </div>
         )}
 
         {/* Bill history */}
         {billHistory.length > 0 && (
           <div className="w-full max-w-md mt-4">
-            <h2 className="text-sm font-semibold text-[#8B9BB4] mb-3">Recent bills</h2>
+            <h2 className="text-sm font-semibold text-[#9C8E80] mb-3">Recent bills</h2>
             <div className="flex flex-col gap-2">
               {billHistory.slice(0, 5).map((b) => (
                 <button
                   key={b.id}
                   onClick={() => { setBill(b); setParticipants(b.participants); setStep("split"); }}
-                  className="flex items-center justify-between p-3 bg-[#152038] rounded-xl hover:bg-[#1C2A4A] transition-colors text-left"
+                  className="flex items-center justify-between p-3 bg-[#FFFFFF] rounded-xl hover:bg-[#F5EDE3] transition-colors text-left"
                 >
                   <div>
                     <p className="font-medium text-sm">{b.name || "Untitled bill"}</p>
-                    <p className="text-xs text-[#8B9BB4]">
+                    <p className="text-xs text-[#9C8E80]">
                       {b.participants.length} people · {new Date(b.createdAt).toLocaleDateString()}
                     </p>
                   </div>
@@ -196,7 +196,7 @@ export default function Home() {
 
         <button
           onClick={loadTestData}
-          className="text-xs text-[#4A5568] hover:text-[#8B9BB4] transition-colors mt-4"
+          className="text-xs text-[#C4B5A6] hover:text-[#9C8E80] transition-colors mt-4"
         >
           🧪 Test mode — skip to splitting with sample data
         </button>
@@ -217,20 +217,20 @@ export default function Home() {
         {/* Current participants */}
         {participants.length > 0 && (
           <div className="mb-6">
-            <p className="text-sm text-[#8B9BB4] mb-2 text-center">Splitting with</p>
+            <p className="text-sm text-[#9C8E80] mb-2 text-center">Splitting with</p>
             <div className="flex flex-wrap gap-2 justify-center">
               {participants.map((p) => (
                 <span
                   key={p.id}
-                  className="flex items-center gap-1 bg-[#1C2A4A] px-3 py-1 rounded-full text-sm"
+                  className="flex items-center gap-1 bg-[#F5EDE3] px-3 py-1 rounded-full text-sm"
                 >
                   {p.name}
                   {p.venmoUsername && (
-                    <span className="text-[#8B9BB4]">@{p.venmoUsername}</span>
+                    <span className="text-[#9C8E80]">@{p.venmoUsername}</span>
                   )}
                   <button
                     onClick={() => removeParticipant(p.id)}
-                    className="text-[#8B9BB4] hover:text-[#FF8A80] ml-1 p-2 -mr-2"
+                    className="text-[#9C8E80] hover:text-[#E8613C] ml-1 p-2 -mr-2"
                   >
                     ✕
                   </button>
@@ -243,7 +243,7 @@ export default function Home() {
         {/* Saved contacts — quick tap to add */}
         {unusedContacts.length > 0 && (
           <div className="mb-6">
-            <p className="text-sm text-[#8B9BB4] mb-2 text-center">Tap to add</p>
+            <p className="text-sm text-[#9C8E80] mb-2 text-center">Tap to add</p>
             <div className="flex gap-3 overflow-x-auto pb-2 justify-center">
               {unusedContacts.map((contact, i) => (
                 <button
@@ -277,7 +277,7 @@ export default function Home() {
               placeholder="Name"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              className="px-4 py-3 rounded-xl border border-[#1C2A4A] bg-transparent text-center"
+              className="px-4 py-3 rounded-xl border border-[#F5EDE3] bg-transparent text-center"
               autoFocus
               onKeyDown={(e) => e.key === "Enter" && addParticipant()}
             />
@@ -286,20 +286,20 @@ export default function Home() {
               placeholder="Venmo or $CashApp (optional)"
               value={newVenmo}
               onChange={(e) => setNewVenmo(e.target.value)}
-              className="px-4 py-3 rounded-xl border border-[#1C2A4A] bg-transparent text-sm text-center"
+              className="px-4 py-3 rounded-xl border border-[#F5EDE3] bg-transparent text-sm text-center"
               onKeyDown={(e) => e.key === "Enter" && addParticipant()}
             />
             <div className="flex gap-2 justify-center">
               <button
                 onClick={() => { addParticipant(); setShowAddForm(false); }}
                 disabled={!newName.trim()}
-                className="text-[#FF8A80] font-semibold disabled:opacity-30"
+                className="text-[#E8613C] font-semibold disabled:opacity-30"
               >
                 Add
               </button>
               <button
                 onClick={() => setShowAddForm(false)}
-                className="text-[#8B9BB4]"
+                className="text-[#9C8E80]"
               >
                 Cancel
               </button>
@@ -308,21 +308,28 @@ export default function Home() {
         ) : (
           <button
             onClick={() => setShowAddForm(true)}
-            className="text-[#FF8A80] font-semibold mb-6 text-center"
+            className="text-[#E8613C] font-semibold mb-6 text-center"
           >
             + Add someone new
           </button>
         )}
 
+        <button
+          onClick={() => setStep("edit")}
+          className="text-sm text-[#9C8E80] mb-4"
+        >
+          ← Back to receipt
+        </button>
+
         <div className="mt-8">
           <PrimaryButton
-            onClick={() => setStep("scan")}
-            disabled={participants.length < 1}
+            onClick={createBill}
+            disabled={participants.length < 1 || authLoading}
           >
-            Next: Add the receipt
+            Start splitting
           </PrimaryButton>
           {participants.length < 1 && (
-            <p className="text-xs text-[#8B9BB4] text-center mt-2">
+            <p className="text-xs text-[#9C8E80] text-center mt-2">
               Add at least 1 person
             </p>
           )}
@@ -336,10 +343,10 @@ export default function Home() {
     return (
       <main className="min-h-dvh p-6 max-w-md mx-auto">
         <button
-          onClick={() => setStep("participants")}
-          className="text-sm text-[#8B9BB4] mb-4"
+          onClick={() => setStep("landing")}
+          className="text-sm text-[#9C8E80] mb-4"
         >
-          ← Back to people
+          ← Back
         </button>
         <ErrorBoundary>
           <ReceiptScanner
@@ -359,7 +366,7 @@ export default function Home() {
       <main className="min-h-dvh p-6 max-w-md mx-auto">
         <button
           onClick={() => setStep("scan")}
-          className="text-sm text-[#8B9BB4] mb-4"
+          className="text-sm text-[#9C8E80] mb-4"
         >
           ← Re-scan or re-enter
         </button>
@@ -367,10 +374,10 @@ export default function Home() {
         <ReceiptEditor receipt={receipt} onChange={setReceipt} />
         <div className="mt-6">
           <PrimaryButton
-            onClick={createBill}
-            disabled={receipt.items.length === 0 || authLoading}
+            onClick={() => setStep("participants")}
+            disabled={receipt.items.length === 0}
           >
-            Looks good — start splitting
+            Next: Who&apos;s splitting?
           </PrimaryButton>
         </div>
       </main>
