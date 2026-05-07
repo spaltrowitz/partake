@@ -160,12 +160,14 @@ export default function Home() {
         </div>
         <h1 className="text-5xl font-bold gradient-text tracking-tight">Partake</h1>
         <p className="text-lg text-[#9C8E80] text-center max-w-sm">
-          No math. No stress.
+          Split the bill in seconds.
+        </p>
+        <p className="text-sm text-[#9C8E80] text-center max-w-xs">
+          Snap your receipt, claim what you ordered, and send payment requests — no app needed.
         </p>
         <PrimaryButton onClick={() => setStep("scan")} className="max-w-xs">
           Scan the receipt
         </PrimaryButton>
-        <p className="text-xs text-[#9C8E80]">Free to use. Sign up for Partake to learn your habits over time.</p>
 
         {billHistory.length === 0 && (
           <div className="text-center mt-4">
