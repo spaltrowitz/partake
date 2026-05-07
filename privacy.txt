@@ -1,0 +1,94 @@
+PRIVACY POLICY
+Partake
+Last Updated: May 7, 2026
+
+1. INTRODUCTION
+Partake ("we," "us," or "our") respects your privacy. This Privacy Policy explains how we collect, use, disclose, and protect your personal information when you use the Partake web application at partakeapp.com.
+
+2. INFORMATION WE COLLECT
+
+Authentication:
+• Partake uses Firebase Anonymous Authentication by default. No email, password, or personal identifiers are required to use the app.
+
+Bill and Receipt Data:
+• Receipt images you photograph or upload
+• Parsed receipt text (item names, prices, tax amounts)
+• Bill split details (participant names, assigned items, calculated amounts)
+
+Contacts (optional, user-provided):
+• Names of people you split bills with
+• Venmo usernames and Cash App cashtags (for payment deep links)
+• Partner grouping preferences
+
+Location Data (optional, with explicit permission):
+• Approximate geolocation (latitude/longitude) used solely to determine your state for tax rate lookup
+• We use low-accuracy geolocation only — precise location is never requested
+• Location is processed in real time and is not stored on our servers
+
+Automatically Collected:
+• Browser localStorage data (last 50 bills, contacts, guest name)
+
+3. HOW WE USE YOUR INFORMATION
+We use your information solely for the following purposes:
+• Scanning and parsing receipt images to extract item names and prices
+• Calculating tax rates based on your approximate location
+• Splitting bills among participants
+• Generating payment request links for Venmo and Cash App
+• Storing your bill history and contacts for convenience
+• Sharing bills via unique share codes
+
+4. INFORMATION SHARING AND DISCLOSURE
+We do not sell, rent, or trade your personal information. We may share your information only in the following limited circumstances:
+• Google Cloud Vision API: Receipt images are sent to Google's Vision API for text extraction (OCR). Images are processed and not retained by Google beyond the API call. If Google Vision is unavailable, OCR is performed entirely on your device using Tesseract.js.
+• OpenStreetMap Nominatim: Your approximate coordinates are sent to Nominatim for reverse geocoding (converting coordinates to a state name for tax lookup). No account or personal identifier is attached to this request.
+• Firebase: Bill data and contacts are stored in Firebase Firestore when you are authenticated. Firebase Anonymous Auth assigns a random ID — no personal identifiers are collected.
+• Firebase Cloud Storage: Receipt images you upload are stored in Firebase Cloud Storage, accessible only to authenticated users of that bill.
+• Payment Apps: When you tap "Pay via Venmo" or "Pay via Cash App," a deep link opens the respective app with pre-filled amount and note. No data is sent to Venmo or Cash App from our servers.
+• Legal Requirements: When required by law, regulation, or legal process
+
+5. DATA SECURITY
+We implement reasonable technical safeguards to protect your information:
+• Firebase Firestore security rules restrict read/write access by authentication status and bill ownership
+• Receipt images in Cloud Storage are access-controlled per user
+• All data is transmitted over HTTPS
+• OCR processing falls back to on-device (Tesseract.js) if the server-side API is unavailable
+
+6. DATA STORAGE AND RETENTION
+• Bill data is stored in Firebase Firestore and in your browser's localStorage (last 50 bills)
+• Receipt images are stored in Firebase Cloud Storage
+• Contacts and guest names are stored in your browser's localStorage
+• LocalStorage data remains on your device until you clear your browser data
+• Firebase data is retained as long as the anonymous auth session is active
+• Shared bills are accessible via share code to anyone with the link
+
+7. YOUR RIGHTS AND CHOICES
+You have the following rights:
+• No Account Required: You can use Partake without providing any personal information — anonymous auth is automatic
+• Location Permission: Geolocation is optional and only requested with your explicit browser permission; you can deny it and enter tax manually
+• Local Data: You can clear your localStorage at any time through your browser settings
+• Image Control: You choose which receipts to photograph; images are only uploaded when you initiate a scan
+
+8. COOKIES AND LOCAL STORAGE
+Partake does not use cookies for tracking. We use browser localStorage to store:
+• Recent bill history (partake_bills, max 50 entries)
+• Saved contacts with payment handles (partake_contacts)
+• Guest name preference (guest_name)
+This data is stored locally on your device and is not transmitted to any server unless you are authenticated.
+
+9. THIRD-PARTY SERVICES
+Our application integrates with the following third-party services, each governed by their own privacy policies:
+• Google Cloud Vision API: https://cloud.google.com/terms/cloud-privacy-notice
+• Firebase (Firestore, Auth, Storage): https://firebase.google.com/support/privacy
+• OpenStreetMap Nominatim: https://wiki.osmfoundation.org/wiki/Privacy_Policy
+• Venmo: https://venmo.com/legal/us-privacy-policy (deep links only, no data sharing)
+• Cash App: https://cash.app/legal/us/en-us/privacy-notice (deep links only, no data sharing)
+
+10. CHILDREN'S PRIVACY
+Partake is not intended for use by individuals under 13 years of age. We do not knowingly collect personal information from children under 13.
+
+11. CHANGES TO THIS PRIVACY POLICY
+We may update this Privacy Policy from time to time. Changes will be posted on this page with an updated "Last Updated" date.
+
+12. CONTACT US
+If you have questions about this Privacy Policy or wish to exercise your privacy rights, contact:
+Email: sharipaltrowitz@gmail.com
