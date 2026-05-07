@@ -71,6 +71,12 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
     // Skip empty lines and decorative separators
     if (!text || /^[\-=*_~.#]{3,}$/.test(text)) continue;
 
+    // Skip suggested tip lines early — before any keyword matching
+    // Handles "+2%: (Tip $2.40 Total $133.08)" and "Tip percentages are based on..."
+    if (/^\+?\d+%/.test(text)) continue;
+    if (/tip percentages/i.test(text)) continue;
+    if (/price before taxes/i.test(text)) continue;
+
     // Check for negative prices (discounts)
     const negMatch = text.match(NEGATIVE_PRICE_PATTERN);
     if (negMatch && matchesAny(lower, DISCOUNT_KEYWORDS)) {
@@ -139,9 +145,6 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
 
     // Skip payment/metadata lines
     if (shouldSkip(lower)) continue;
-
-    // Skip lines that contain tip suggestion patterns like "+2%: (Tip $2.40 Total $133.08)"
-    if (/^\+?\d+%/.test(text)) continue;
 
     // Categorize by keywords
     if (matchesAny(lower, SUBTOTAL_KEYWORDS)) {
