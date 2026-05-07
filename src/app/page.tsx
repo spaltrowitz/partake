@@ -187,11 +187,6 @@ export default function Home() {
           Scan the receipt
         </PrimaryButton>
 
-        {billHistory.length === 0 && (
-          <div className="text-center mt-4">
-            <p className="text-sm text-[#9C8E80]">No bills yet. Go eat something 🍕</p>
-          </div>
-        )}
 
         {/* Bill history */}
         {billHistory.length > 0 && (
