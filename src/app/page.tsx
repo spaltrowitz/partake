@@ -500,7 +500,7 @@ export default function Home() {
     return (
       <main className="min-h-dvh max-w-md mx-auto">
         <ErrorBoundary>
-          <BillSplitter bill={bill} />
+          <BillSplitter bill={bill} onBack={() => setStep("participants")} />
         </ErrorBoundary>
       </main>
     );

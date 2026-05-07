@@ -15,7 +15,7 @@ import { TipSelector } from "./TipSelector";
 import { Settlement } from "./Settlement";
 import { PartnerPairSelector } from "./PartnerPairSelector";
 
-export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
+export function BillSplitter({ bill: initialBill, onBack }: { bill: Bill; onBack?: () => void }) {
   const [bill, setBill] = useState(initialBill);
   const [splitMethod, setSplitMethod] = useState<SplitMethod>("itemized");
   const [selectedParticipant, setSelectedParticipant] = useState<string>(
@@ -131,6 +131,13 @@ export function BillSplitter({ bill: initialBill }: { bill: Bill }) {
 
   return (
     <div className="flex flex-col h-full">
+      {onBack && (
+        <div className="p-3 bg-[#FFFFFF]">
+          <button onClick={onBack} className="text-sm text-[#9C8E80]">
+            ← Back to people
+          </button>
+        </div>
+      )}
       <SplitMethodSelector splitMethod={splitMethod} onSelect={setSplitMethod} />
 
       <PartnerPairSelector
