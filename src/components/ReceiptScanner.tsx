@@ -34,8 +34,8 @@ export function ReceiptScanner({
           "Couldn't read that one. Try a clearer pic or just type it in — no judgment."
         );
       }
-    } catch {
-      setError("Something went wrong. Try again or type it in manually.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Try again or type it in manually.");
     } finally {
       setIsScanning(false);
       setProgress("");
