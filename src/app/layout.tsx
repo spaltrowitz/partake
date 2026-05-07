@@ -14,9 +14,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Partake — No math. No stress.",
-  description: "Split bills the easy way. Scan a receipt, claim your items, settle up via Venmo or Cash App.",
+  title: "Partake — Split the bill in seconds",
+  description: "Snap your receipt, claim what you ordered, and send payment requests — no app needed.",
   manifest: "/manifest.json",
+  openGraph: {
+    title: "Partake — Split the bill in seconds",
+    description: "Snap your receipt, claim what you ordered, and send payment requests — no app needed.",
+    siteName: "Partake",
+    type: "website",
+    url: "https://partake-app.vercel.app",
+  },
+  twitter: {
+    card: "summary",
+    title: "Partake — Split the bill in seconds",
+    description: "Snap your receipt, claim what you ordered, and send payment requests — no app needed.",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
