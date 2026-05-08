@@ -15,8 +15,9 @@ import { ExactSplitView } from "./ExactSplitView";
 import { TipSelector } from "./TipSelector";
 import { Settlement } from "./Settlement";
 import { PartnerGroupSelector } from "./PartnerPairSelector";
+import { FeedbackWidget } from "./FeedbackWidget";
 
-export function BillSplitter({ bill: initialBill, onBack, onEditReceipt }: { bill: Bill; onBack?: () => void; onEditReceipt?: () => void }) {
+export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome }: { bill: Bill; onBack?: () => void; onEditReceipt?: () => void; onHome?: () => void }) {
   const [bill, setBill] = useState(initialBill);
   const [splitMethod, setSplitMethod] = useState<SplitMethod>("itemized");
   const [selectedParticipant, setSelectedParticipant] = useState<string>(
@@ -198,11 +199,25 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt }: { bil
           <button onClick={onBack} className="text-sm text-[#9C8E80]">
             ← Back to people
           </button>
-          {onEditReceipt && (
-            <button onClick={onEditReceipt} className="text-sm text-[#E8613C]">
-              Edit items
-            </button>
-          )}
+          <div className="flex gap-3">
+            {onEditReceipt && (
+              <button onClick={onEditReceipt} className="text-sm text-[#E8613C]">
+                Edit items
+              </button>
+            )}
+            {onHome && (
+              <button
+                onClick={() => {
+                  if (confirm("Exit this bill? You can reopen it from Recent Bills.")) {
+                    onHome();
+                  }
+                }}
+                className="text-sm text-[#9C8E80]"
+              >
+                ✕ Done
+              </button>
+            )}
+          </div>
         </div>
       )}
       <SplitMethodSelector splitMethod={splitMethod} onSelect={setSplitMethod} />

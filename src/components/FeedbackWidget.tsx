@@ -10,7 +10,7 @@ const categories: { key: Category; emoji: string; label: string; placeholder: st
   { key: "love", emoji: "💜", label: "Love it", placeholder: "What do you love about Partake?" },
 ];
 
-export function FeedbackWidget() {
+export function FeedbackWidget({ trigger }: { trigger?: "floating" | "inline" } = {}) {
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState<Category | null>(null);
   const [summary, setSummary] = useState("");
@@ -51,12 +51,10 @@ export function FeedbackWidget() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-3 rounded-full
-          gradient-bg text-white font-semibold shadow-lg hover:opacity-90 transition-opacity"
+        className="text-sm text-[#9C8E80] hover:text-[#E8613C] transition-colors"
         aria-label="Send feedback"
       >
-        <span>💬</span>
-        <span className="hidden sm:inline">Feedback</span>
+        💬 Feedback
       </button>
 
       {open && (

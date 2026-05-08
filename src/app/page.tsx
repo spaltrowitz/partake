@@ -14,6 +14,7 @@ import { getUserProfile, saveUserProfile } from "@/services/userProfile";
 import type { UserProfile } from "@/services/userProfile";
 import { useAuthContext } from "@/components/AuthProvider";
 import { saveBill } from "@/services/firestore";
+import { FeedbackWidget } from "@/components/FeedbackWidget";
 
 type Step = "landing" | "participants" | "scan" | "edit" | "split";
 
@@ -280,7 +281,9 @@ export default function Home() {
         </button>
 
         <footer className="mt-8 pt-4 border-t border-[#E8DFD4] w-full max-w-md text-center">
-          <div className="flex justify-center gap-4 text-xs text-[#C4B5A6]">
+          <div className="flex justify-center gap-4 text-xs text-[#C4B5A6] items-center">
+            <FeedbackWidget />
+            <span>·</span>
             <a href="/privacy" className="hover:text-[#9C8E80] transition-colors">Privacy</a>
             <span>·</span>
             <a href="/terms" className="hover:text-[#9C8E80] transition-colors">Terms</a>
@@ -654,7 +657,14 @@ export default function Home() {
     return (
       <main className="min-h-dvh max-w-md mx-auto">
         <ErrorBoundary>
-          <BillSplitter bill={bill} onBack={() => setStep("participants")} onEditReceipt={() => setStep("edit")} />
+          <BillSplitter bill={bill} onBack={() => setStep("participants")} onEditReceipt={() => setStep("edit")} onHome={() => {
+            try { localStorage.removeItem("partake_active_session"); } catch {}
+            setBill(null);
+            setReceipt(null);
+            setParticipants([]);
+            setBillHistory(getBillHistory());
+            setStep("landing");
+          }} />
         </ErrorBoundary>
       </main>
     );
