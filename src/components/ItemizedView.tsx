@@ -63,11 +63,15 @@ export function ItemizedView({
   return (
     <>
       <p className="text-xs text-[#9C8E80] mb-3">
-        Tap items to claim them for the selected person
+        Select a person above, then tap their items. Tap the same item for multiple people to split it.
       </p>
       <div className="flex flex-col gap-1">
         {items.map((item) => {
           const isClaimed = item.claimedBy.includes(selectedParticipant);
+          const claimerNames = item.claimedBy.map(cid => {
+            const p = participants.find(pp => pp.id === cid);
+            return p?.name?.split(" ")[0] ?? "";
+          }).filter(Boolean);
           return (
             <button
               key={item.id}
@@ -80,22 +84,27 @@ export function ItemizedView({
             >
               <div className="flex-1">
                 <p className="font-medium">{item.name}</p>
-                {item.claimedBy.length > 0 && (
-                  <div className="flex -space-x-1 mt-1">
-                    {item.claimedBy.map((cid) => {
-                      const idx = participants.findIndex(
-                        (p) => p.id === cid
-                      );
-                      return (
-                        <div
-                          key={cid}
-                          className="w-4 h-4 rounded-full border border-[#F5EDE3]"
-                          style={{
-                            backgroundColor: getParticipantColor(idx),
-                          }}
-                        />
-                      );
-                    })}
+                {claimerNames.length > 0 && (
+                  <div className="flex items-center gap-1 mt-1">
+                    <div className="flex -space-x-1">
+                      {item.claimedBy.map((cid) => {
+                        const idx = participants.findIndex(
+                          (p) => p.id === cid
+                        );
+                        return (
+                          <div
+                            key={cid}
+                            className="w-4 h-4 rounded-full border border-[#F5EDE3]"
+                            style={{
+                              backgroundColor: getParticipantColor(idx),
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                    <span className="text-xs text-[#9C8E80]">
+                      {claimerNames.length === 1 ? claimerNames[0] : `Split ${claimerNames.length} ways`}
+                    </span>
                   </div>
                 )}
               </div>

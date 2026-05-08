@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { Bill, BillSplit, SplitMethod } from "@/types";
 import { calculateSplits, calculateEvenSplit, calculatePercentageSplit, calculateSharesSplit, calculateExactSplit } from "@/services/splitCalculator";
 import { requestPayment, copyToClipboard } from "@/services/venmo";
@@ -35,6 +35,40 @@ export function BillSplitter({ bill: initialBill, onBack }: { bill: Bill; onBack
     Object.fromEntries(bill.participants.map((p) => [p.id, 0]))
   );
   const [partnerPair, setPartnerPair] = useState<{ payerId: string; partnerId: string } | null>(null);
+
+  // Sync bill when participants change (e.g., user goes back and adds someone)
+  useEffect(() => {
+    setBill(prev => {
+      if (prev.participants.length !== initialBill.participants.length ||
+          prev.participants.some((p, i) => p.id !== initialBill.participants[i]?.id)) {
+        return { ...prev, participants: initialBill.participants };
+      }
+      return prev;
+    });
+    // Update percentage/shares/exact for new participants
+    setPercentages(prev => {
+      const updated = { ...prev };
+      const even = 100 / initialBill.participants.length;
+      for (const p of initialBill.participants) {
+        if (!(p.id in updated)) updated[p.id] = Math.round(even * 100) / 100;
+      }
+      return updated;
+    });
+    setShares(prev => {
+      const updated = { ...prev };
+      for (const p of initialBill.participants) {
+        if (!(p.id in updated)) updated[p.id] = 1;
+      }
+      return updated;
+    });
+    setExactAmounts(prev => {
+      const updated = { ...prev };
+      for (const p of initialBill.participants) {
+        if (!(p.id in updated)) updated[p.id] = 0;
+      }
+      return updated;
+    });
+  }, [initialBill]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const effectiveBill = (() => {
     if (!partnerPair) return bill;
