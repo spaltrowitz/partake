@@ -365,45 +365,61 @@ export default function Home() {
 
         {/* Add new person — collapsed by default */}
         {showAddForm ? (
-          <div className="flex flex-col gap-3 mb-6">
+          <div className="flex flex-col gap-3 mb-6 p-4 bg-[#F5EDE3] rounded-xl">
             <p className="text-sm font-semibold text-center">Add a friend</p>
             <input
               type="text"
               placeholder="Their name"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              className="px-4 py-3 rounded-xl border border-[#F5EDE3] bg-transparent text-center"
+              className="px-4 py-3 rounded-xl border border-[#E8DDD0] bg-white text-center"
               autoFocus
-              onKeyDown={(e) => e.key === "Enter" && addParticipant()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && newName.trim()) {
+                  const paymentInput = e.currentTarget.parentElement?.querySelector('input[placeholder*="@"]') as HTMLInputElement;
+                  paymentInput?.focus();
+                }
+              }}
             />
-            <input
-              type="text"
-              placeholder="Venmo or $CashApp (optional)"
-              value={newVenmo}
-              onChange={(e) => setNewVenmo(e.target.value)}
-              className="px-4 py-3 rounded-xl border border-[#F5EDE3] bg-transparent text-sm text-center"
-              onKeyDown={(e) => e.key === "Enter" && addParticipant()}
-            />
-            <div className="flex gap-2 justify-center">
-              <button
-                onClick={() => { addParticipant(); setShowAddForm(false); }}
-                disabled={!newName.trim()}
-                className="text-[#E8613C] font-semibold disabled:opacity-30"
-              >
-                Add
-              </button>
-              <button
-                onClick={() => setShowAddForm(false)}
-                className="text-[#9C8E80]"
-              >
-                Cancel
-              </button>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="@venmo or $cashtag (optional)"
+                value={newVenmo}
+                onChange={(e) => {
+                  let val = e.target.value;
+                  // Auto-prefix @ if they start typing a letter (Venmo)
+                  if (val.length === 1 && /[a-zA-Z]/.test(val)) {
+                    val = "@" + val;
+                  }
+                  setNewVenmo(val);
+                }}
+                className="px-4 py-3 rounded-xl border border-[#E8DDD0] bg-white text-sm text-center w-full"
+                onKeyDown={(e) => e.key === "Enter" && addParticipant()}
+              />
+              {newVenmo && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#9C8E80]">
+                  {newVenmo.startsWith("$") ? "Cash App" : "Venmo"}
+                </span>
+              )}
             </div>
+            <PrimaryButton
+              onClick={() => { addParticipant(); setShowAddForm(false); }}
+              disabled={!newName.trim()}
+            >
+              Add {newName.trim() || "friend"}
+            </PrimaryButton>
+            <button
+              onClick={() => { setShowAddForm(false); setNewName(""); setNewVenmo(""); }}
+              className="text-sm text-[#9C8E80] text-center"
+            >
+              Cancel
+            </button>
           </div>
         ) : (
           <button
             onClick={() => setShowAddForm(true)}
-            className="text-[#E8613C] font-semibold mb-6 text-center"
+            className="w-full py-3 rounded-xl border-2 border-dashed border-[#E8DDD0] text-[#E8613C] font-semibold text-center mb-6 hover:bg-[#F5EDE3] transition-colors"
           >
             + Add another person
           </button>
