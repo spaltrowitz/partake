@@ -53,7 +53,7 @@ export default function Home() {
         }, ...prev];
       });
     }
-  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [step, myProfile]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function addParticipant() {
     if (!newName.trim()) return;
