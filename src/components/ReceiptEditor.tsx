@@ -16,6 +16,10 @@ export function ReceiptEditor({
   const nameInputRef = useRef<HTMLInputElement>(null);
   const [suggestedRate, setSuggestedRate] = useState<{ rate: number; jurisdiction: string } | null>(null);
   const [taxRateLoaded, setTaxRateLoaded] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editPrice, setEditPrice] = useState("");
+  const [editQty, setEditQty] = useState("");
   const isManualEntry = receipt.items.length === 0 && !receipt.restaurantName;
 
   // Auto-focus the first input on manual entry
@@ -60,6 +64,45 @@ export function ReceiptEditor({
       ...receipt,
       items: receipt.items.filter((i) => i.id !== id),
     });
+    if (editingId === id) setEditingId(null);
+  }
+
+  function startEdit(item: ParsedItem) {
+    setEditingId(item.id);
+    setEditName(item.name);
+    setEditPrice((item.price * item.quantity).toFixed(2));
+    setEditQty(item.quantity.toString());
+  }
+
+  function saveEdit() {
+    if (!editingId || !editName.trim()) return;
+    const totalPrice = parseFloat(editPrice);
+    const qty = Math.max(1, parseInt(editQty) || 1);
+    if (isNaN(totalPrice) || totalPrice < 0) return;
+    const unitPrice = qty > 1 ? Math.round((totalPrice / qty) * 100) / 100 : totalPrice;
+    onChange({
+      ...receipt,
+      items: receipt.items.map((i) =>
+        i.id === editingId ? { ...i, name: editName.trim(), price: unitPrice, quantity: qty } : i
+      ),
+    });
+    setEditingId(null);
+  }
+
+  function splitIntoIndividual(item: ParsedItem) {
+    if (item.quantity <= 1) return;
+    const newItems = Array.from({ length: item.quantity }, (_, idx) => ({
+      id: idx === 0 ? item.id : crypto.randomUUID(),
+      name: item.name,
+      price: item.price,
+      confidence: item.confidence,
+      quantity: 1,
+    }));
+    const index = receipt.items.findIndex((i) => i.id === item.id);
+    const updated = [...receipt.items];
+    updated.splice(index, 1, ...newItems);
+    onChange({ ...receipt, items: updated });
+    setEditingId(null);
   }
 
   function updateTax(value: string) {
@@ -94,29 +137,80 @@ export function ReceiptEditor({
       {/* Item list */}
       <div className="flex flex-col gap-2">
         {receipt.items.map((item, index) => (
-          <div
-            key={item.id}
-            className={`flex items-center justify-between p-3 rounded-xl ${
-              item.confidence < 0.7 ? "bg-[#FFF3E0] border border-orange-800" : "bg-[#F5EDE3]"
-            }`}
-          >
-            <div className="flex items-center gap-3 flex-1">
-              <span className="text-xs text-[#9C8E80] w-5">{index + 1}</span>
-              <span className="font-medium">
-                {item.quantity > 1 && <span className="text-[#9C8E80]">{item.quantity}× </span>}
-                {item.name}
-              </span>
+          editingId === item.id ? (
+            <div key={item.id} className="flex flex-col gap-2 p-3 rounded-xl bg-[#F5EDE3] border-2 border-[#E8613C]">
+              <input
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="px-3 py-2 rounded-lg bg-white text-sm font-medium outline-none"
+                autoFocus
+              />
+              <div className="flex gap-2">
+                <div className="flex items-center gap-1 flex-1">
+                  <span className="text-xs text-[#9C8E80]">Qty</span>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min="1"
+                    value={editQty}
+                    onChange={(e) => setEditQty(e.target.value)}
+                    className="w-12 px-2 py-1 rounded-lg bg-white text-sm text-center outline-none"
+                  />
+                </div>
+                <div className="flex items-center gap-1 flex-1">
+                  <span className="text-xs text-[#9C8E80]">Total $</span>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={editPrice}
+                    onChange={(e) => setEditPrice(e.target.value.replace(/[^0-9.]/g, ""))}
+                    className="w-20 px-2 py-1 rounded-lg bg-white text-sm text-right font-bold outline-none"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={saveEdit} className="flex-1 py-2 rounded-lg text-white text-sm font-medium gradient-bg">
+                  Save
+                </button>
+                {item.quantity > 1 && (
+                  <button
+                    onClick={() => splitIntoIndividual(item)}
+                    className="flex-1 py-2 rounded-lg text-sm font-medium border border-[#E8613C] text-[#E8613C]"
+                  >
+                    Split into {item.quantity} items
+                  </button>
+                )}
+                <button onClick={() => setEditingId(null)} className="px-3 py-2 text-sm text-[#9C8E80]">
+                  Cancel
+                </button>
+              </div>
             </div>
-            <span className="font-bold text-[#F4A261] ml-3">
-              ${(item.price * item.quantity).toFixed(2)}
-            </span>
-            <button
-              onClick={() => removeItem(item.id)}
-              className="ml-3 text-[#9C8E80] hover:text-[#E8613C] transition-colors text-sm"
+          ) : (
+            <div
+              key={item.id}
+              onClick={() => startEdit(item)}
+              className={`flex items-center justify-between p-3 rounded-xl cursor-pointer hover:ring-1 hover:ring-[#E8613C] transition-all ${
+                item.confidence < 0.7 ? "bg-[#FFF3E0] border border-orange-800" : "bg-[#F5EDE3]"
+              }`}
             >
-              ✕
-            </button>
-          </div>
+              <div className="flex items-center gap-3 flex-1">
+                <span className="text-xs text-[#9C8E80] w-5">{index + 1}</span>
+                <span className="font-medium">
+                  {item.name}{item.quantity > 1 && <span className="text-[#9C8E80]"> ({item.quantity}×)</span>}
+                </span>
+              </div>
+              <span className="font-bold text-[#F4A261] ml-3">
+                ${(item.price * item.quantity).toFixed(2)}
+              </span>
+              <button
+                onClick={(e) => { e.stopPropagation(); removeItem(item.id); }}
+                className="ml-3 text-[#9C8E80] hover:text-[#E8613C] transition-colors text-sm"
+              >
+                ✕
+              </button>
+            </div>
+          )
         ))}
 
         {/* Add item input */}
