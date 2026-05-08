@@ -159,6 +159,7 @@ export function BillSplitter({ bill: initialBill, onBack }: { bill: Bill; onBack
         bill={bill}
         splits={splits}
         settledIds={settledIds}
+        partnerPair={partnerPair}
         onPayment={handlePayment}
         onCopy={(split) => {
           copyToClipboard(split.total.toFixed(2));

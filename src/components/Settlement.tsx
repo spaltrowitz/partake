@@ -44,6 +44,7 @@ export function Settlement({
   bill,
   splits,
   settledIds,
+  partnerPair,
   onPayment,
   onCopy,
   onDone,
@@ -51,12 +52,17 @@ export function Settlement({
   bill: Bill;
   splits: BillSplit[];
   settledIds: Set<string>;
+  partnerPair?: { payerId: string; partnerId: string } | null;
   onPayment: (split: BillSplit) => void;
   onCopy: (split: BillSplit) => void;
   onDone: () => void;
 }) {
   const allSettled =
     splits.filter((s) => s.total > 0).every((s) => settledIds.has(s.participantId));
+
+  // Find partner info for display
+  const partnerName = partnerPair ? bill.participants.find(p => p.id === partnerPair.partnerId)?.name : null;
+  const payerName = partnerPair ? bill.participants.find(p => p.id === partnerPair.payerId)?.name : null;
 
   return (
     <div className="p-4 pb-safe overflow-y-auto">
@@ -70,14 +76,19 @@ export function Settlement({
       <div className="flex flex-col gap-4">
         {splits.map((split) => {
           const originalIndex = bill.participants.findIndex((p) => p.id === split.participantId);
+          const isPayerWithPartner = partnerPair && split.participantId === partnerPair.payerId;
           return (
           <Card key={split.participantId}>
             <div className="flex items-center gap-3 mb-3">
               <Avatar name={split.participantName} index={originalIndex} size={40} />
               <div className="flex-1">
-                <p className="font-semibold">{split.participantName}</p>
+                <p className="font-semibold">
+                  {split.participantName}
+                  {isPayerWithPartner && <span className="text-xs text-[#9C8E80] ml-1">+ {partnerName}</span>}
+                </p>
                 <p className="text-xs text-[#9C8E80]">
                   {split.items.length} item{split.items.length !== 1 && "s"}
+                  {isPayerWithPartner && ` (covering ${partnerName})`}
                 </p>
               </div>
               <span className="text-xl font-bold">
@@ -89,12 +100,15 @@ export function Settlement({
             <div className="text-xs text-[#9C8E80] space-y-1 mb-3">
               {split.items.map((item) => {
                 const lineTotal = item.price * item.quantity;
+                const yourShare = item.claimedBy.length > 1
+                  ? lineTotal / item.claimedBy.length
+                  : lineTotal;
                 return (
                 <div key={item.id} className="flex justify-between">
-                  <span>{item.quantity > 1 ? `${item.quantity}× ` : ""}{item.name}</span>
+                  <span>{item.name}</span>
                   <span>
                     {item.claimedBy.length > 1
-                      ? `$${(lineTotal / item.claimedBy.length).toFixed(2)} (split ${item.claimedBy.length} ways)`
+                      ? `$${yourShare.toFixed(2)} / $${lineTotal.toFixed(2)}`
                       : `$${lineTotal.toFixed(2)}`}
                   </span>
                 </div>
@@ -106,7 +120,9 @@ export function Settlement({
                 <span>${split.taxShare.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span>Tip</span>
+                <span>Tip{split.itemsSubtotal > 0 && bill.tipAmount > 0
+                  ? ` (${Math.round((split.tipShare / split.itemsSubtotal) * 100)}%)`
+                  : ""}</span>
                 <span>${split.tipShare.toFixed(2)}</span>
               </div>
             </div>
@@ -151,6 +167,20 @@ export function Settlement({
           </Card>
           );
         })}
+
+        {/* Partner card — shows "Covered by X" */}
+        {partnerPair && partnerName && payerName && (
+          <Card>
+            <div className="flex items-center gap-3">
+              <Avatar name={partnerName} index={bill.participants.findIndex(p => p.id === partnerPair.partnerId)} size={40} />
+              <div className="flex-1">
+                <p className="font-semibold">{partnerName}</p>
+                <p className="text-xs text-[#9C8E80]">Covered by {payerName} 👫</p>
+              </div>
+              <span className="text-lg font-bold text-[#2E7D32]">$0.00</span>
+            </div>
+          </Card>
+        )}
       </div>
 
       {/* Share summary */}
