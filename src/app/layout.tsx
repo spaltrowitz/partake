@@ -15,11 +15,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Partake — Split the bill in seconds",
-  description: "Snap your receipt, claim what you ordered, and send payment requests — no app needed.",
+  description: "Snap your receipt, claim what you ordered, and send payment requests ",
   manifest: "/manifest.json",
   openGraph: {
     title: "Partake — Split the bill in seconds",
-    description: "Snap your receipt, claim what you ordered, and send payment requests — no app needed.",
+    description: "Snap your receipt, claim what you ordered, and send payment requests ",
     siteName: "Partake",
     type: "website",
     url: "https://partake-app.vercel.app",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary",
     title: "Partake — Split the bill in seconds",
-    description: "Snap your receipt, claim what you ordered, and send payment requests — no app needed.",
+    description: "Snap your receipt, claim what you ordered, and send payment requests ",
   },
   appleWebApp: {
     capable: true,

@@ -198,7 +198,7 @@ export default function Home() {
           Split the bill in seconds.
         </p>
         <p className="text-sm text-[#9C8E80] text-center max-w-xs">
-          Snap your receipt, claim what you ordered, and send payment requests — no app needed.
+          Snap your receipt, claim what you ordered, and send payment requests.
         </p>
         <PrimaryButton onClick={() => {
           // Clear active session for a fresh start
