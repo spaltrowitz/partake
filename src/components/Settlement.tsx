@@ -90,12 +90,15 @@ export function Settlement({
       </div>
 
       {payableSplits.length > 1 && (
-        <button
-          onClick={handleRequestAll}
-          className="w-full py-3 mb-4 rounded-xl text-white font-semibold gradient-bg hover:opacity-90 transition-opacity"
-        >
-          Request all {payableSplits.length} via Venmo
-        </button>
+        <div className="mb-4">
+          <button
+            onClick={handleRequestAll}
+            className="w-full py-3 rounded-xl text-white font-semibold gradient-bg hover:opacity-90 transition-opacity"
+          >
+            Request all {payableSplits.length} via Venmo
+          </button>
+          <p className="text-xs text-[#9C8E80] text-center mt-1">Best on desktop — mobile may only open the first</p>
+        </div>
       )}
 
       <div className="flex flex-col gap-4">
