@@ -29,6 +29,7 @@ export default function Home() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [billHistory, setBillHistory] = useState<Bill[]>([]);
   const [showRescanConfirm, setShowRescanConfirm] = useState(false);
+  const [rescanReason, setRescanReason] = useState("");
   const [myProfile, setMyProfile] = useState<UserProfile | null>(null);
   const { user, loading: authLoading } = useAuthContext();
 
@@ -500,26 +501,55 @@ export default function Home() {
           }}
           className="text-sm text-[#9C8E80] mb-4"
         >
-          ← Re-scan or re-enter
+          ← Re-scan
         </button>
 
         {showRescanConfirm && (
           <div className="mb-4 p-4 bg-[#F5EDE3] rounded-xl flex flex-col gap-3">
-            <p className="text-sm font-medium">This will replace your current items. Continue?</p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => { setShowRescanConfirm(false); setStep("scan"); }}
-                className="flex-1 py-2 rounded-full text-white font-semibold gradient-bg text-sm"
-              >
-                Yes, re-scan
-              </button>
-              <button
-                onClick={() => setShowRescanConfirm(false)}
-                className="flex-1 py-2 rounded-full border border-[#E8DDD0] text-sm font-medium text-[#9C8E80]"
-              >
-                Cancel
-              </button>
+            <p className="text-sm font-medium">What went wrong?</p>
+            <div className="flex flex-wrap gap-2">
+              {["Wrong items", "Wrong prices", "Missing items", "Couldn\u0027t read it", "Other"].map((reason) => (
+                <button
+                  key={reason}
+                  onClick={() => setRescanReason(reason)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    rescanReason === reason
+                      ? "gradient-bg text-white"
+                      : "bg-white border border-[#E8DDD0] text-[#9C8E80]"
+                  }`}
+                >
+                  {reason}
+                </button>
+              ))}
             </div>
+            <button
+              onClick={() => {
+                // Submit feedback if reason selected
+                if (rescanReason) {
+                  fetch("/api/feedback", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      category: "bug",
+                      summary: `Re-scan: ${rescanReason}`,
+                      details: `Restaurant: ${receipt.restaurantName || "unknown"}, Items: ${receipt.items.length}`,
+                    }),
+                  }).catch(() => {});
+                }
+                setShowRescanConfirm(false);
+                setRescanReason("");
+                setStep("scan");
+              }}
+              className="w-full py-2 rounded-full text-white font-semibold gradient-bg text-sm"
+            >
+              Re-scan
+            </button>
+            <button
+              onClick={() => { setShowRescanConfirm(false); setRescanReason(""); }}
+              className="text-sm text-[#9C8E80] text-center"
+            >
+              Cancel
+            </button>
           </div>
         )}
         <h1 className="text-2xl font-bold mb-4">Review the receipt</h1>
