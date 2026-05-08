@@ -72,6 +72,7 @@ export function BillSplitter({ bill: initialBill, onBack }: { bill: Bill; onBack
 
   const effectiveBill = (() => {
     if (!partnerPair) return bill;
+    // Roll partner's claimed items into payer's claims
     const updatedItems = bill.items.map((item) => {
       if (item.claimedBy.includes(partnerPair.partnerId)) {
         const withoutPartner = item.claimedBy.filter((id) => id !== partnerPair.partnerId);
@@ -82,11 +83,16 @@ export function BillSplitter({ bill: initialBill, onBack }: { bill: Bill; onBack
       }
       return item;
     });
-    return { ...bill, items: updatedItems };
+    // Remove partner from participants — payer covers for both
+    const updatedParticipants = bill.participants.filter(
+      (p) => p.id !== partnerPair.partnerId
+    );
+    return { ...bill, items: updatedItems, participants: updatedParticipants };
   })();
 
   const splits = (() => {
-    const b = splitMethod === "itemized" ? effectiveBill : bill;
+    // Always use effectiveBill — it has partner removed when paired
+    const b = effectiveBill;
     switch (splitMethod) {
       case "even":
         return calculateEvenSplit(b);
@@ -198,7 +204,7 @@ export function BillSplitter({ bill: initialBill, onBack }: { bill: Bill; onBack
           />
         )}
         {splitMethod === "even" && (
-          <EvenSplitView total={bill.total} participantCount={bill.participants.length} />
+          <EvenSplitView total={bill.total} participantCount={effectiveBill.participants.length} />
         )}
         {splitMethod === "percentage" && (
           <PercentageSplitView
