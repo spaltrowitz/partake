@@ -262,6 +262,23 @@ export default function Home() {
           </button>
         )}
 
+        <button
+          onClick={() => {
+            const text = "Split bills instantly — just scan the receipt 🧾";
+            const url = "https://partake-app.vercel.app";
+            if (navigator.share) {
+              navigator.share({ title: "Partake", text, url }).catch(() => {});
+            } else {
+              navigator.clipboard?.writeText(`${text}\n${url}`).then(() => {
+                alert("Link copied!");
+              }).catch(() => {});
+            }
+          }}
+          className="text-sm text-[#E8613C] font-medium mt-4"
+        >
+          📤 Share Partake with a friend
+        </button>
+
         <footer className="mt-8 pt-4 border-t border-[#E8DFD4] w-full max-w-md text-center">
           <div className="flex justify-center gap-4 text-xs text-[#C4B5A6]">
             <a href="/privacy" className="hover:text-[#9C8E80] transition-colors">Privacy</a>

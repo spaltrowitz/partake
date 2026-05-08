@@ -15,19 +15,28 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Partake — Split the bill in seconds",
-  description: "Snap your receipt, claim what you ordered, and send payment requests ",
+  description: "Scan your receipt, claim what you ordered, and send payment requests.",
   manifest: "/manifest.json",
   openGraph: {
-    title: "Partake — Split the bill in seconds",
-    description: "Snap your receipt, claim what you ordered, and send payment requests ",
+    title: "Partake",
+    description: "Split the bill in seconds. Scan • Claim • Pay.",
     siteName: "Partake",
     type: "website",
     url: "https://partake-app.vercel.app",
+    images: [
+      {
+        url: "https://partake-app.vercel.app/api/og",
+        width: 1200,
+        height: 630,
+        alt: "Partake — Split the bill in seconds",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
-    title: "Partake — Split the bill in seconds",
-    description: "Snap your receipt, claim what you ordered, and send payment requests ",
+    card: "summary_large_image",
+    title: "Partake",
+    description: "Split the bill in seconds. Scan • Claim • Pay.",
+    images: ["https://partake-app.vercel.app/api/og"],
   },
   appleWebApp: {
     capable: true,
