@@ -39,16 +39,19 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (step === "participants" && myProfile && !participants.some(p => p.name.toLowerCase() === myProfile.name.toLowerCase())) {
-      const paymentHandle = (myProfile.venmoUsername || myProfile.cashAppUsername || "").replace(/^@/, "");
-      const isCashApp = paymentHandle.startsWith("$");
-      setParticipants(prev => [{
-        id: crypto.randomUUID(),
-        name: myProfile.name,
-        venmoUsername: !isCashApp && paymentHandle ? paymentHandle : undefined,
-        cashAppUsername: isCashApp ? paymentHandle : undefined,
-        isAppUser: true,
-      }, ...prev]);
+    if (step === "participants" && myProfile) {
+      setParticipants(prev => {
+        if (prev.some(p => p.name.toLowerCase() === myProfile.name.toLowerCase())) return prev;
+        const paymentHandle = (myProfile.venmoUsername || myProfile.cashAppUsername || "").replace(/^@/, "");
+        const isCashApp = paymentHandle.startsWith("$");
+        return [{
+          id: crypto.randomUUID(),
+          name: myProfile.name,
+          venmoUsername: !isCashApp && paymentHandle ? paymentHandle : undefined,
+          cashAppUsername: isCashApp ? paymentHandle : undefined,
+          isAppUser: true,
+        }, ...prev];
+      });
     }
   }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -408,7 +411,15 @@ export default function Home() {
 
         <div className="mt-8">
           <PrimaryButton
-            onClick={createBill}
+            onClick={() => {
+              if (bill) {
+                // Returning from split — update participants on existing bill
+                setBill({ ...bill, participants });
+                setStep("split");
+              } else {
+                createBill();
+              }
+            }}
             disabled={participants.length < 1 || authLoading}
           >
             Start splitting
