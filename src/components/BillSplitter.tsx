@@ -153,7 +153,7 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt }: { bil
   }
 
   function handlePayment(split: BillSplit) {
-    const note = `🧾 ${bill.name || "Bill split"} — Split with Partake: https://partake-app.vercel.app`;
+    const note = `🧾 ${bill.name || "Bill split"} via Partake`;
     // Save state before navigating away to Venmo
     try { localStorage.setItem("partake_active_session", JSON.stringify({ bill })); } catch {}
     if (split.venmoUsername) {
