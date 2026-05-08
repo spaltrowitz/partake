@@ -9,7 +9,7 @@ import { PrimaryButton } from "@/components/UI";
 import { Avatar } from "@/components/Avatar";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { getSavedContacts, saveAllParticipantsAsContacts } from "@/services/localContacts";
-import { getBillHistory, saveBillToHistory } from "@/services/billHistory";
+import { getBillHistory, saveBillToHistory, deleteBillFromHistory } from "@/services/billHistory";
 import { getUserProfile, saveUserProfile } from "@/services/userProfile";
 import type { UserProfile } from "@/services/userProfile";
 import { useAuthContext } from "@/components/AuthProvider";
@@ -197,19 +197,33 @@ export default function Home() {
             <h2 className="text-sm font-semibold text-[#9C8E80] mb-3">Recent bills</h2>
             <div className="flex flex-col gap-2">
               {billHistory.slice(0, 5).map((b) => (
-                <button
+                <div
                   key={b.id}
-                  onClick={() => { setBill(b); setParticipants(b.participants); setStep("split"); }}
-                  className="flex items-center justify-between p-3 bg-[#FFFFFF] rounded-xl hover:bg-[#F5EDE3] transition-colors text-left"
+                  className="flex items-center gap-2 bg-[#FFFFFF] rounded-xl hover:bg-[#F5EDE3] transition-colors"
                 >
-                  <div>
-                    <p className="font-medium text-sm">{b.name || "Untitled bill"}</p>
-                    <p className="text-xs text-[#9C8E80]">
-                      {b.participants.length} people · {new Date(b.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <span className="font-bold text-sm">${b.total.toFixed(2)}</span>
-                </button>
+                  <button
+                    onClick={() => { setBill(b); setParticipants(b.participants); setStep("split"); }}
+                    className="flex items-center justify-between flex-1 p-3 text-left"
+                  >
+                    <div>
+                      <p className="font-medium text-sm">{b.name || "Untitled bill"}</p>
+                      <p className="text-xs text-[#9C8E80]">
+                        {b.participants.length} people · {new Date(b.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <span className="font-bold text-sm">${b.total.toFixed(2)}</span>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteBillFromHistory(b.id);
+                      setBillHistory(prev => prev.filter(bill => bill.id !== b.id));
+                    }}
+                    className="p-3 text-[#9C8E80] hover:text-[#E8613C] transition-colors text-sm"
+                  >
+                    ✕
+                  </button>
+                </div>
               ))}
             </div>
           </div>
@@ -295,12 +309,11 @@ export default function Home() {
         >
           ← Back to receipt
         </button>
-        <h1 className="text-2xl font-bold mb-6 text-center">Who&apos;s splitting?</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">Who&apos;s in?</h1>
 
         {/* Current participants */}
         {participants.length > 0 && (
           <div className="mb-6">
-            <p className="text-sm text-[#9C8E80] mb-2 text-center">Splitting with</p>
             <div className="flex flex-wrap gap-2 justify-center">
               {participants.map((p) => (
                 <span
@@ -439,7 +452,7 @@ export default function Home() {
             }}
             disabled={participants.length < 1 || authLoading}
           >
-            Start splitting
+            Split the bill
           </PrimaryButton>
           {participants.length < 1 && (
             <p className="text-xs text-[#9C8E80] text-center mt-2">
@@ -516,7 +529,7 @@ export default function Home() {
             onClick={() => setStep("participants")}
             disabled={receipt.items.length === 0}
           >
-            Next: Who&apos;s splitting?
+            Next: Who&apos;s in?
           </PrimaryButton>
         </div>
       </main>
