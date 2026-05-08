@@ -13,7 +13,7 @@ import { SharesSplitView } from "./SharesSplitView";
 import { ExactSplitView } from "./ExactSplitView";
 import { TipSelector } from "./TipSelector";
 import { Settlement } from "./Settlement";
-import { PartnerPairSelector } from "./PartnerPairSelector";
+import { PartnerGroupSelector } from "./PartnerPairSelector";
 
 export function BillSplitter({ bill: initialBill, onBack }: { bill: Bill; onBack?: () => void }) {
   const [bill, setBill] = useState(initialBill);
@@ -34,7 +34,7 @@ export function BillSplitter({ bill: initialBill, onBack }: { bill: Bill; onBack
   const [exactAmounts, setExactAmounts] = useState<Record<string, number>>(() =>
     Object.fromEntries(bill.participants.map((p) => [p.id, 0]))
   );
-  const [partnerPair, setPartnerPair] = useState<{ payerId: string; partnerId: string } | null>(null);
+  const [payingGroups, setPayingGroups] = useState<{ payerId: string; memberIds: string[] }[]>([]);
 
   // Sync bill when participants change (e.g., user goes back and adds someone)
   useEffect(() => {
@@ -71,21 +71,29 @@ export function BillSplitter({ bill: initialBill, onBack }: { bill: Bill; onBack
   }, [initialBill]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const effectiveBill = (() => {
-    if (!partnerPair) return bill;
-    // Roll partner's claimed items into payer's claims
-    const updatedItems = bill.items.map((item) => {
-      if (item.claimedBy.includes(partnerPair.partnerId)) {
-        const withoutPartner = item.claimedBy.filter((id) => id !== partnerPair.partnerId);
-        if (!withoutPartner.includes(partnerPair.payerId)) {
-          withoutPartner.push(partnerPair.payerId);
-        }
-        return { ...item, claimedBy: withoutPartner };
+    if (payingGroups.length === 0) return bill;
+
+    let updatedItems = [...bill.items];
+    const excludedIds = new Set<string>();
+
+    for (const group of payingGroups) {
+      for (const memberId of group.memberIds) {
+        excludedIds.add(memberId);
+        updatedItems = updatedItems.map((item) => {
+          if (item.claimedBy.includes(memberId)) {
+            const without = item.claimedBy.filter((id) => id !== memberId);
+            if (!without.includes(group.payerId)) {
+              without.push(group.payerId);
+            }
+            return { ...item, claimedBy: without };
+          }
+          return item;
+        });
       }
-      return item;
-    });
-    // Remove partner from participants — payer covers for both
+    }
+
     const updatedParticipants = bill.participants.filter(
-      (p) => p.id !== partnerPair.partnerId
+      (p) => !excludedIds.has(p.id)
     );
     return { ...bill, items: updatedItems, participants: updatedParticipants };
   })();
@@ -159,7 +167,7 @@ export function BillSplitter({ bill: initialBill, onBack }: { bill: Bill; onBack
         bill={bill}
         splits={splits}
         settledIds={settledIds}
-        partnerPair={partnerPair}
+        payingGroups={payingGroups}
         onPayment={handlePayment}
         onCopy={(split) => {
           copyToClipboard(split.total.toFixed(2));
@@ -189,10 +197,10 @@ export function BillSplitter({ bill: initialBill, onBack }: { bill: Bill; onBack
         />
       )}
 
-      <PartnerPairSelector
+      <PartnerGroupSelector
         participants={bill.participants}
-        partnerPair={partnerPair}
-        onSetPartnerPair={setPartnerPair}
+        payingGroups={payingGroups}
+        onSetPayingGroups={setPayingGroups}
       />
 
       <div className="flex-1 overflow-y-auto p-4">
