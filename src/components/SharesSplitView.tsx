@@ -25,7 +25,7 @@ export function SharesSplitView({
         const proportion = totalShares > 0 ? (shares[p.id] ?? 0) / totalShares : 0;
         return (
           <div key={p.id} className="flex items-center gap-3 p-3 bg-[#F5EDE3] rounded-lg">
-            <Avatar name={p.name} index={i} size={32} />
+            <Avatar name={p.name} index={i} size={32} allNames={participants.map(pp => pp.name)} />
             <span className="flex-1 font-medium text-sm">{p.name}</span>
             <div className="flex items-center gap-1">
               <button

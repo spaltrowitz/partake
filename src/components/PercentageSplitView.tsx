@@ -23,7 +23,7 @@ export function PercentageSplitView({
       </p>
       {participants.map((p, i) => (
         <div key={p.id} className="flex items-center gap-3 p-3 bg-[#F5EDE3] rounded-lg">
-          <Avatar name={p.name} index={i} size={32} />
+          <Avatar name={p.name} index={i} size={32} allNames={participants.map(pp => pp.name)} />
           <span className="flex-1 font-medium text-sm">{p.name}</span>
           <input
             type="number"

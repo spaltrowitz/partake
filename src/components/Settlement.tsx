@@ -108,7 +108,7 @@ export function Settlement({
           return (
           <Card key={split.participantId}>
             <div className="flex items-center gap-3 mb-3">
-              <Avatar name={split.participantName} index={originalIndex} size={40} />
+              <Avatar name={split.participantName} index={originalIndex} size={40} allNames={bill.participants.map(p => p.name)} />
               <div className="flex-1">
                 <p className="font-semibold">
                   {split.participantName}

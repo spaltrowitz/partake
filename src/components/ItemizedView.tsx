@@ -32,7 +32,7 @@ export function ItemizedParticipantBar({
                 : undefined
             }
           >
-            <Avatar name={p.name} index={i} size={48} />
+            <Avatar name={p.name} index={i} size={48} allNames={participants.map(pp => pp.name)} />
           </div>
           <span
             className={`text-xs truncate max-w-[64px] ${
