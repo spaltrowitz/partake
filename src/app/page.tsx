@@ -29,7 +29,7 @@ export default function Home() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [billHistory, setBillHistory] = useState<Bill[]>([]);
   const [showRescanConfirm, setShowRescanConfirm] = useState(false);
-  const [rescanReason, setRescanReason] = useState("");
+  const [rescanReasons, setRescanReasons] = useState<string[]>([]);
   const [myProfile, setMyProfile] = useState<UserProfile | null>(null);
   const { user, loading: authLoading } = useAuthContext();
 
@@ -523,14 +523,16 @@ export default function Home() {
 
         {showRescanConfirm && (
           <div className="mb-4 p-4 bg-[#F5EDE3] rounded-xl flex flex-col gap-3">
-            <p className="text-sm font-medium">What went wrong?</p>
+            <p className="text-sm font-medium">What went wrong? (select all that apply)</p>
             <div className="flex flex-wrap gap-2">
               {["Wrong items", "Wrong prices", "Missing items", "Couldn\u0027t read it", "Other"].map((reason) => (
                 <button
                   key={reason}
-                  onClick={() => setRescanReason(reason)}
+                  onClick={() => setRescanReasons(prev => 
+                    prev.includes(reason) ? prev.filter(r => r !== reason) : [...prev, reason]
+                  )}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                    rescanReason === reason
+                    rescanReasons.includes(reason)
                       ? "gradient-bg text-white"
                       : "bg-white border border-[#E8DDD0] text-[#9C8E80]"
                   }`}
@@ -541,20 +543,19 @@ export default function Home() {
             </div>
             <button
               onClick={() => {
-                // Submit feedback if reason selected
-                if (rescanReason) {
+                if (rescanReasons.length > 0) {
                   fetch("/api/feedback", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                       category: "bug",
-                      summary: `Re-scan: ${rescanReason}`,
+                      summary: `Re-scan: ${rescanReasons.join(", ")}`,
                       details: `Restaurant: ${receipt.restaurantName || "unknown"}, Items: ${receipt.items.length}`,
                     }),
                   }).catch(() => {});
                 }
                 setShowRescanConfirm(false);
-                setRescanReason("");
+                setRescanReasons([]);
                 setStep("scan");
               }}
               className="w-full py-2 rounded-full text-white font-semibold gradient-bg text-sm"
@@ -562,7 +563,7 @@ export default function Home() {
               Re-scan
             </button>
             <button
-              onClick={() => { setShowRescanConfirm(false); setRescanReason(""); }}
+              onClick={() => { setShowRescanConfirm(false); setRescanReasons([]); }}
               className="text-sm text-[#9C8E80] text-center"
             >
               Cancel
