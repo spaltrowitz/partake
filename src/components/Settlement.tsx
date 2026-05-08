@@ -45,6 +45,7 @@ export function Settlement({
   splits,
   settledIds,
   payingGroups,
+  myName,
   onPayment,
   onCopy,
   onDone,
@@ -53,6 +54,7 @@ export function Settlement({
   splits: BillSplit[];
   settledIds: Set<string>;
   payingGroups?: { payerId: string; memberIds: string[] }[];
+  myName?: string;
   onPayment: (split: BillSplit) => void;
   onCopy: (split: BillSplit) => void;
   onDone: () => void;
@@ -62,9 +64,10 @@ export function Settlement({
 
   const groups = payingGroups ?? [];
 
-  // Splits that have a payment app and owe money (for "Request all")
+  // Splits that have a payment app and owe money (for "Request all") — exclude yourself
   const payableSplits = splits.filter((s) => {
     if (s.total <= 0 || settledIds.has(s.participantId)) return false;
+    if (myName && s.participantName.toLowerCase() === myName.toLowerCase()) return false;
     const participant = bill.participants.find((p) => p.id === s.participantId);
     return !!(s.venmoUsername || participant?.cashAppUsername);
   });
@@ -154,8 +157,8 @@ export function Settlement({
               </div>
             </div>
 
-            {/* Payment action */}
-            {split.total > 0 && (
+            {/* Payment action — skip for yourself */}
+            {split.total > 0 && !(myName && split.participantName.toLowerCase() === myName.toLowerCase()) && (
               <>
                 {(() => {
                   const participant = bill.participants.find((p) => p.id === split.participantId);
@@ -190,6 +193,9 @@ export function Settlement({
                   );
                 })()}
               </>
+            )}
+            {myName && split.participantName.toLowerCase() === myName.toLowerCase() && split.total > 0 && (
+              <p className="text-xs text-[#9C8E80] text-center py-1">Your share</p>
             )}
           </Card>
           );

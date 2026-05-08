@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import type { Bill, BillSplit, SplitMethod } from "@/types";
 import { calculateSplits, calculateEvenSplit, calculatePercentageSplit, calculateSharesSplit, calculateExactSplit } from "@/services/splitCalculator";
 import { requestPayment, copyToClipboard } from "@/services/venmo";
+import { getUserProfile } from "@/services/userProfile";
 import { PrimaryButton } from "./UI";
 import { SplitMethodSelector } from "./SplitMethodSelector";
 import { ItemizedView, ItemizedParticipantBar } from "./ItemizedView";
@@ -147,7 +148,7 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt }: { bil
   }
 
   function handlePayment(split: BillSplit) {
-    const note = `Partake: ${bill.name || "Bill split"}`;
+    const note = `🧾 ${bill.name || "Bill split"} — Partake`;
     if (split.venmoUsername) {
       requestPayment("venmo", split.venmoUsername, split.total, note);
     } else {
@@ -168,6 +169,7 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt }: { bil
         splits={splits}
         settledIds={settledIds}
         payingGroups={payingGroups}
+        myName={getUserProfile()?.name}
         onPayment={handlePayment}
         onCopy={(split) => {
           copyToClipboard(split.total.toFixed(2));
