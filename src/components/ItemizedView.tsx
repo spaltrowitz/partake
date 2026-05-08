@@ -60,8 +60,17 @@ export function ItemizedView({
   selectedParticipant: string;
   onToggleClaim: (itemId: string) => void;
 }) {
+  const unclaimedCount = items.filter((item) => item.claimedBy.length === 0).length;
+
   return (
     <>
+      {unclaimedCount > 0 && (
+        <p className="text-sm text-[#E8613C] mb-3 text-center font-medium">
+          {unclaimedCount === items.length
+            ? "Tap each item to assign it to someone"
+            : `${unclaimedCount} item${unclaimedCount !== 1 ? "s" : ""} still need to be claimed`}
+        </p>
+      )}
       <p className="text-xs text-[#9C8E80] mb-3">
         Select a person above, then tap their items. Tap the same item for multiple people to split it.
       </p>
@@ -120,13 +129,6 @@ export function ItemizedView({
           );
         })}
       </div>
-      {items.some((item) => item.claimedBy.length === 0) && (
-        <p className="text-sm text-[#E8613C] mt-4 text-center font-medium">
-          {items.filter((item) => item.claimedBy.length === 0).length === items.length
-            ? "Tap each item to assign it to someone"
-            : `${items.filter((item) => item.claimedBy.length === 0).length} item${items.filter((item) => item.claimedBy.length === 0).length !== 1 ? "s" : ""} still need to be claimed`}
-        </p>
-      )}
     </>
   );
 }
