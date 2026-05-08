@@ -26,14 +26,42 @@ export function ReceiptScanner({
     try {
       const lines = await recognizeText(file);
 
-      if (lines.length > 0) {
-        const receipt = parseReceiptText(lines);
-        onReceipt(receipt);
-      } else {
-        setError(
-          "Couldn't read that one. Try a clearer pic or just type it in — no judgment."
-        );
+      if (lines.length === 0) {
+        setError("Couldn't detect any text. Make sure the receipt is in focus and well-lit.");
+        return;
       }
+
+      const receipt = parseReceiptText(lines);
+
+      // Quality checks — give specific feedback instead of bad results
+      const issues: string[] = [];
+
+      if (receipt.items.length === 0 && !receipt.subtotal && !receipt.total) {
+        setError("Couldn't find any items or totals. Try:\n• Better lighting (avoid shadows)\n• Flatten the receipt\n• Get closer to the text");
+        return;
+      }
+
+      if (receipt.items.length === 0 && (receipt.subtotal || receipt.total)) {
+        issues.push("Found totals but no items — the item text may be hard to read");
+      }
+
+      if (receipt.items.some(i => i.confidence < 0.7)) {
+        issues.push("Some items may be misread — tap to edit any that look wrong");
+      }
+
+      const itemSum = receipt.items.reduce((s, i) => s + i.price * i.quantity, 0);
+      if (receipt.subtotal && Math.abs(itemSum - receipt.subtotal) > 2) {
+        issues.push("Item prices don't add up to the subtotal — some may be missing or misread");
+      }
+
+      if (issues.length > 0) {
+        setProgress("");
+        // Still show the results but with a warning
+        onReceipt(receipt);
+        return;
+      }
+
+      onReceipt(receipt);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Try again or type it in manually.");
     } finally {
@@ -69,10 +97,10 @@ export function ReceiptScanner({
           </p>
 
           {error && (
-            <div className="flex flex-col items-center gap-3">
-              <p className="text-sm text-orange-600 bg-orange-50 p-3 rounded-lg text-center">
+            <div className="flex flex-col items-center gap-3 w-full max-w-xs">
+              <div className="text-sm text-orange-600 bg-orange-50 p-4 rounded-xl text-left w-full whitespace-pre-line">
                 {error}
-              </p>
+              </div>
               <SecondaryButton onClick={handleManualEntry}>
                 Type it in instead
               </SecondaryButton>
