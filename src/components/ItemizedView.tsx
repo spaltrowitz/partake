@@ -61,9 +61,10 @@ export function ItemizedView({
   participants: Participant[];
   selectedParticipant: string;
   onToggleClaim: (itemId: string) => void;
-  onSplitItem?: (itemId: string) => void;
+  onSplitItem?: (itemId: string, count: number) => void;
 }) {
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
+  const [splitCount, setSplitCount] = useState(2);
   const unclaimedCount = items.filter((item) => item.claimedBy.length === 0).length;
 
   return (
@@ -134,19 +135,36 @@ export function ItemizedView({
               {/* Split option for quantity items */}
               {item.quantity > 1 && onSplitItem && (
                 <button
-                  onClick={(e) => { e.stopPropagation(); setExpandedItem(isExpanded ? null : item.id); }}
+                  onClick={(e) => { e.stopPropagation(); setExpandedItem(isExpanded ? null : item.id); setSplitCount(item.quantity); }}
                   className="w-full text-xs text-[#9C8E80] py-1 hover:text-[#E8613C] transition-colors"
                 >
-                  {isExpanded ? "Cancel" : `Need to split these ${item.quantity} individually?`}
+                  {isExpanded ? "Cancel" : `Need to split these individually?`}
                 </button>
               )}
               {isExpanded && item.quantity > 1 && onSplitItem && (
-                <button
-                  onClick={() => { onSplitItem(item.id); setExpandedItem(null); }}
-                  className="w-full py-2 mb-1 rounded-lg border border-[#E8613C] text-[#E8613C] text-sm font-medium hover:bg-[#FFF3E0] transition-colors"
-                >
-                  Split into {item.quantity} separate items
-                </button>
+                <div className="p-3 mb-1 rounded-lg bg-[#F5EDE3] flex flex-col gap-2">
+                  <p className="text-xs text-[#9C8E80]">How many portions? (receipt says {item.quantity}, but you can change it)</p>
+                  <div className="flex items-center justify-center gap-3">
+                    <button
+                      onClick={() => setSplitCount(Math.max(2, splitCount - 1))}
+                      className="w-9 h-9 rounded-full bg-white border border-[#E8DDD0] text-sm font-bold"
+                    >−</button>
+                    <span className="text-lg font-bold w-8 text-center">{splitCount}</span>
+                    <button
+                      onClick={() => setSplitCount(splitCount + 1)}
+                      className="w-9 h-9 rounded-full bg-white border border-[#E8DDD0] text-sm font-bold"
+                    >+</button>
+                  </div>
+                  <p className="text-xs text-[#9C8E80] text-center">
+                    ${(item.price * item.quantity).toFixed(2)} ÷ {splitCount} = <strong>${((item.price * item.quantity) / splitCount).toFixed(2)} each</strong>
+                  </p>
+                  <button
+                    onClick={() => { onSplitItem(item.id, splitCount); setExpandedItem(null); }}
+                    className="w-full py-2 rounded-lg text-white text-sm font-semibold gradient-bg"
+                  >
+                    Split into {splitCount} × ${((item.price * item.quantity) / splitCount).toFixed(2)}
+                  </button>
+                </div>
               )}
             </div>
           );

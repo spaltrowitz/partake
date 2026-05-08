@@ -487,7 +487,24 @@ export default function Home() {
     );
   }
 
-  // Edit receipt
+  // Edit receipt — reconstruct from bill if receipt is null (e.g., loaded from history)
+  if (step === "edit" && !receipt && bill) {
+    setReceipt({
+      items: bill.items.map((i) => ({
+        id: i.id,
+        name: i.name,
+        price: i.price,
+        confidence: 1,
+        quantity: i.quantity,
+      })),
+      tax: bill.tax,
+      tip: bill.tipAmount,
+      subtotal: bill.subtotal,
+      total: bill.total,
+      restaurantName: bill.restaurantName,
+    });
+  }
+
   if (step === "edit" && receipt) {
     return (
       <main className="min-h-dvh p-6 max-w-md mx-auto">
@@ -571,7 +588,7 @@ export default function Home() {
     return (
       <main className="min-h-dvh max-w-md mx-auto">
         <ErrorBoundary>
-          <BillSplitter bill={bill} onBack={() => setStep("participants")} />
+          <BillSplitter bill={bill} onBack={() => setStep("participants")} onEditReceipt={() => setStep("edit")} />
         </ErrorBoundary>
       </main>
     );

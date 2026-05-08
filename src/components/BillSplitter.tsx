@@ -15,7 +15,7 @@ import { TipSelector } from "./TipSelector";
 import { Settlement } from "./Settlement";
 import { PartnerGroupSelector } from "./PartnerPairSelector";
 
-export function BillSplitter({ bill: initialBill, onBack }: { bill: Bill; onBack?: () => void }) {
+export function BillSplitter({ bill: initialBill, onBack, onEditReceipt }: { bill: Bill; onBack?: () => void; onEditReceipt?: () => void }) {
   const [bill, setBill] = useState(initialBill);
   const [splitMethod, setSplitMethod] = useState<SplitMethod>("itemized");
   const [selectedParticipant, setSelectedParticipant] = useState<string>(
@@ -181,10 +181,15 @@ export function BillSplitter({ bill: initialBill, onBack }: { bill: Bill; onBack
   return (
     <div className="flex flex-col h-full">
       {onBack && (
-        <div className="p-3 bg-[#FFFFFF]">
+        <div className="p-3 bg-[#FFFFFF] flex justify-between">
           <button onClick={onBack} className="text-sm text-[#9C8E80]">
             ← Back to people
           </button>
+          {onEditReceipt && (
+            <button onClick={onEditReceipt} className="text-sm text-[#E8613C]">
+              Edit items
+            </button>
+          )}
         </div>
       )}
       <SplitMethodSelector splitMethod={splitMethod} onSelect={setSplitMethod} />
@@ -210,14 +215,16 @@ export function BillSplitter({ bill: initialBill, onBack }: { bill: Bill; onBack
             participants={bill.participants}
             selectedParticipant={selectedParticipant}
             onToggleClaim={toggleClaim}
-            onSplitItem={(itemId) => {
+            onSplitItem={(itemId, count) => {
               setBill((prev) => {
                 const item = prev.items.find((i) => i.id === itemId);
                 if (!item || item.quantity <= 1) return prev;
-                const newItems = Array.from({ length: item.quantity }, (_, idx) => ({
+                const totalPrice = item.price * item.quantity;
+                const perItemPrice = Math.round((totalPrice / count) * 100) / 100;
+                const newItems = Array.from({ length: count }, (_, idx) => ({
                   id: idx === 0 ? item.id : crypto.randomUUID(),
                   name: item.name,
-                  price: item.price,
+                  price: perItemPrice,
                   claimedBy: idx === 0 ? item.claimedBy : [],
                   quantity: 1,
                 }));
