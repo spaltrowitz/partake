@@ -101,5 +101,5 @@ When the owner corrects or refines squad output during a session, capture the co
 
 ## Model
 
-- **Preferred:** claude-haiku-4.5
+- **Preferred:** gpt-5.5
 - **Rationale:** Logging and merging is mechanical work. Haiku is cost-effective and fast.
