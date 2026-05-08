@@ -64,6 +64,22 @@ export function Settlement({
   const partnerName = partnerPair ? bill.participants.find(p => p.id === partnerPair.partnerId)?.name : null;
   const payerName = partnerPair ? bill.participants.find(p => p.id === partnerPair.payerId)?.name : null;
 
+  // Splits that have a payment app and owe money (for "Request all")
+  const payableSplits = splits.filter((s) => {
+    if (s.total <= 0 || settledIds.has(s.participantId)) return false;
+    const participant = bill.participants.find((p) => p.id === s.participantId);
+    return !!(s.venmoUsername || participant?.cashAppUsername);
+  });
+
+  function handleRequestAll() {
+    // Open each payment request with a small delay to avoid popup blocking
+    payableSplits.forEach((split, i) => {
+      setTimeout(() => {
+        onPayment(split);
+      }, i * 500);
+    });
+  }
+
   return (
     <div className="p-4 pb-safe overflow-y-auto">
       <div className="text-center mb-6">
@@ -72,6 +88,15 @@ export function Settlement({
         </h2>
         <p className="text-[#9C8E80]">${bill.total.toFixed(2)} total</p>
       </div>
+
+      {payableSplits.length > 1 && (
+        <button
+          onClick={handleRequestAll}
+          className="w-full py-3 mb-4 rounded-xl text-white font-semibold gradient-bg hover:opacity-90 transition-opacity"
+        >
+          Request all {payableSplits.length} via Venmo
+        </button>
+      )}
 
       <div className="flex flex-col gap-4">
         {splits.map((split) => {

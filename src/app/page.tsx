@@ -429,8 +429,9 @@ export default function Home() {
           <PrimaryButton
             onClick={() => {
               if (bill) {
-                // Returning from split — update participants on existing bill
-                setBill({ ...bill, participants });
+                const updatedBill = { ...bill, participants };
+                setBill(updatedBill);
+                saveBillToHistory(updatedBill);
                 setStep("split");
               } else {
                 createBill();
