@@ -24,7 +24,12 @@ function ensureDb() {
 // Bills
 export async function saveBill(bill: Bill): Promise<void> {
   ensureDb();
-  await setDoc(doc(db, "bills", bill.id), bill);
+  // Serialize Date to ISO string for Firestore compatibility
+  const data = {
+    ...bill,
+    createdAt: bill.createdAt instanceof Date ? bill.createdAt.toISOString() : bill.createdAt,
+  };
+  await setDoc(doc(db, "bills", bill.id), data);
 }
 
 export async function getBill(id: string): Promise<Bill | null> {

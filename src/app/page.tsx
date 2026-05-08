@@ -135,7 +135,10 @@ export default function Home() {
 
     setBill(newBill);
     saveBillToHistory(newBill);
-    saveBill(newBill).catch((err) => console.warn("Cloud sync failed:", err));
+    // Save to Firestore — retry once if auth not ready
+    saveBill(newBill).catch(() => {
+      setTimeout(() => saveBill(newBill).catch((err) => console.warn("Cloud sync failed:", err)), 2000);
+    });
     saveAllParticipantsAsContacts(participants);
     setStep("split");
   }

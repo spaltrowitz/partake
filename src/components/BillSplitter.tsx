@@ -71,9 +71,13 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt }: { bil
     });
   }, [initialBill]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Persist bill state so it survives Venmo redirect
+  // Persist bill state so it survives Venmo redirect + sync to Firestore
   useEffect(() => {
     try { localStorage.setItem("partake_active_session", JSON.stringify({ bill })); } catch {}
+    // Sync claims to Firestore for shared links
+    import("@/services/firestore").then(({ saveBill }) => {
+      saveBill(bill).catch(() => {});
+    }).catch(() => {});
   }, [bill]);
 
   const effectiveBill = (() => {
