@@ -38,12 +38,12 @@ export async function POST(req: NextRequest) {
         title,
         body,
         labels: [label, "squad"],
-        assignees: ["copilot"],
       }),
     });
 
     if (!res.ok) {
       const err = await res.json();
+      console.error("GitHub API error:", err);
       throw new Error(err.message || "GitHub API error");
     }
 
@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url: issue.html_url });
   } catch (error) {
     console.error("Feedback error:", error);
-    return NextResponse.json({ error: "Failed to submit feedback" }, { status: 500 });
+    const msg = error instanceof Error ? error.message : "Failed to submit feedback";
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
