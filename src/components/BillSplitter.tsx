@@ -71,6 +71,11 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt }: { bil
     });
   }, [initialBill]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Persist bill state so it survives Venmo redirect
+  useEffect(() => {
+    try { localStorage.setItem("partake_active_session", JSON.stringify({ bill })); } catch {}
+  }, [bill]);
+
   const effectiveBill = (() => {
     if (payingGroups.length === 0) return bill;
 
@@ -148,7 +153,9 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt }: { bil
   }
 
   function handlePayment(split: BillSplit) {
-    const note = `🧾 ${bill.name || "Bill split"} — Partake`;
+    const note = `🧾 ${bill.name || "Bill split"} — Split with Partake: https://partake-app.vercel.app`;
+    // Save state before navigating away to Venmo
+    try { localStorage.setItem("partake_active_session", JSON.stringify({ bill })); } catch {}
     if (split.venmoUsername) {
       requestPayment("venmo", split.venmoUsername, split.total, note);
     } else {

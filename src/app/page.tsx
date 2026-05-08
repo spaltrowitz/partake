@@ -37,6 +37,19 @@ export default function Home() {
     setSavedContacts(getSavedContacts());
     setBillHistory(getBillHistory());
     setMyProfile(getUserProfile());
+
+    // Restore active session (e.g., after Venmo redirect)
+    try {
+      const saved = localStorage.getItem("partake_active_session");
+      if (saved) {
+        const session = JSON.parse(saved);
+        if (session.bill) {
+          setBill({ ...session.bill, createdAt: new Date(session.bill.createdAt) });
+          setParticipants(session.bill.participants);
+          setStep("split");
+        }
+      }
+    } catch {}
   }, []);
 
   useEffect(() => {
@@ -187,7 +200,14 @@ export default function Home() {
         <p className="text-sm text-[#9C8E80] text-center max-w-xs">
           Snap your receipt, claim what you ordered, and send payment requests — no app needed.
         </p>
-        <PrimaryButton onClick={() => setStep("scan")} className="max-w-xs">
+        <PrimaryButton onClick={() => {
+          // Clear active session for a fresh start
+          try { localStorage.removeItem("partake_active_session"); } catch {}
+          setBill(null);
+          setReceipt(null);
+          setParticipants([]);
+          setStep("scan");
+        }} className="max-w-xs">
           Scan the receipt
         </PrimaryButton>
 
