@@ -25,6 +25,7 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome 
   );
   const [showSettlement, setShowSettlement] = useState(false);
   const [settledIds, setSettledIds] = useState<Set<string>>(new Set());
+  const [claimLockError, setClaimLockError] = useState<string | null>(null);
   const [customTipMode, setCustomTipMode] = useState(false);
   const [percentages, setPercentages] = useState<Record<string, number>>(() => {
     const even = 100 / bill.participants.length;
@@ -37,6 +38,7 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome 
     Object.fromEntries(bill.participants.map((p) => [p.id, 0]))
   );
   const [payingGroups, setPayingGroups] = useState<{ payerId: string; memberIds: string[] }[]>([]);
+  const claimsLocked = bill.status === "settled";
 
   // Sync bill when participants change (e.g., user goes back and adds someone)
   useEffect(() => {
@@ -128,6 +130,7 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome 
 
   const toggleClaim = useCallback(
     (itemId: string) => {
+      if (claimsLocked) return;
       setBill((prev) => {
         const items = prev.items.map((item) => {
           if (item.id !== itemId) return item;
@@ -142,8 +145,22 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome 
         return { ...prev, items };
       });
     },
-    [selectedParticipant]
+    [claimsLocked, selectedParticipant]
   );
+
+  async function lockClaims(): Promise<boolean> {
+    if (bill.status === "settled") return true;
+    const lockedBill = { ...bill, status: "settled" as const };
+    setBill(lockedBill);
+    try {
+      const { saveBill } = await import("@/services/firestore");
+      await saveBill(lockedBill);
+      return true;
+    } catch (error) {
+      console.error("Failed to persist claim lock state", error);
+      return false;
+    }
+  }
 
   function updateTip(percent: number) {
     setBill((prev) => {
@@ -157,7 +174,13 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome 
     });
   }
 
-  function handlePayment(split: BillSplit) {
+  async function handlePayment(split: BillSplit) {
+    const locked = await lockClaims();
+    if (!locked) {
+      setClaimLockError("Couldn't lock claims. Check your connection and try again.");
+      return;
+    }
+    setClaimLockError(null);
     const note = `🧾 ${bill.name || "Bill split"} via Partake`;
     // Save state before navigating away to Venmo
     try { localStorage.setItem("partake_active_session", JSON.stringify({ bill })); } catch {}
@@ -183,7 +206,13 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome 
         payingGroups={payingGroups}
         myName={getUserProfile()?.name}
         onPayment={handlePayment}
-        onCopy={(split) => {
+        onCopy={async (split) => {
+          const locked = await lockClaims();
+          if (!locked) {
+            setClaimLockError("Couldn't lock claims. Check your connection and try again.");
+            return;
+          }
+          setClaimLockError(null);
           copyToClipboard(split.total.toFixed(2));
           setSettledIds((prev) => new Set([...prev, split.participantId]));
         }}
@@ -243,7 +272,9 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome 
             participants={bill.participants}
             selectedParticipant={selectedParticipant}
             onToggleClaim={toggleClaim}
+            claimsLocked={claimsLocked}
             onSplitItem={(itemId, count) => {
+              if (claimsLocked) return;
               setBill((prev) => {
                 const item = prev.items.find((i) => i.id === itemId);
                 if (!item || item.quantity <= 1) return prev;
@@ -316,6 +347,14 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome 
           <span className="font-semibold">Total</span>
           <span className="text-xl font-bold">${bill.total.toFixed(2)}</span>
         </div>
+        {claimsLocked && (
+          <p className="text-xs text-[#9C8E80] mb-2">
+            Claims are locked because payment requests were already sent.
+          </p>
+        )}
+        {claimLockError && (
+          <p className="text-xs text-[#E8613C] mb-2">{claimLockError}</p>
+        )}
         <PrimaryButton onClick={() => setShowSettlement(true)}>
           See the split
         </PrimaryButton>

@@ -99,7 +99,7 @@ function SharedBillContent() {
 
   const toggleClaim = useCallback(
     async (item: BillItem) => {
-      if (!bill || !nameConfirmed || !guestName.trim()) return;
+      if (!bill || bill.status === "settled" || !nameConfirmed || !guestName.trim()) return;
       const name = guestName.trim();
       const isClaimed = item.claimedBy.includes(name);
       const updatedItems = bill.items.map((i) =>
@@ -157,6 +157,7 @@ function SharedBillContent() {
   if (!bill) return null;
 
   const owes = calculateOwes(bill);
+  const claimsLocked = bill.status === "settled";
 
   return (
     <div className="min-h-dvh flex flex-col p-4 max-w-lg mx-auto w-full">
@@ -209,6 +210,11 @@ function SharedBillContent() {
       )}
 
       {/* Items */}
+      {claimsLocked && (
+        <Card className="mb-3">
+          <p className="text-sm text-[#9C8E80]">Claims are locked because payment requests were already sent.</p>
+        </Card>
+      )}
       <div className="flex flex-col gap-2 mb-6">
         {bill.items.map((item) => {
           const isMine = nameConfirmed && item.claimedBy.includes(guestName.trim());
@@ -217,12 +223,12 @@ function SharedBillContent() {
             <button
               key={item.id}
               onClick={() => toggleClaim(item)}
-              disabled={!nameConfirmed}
+              disabled={!nameConfirmed || claimsLocked}
               className={`w-full text-left p-3 rounded-xl border transition-colors touch-target ${
                 isMine
                   ? "bg-[#F5EDE3] border-[#E8613C]"
                   : "bg-[#FFFFFF] border-[#F5EDE3] hover:border-[#9C8E80]"
-              } disabled:opacity-60`}
+              } disabled:opacity-60 disabled:cursor-not-allowed`}
             >
               <div className="flex justify-between items-start">
                 <div className="flex-1">

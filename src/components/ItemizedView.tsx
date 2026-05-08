@@ -56,12 +56,14 @@ export function ItemizedView({
   selectedParticipant,
   onToggleClaim,
   onSplitItem,
+  claimsLocked = false,
 }: {
   items: BillItem[];
   participants: Participant[];
   selectedParticipant: string;
   onToggleClaim: (itemId: string) => void;
   onSplitItem?: (itemId: string, count: number) => void;
+  claimsLocked?: boolean;
 }) {
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const [splitCount, setSplitCount] = useState(2);
@@ -91,11 +93,12 @@ export function ItemizedView({
             <div key={item.id}>
               <button
                 onClick={() => onToggleClaim(item.id)}
+                disabled={claimsLocked}
                 className={`w-full flex items-center justify-between p-3 rounded-lg transition-all text-left ${
                   isClaimed
                     ? "bg-[#E8F5E9]"
                     : "bg-[#F5EDE3] hover:bg-[#F5EDE3]"
-                } ${isClaimed ? "pop-animation" : ""}`}
+                } ${isClaimed ? "pop-animation" : ""} ${claimsLocked ? "opacity-70 cursor-not-allowed" : ""}`}
               >
                 <div className="flex-1">
                   <p className="font-medium">
@@ -135,13 +138,14 @@ export function ItemizedView({
               {/* Split option for quantity items */}
               {item.quantity > 1 && onSplitItem && (
                 <button
+                  disabled={claimsLocked}
                   onClick={(e) => { e.stopPropagation(); setExpandedItem(isExpanded ? null : item.id); setSplitCount(item.quantity); }}
-                  className="w-full text-xs text-[#9C8E80] py-1 hover:text-[#E8613C] transition-colors"
+                  className="w-full text-xs text-[#9C8E80] py-1 hover:text-[#E8613C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isExpanded ? "Cancel" : `Need to split these individually?`}
                 </button>
               )}
-              {isExpanded && item.quantity > 1 && onSplitItem && (
+              {isExpanded && !claimsLocked && item.quantity > 1 && onSplitItem && (
                 <div className="p-3 mb-1 rounded-lg bg-[#F5EDE3] flex flex-col gap-2">
                   <p className="text-xs text-[#9C8E80]">How many portions? (receipt says {item.quantity}, but you can change it)</p>
                   <div className="flex items-center justify-center gap-3">
