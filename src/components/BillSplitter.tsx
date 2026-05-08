@@ -225,13 +225,23 @@ export function BillSplitter({ bill: initialBill, onBack }: { bill: Bill; onBack
           />
         )}
 
-        <TipSelector
-          tipPercent={bill.tipPercent}
-          tipAmount={bill.tipAmount}
-          customTipMode={customTipMode}
-          onSelectTip={(pct) => { updateTip(pct); setCustomTipMode(false); }}
-          onEnableCustom={() => setCustomTipMode(true)}
-        />
+        {bill.tipAmount > 0 && bill.tipPercent === undefined ? (
+          // Tip was pre-filled from receipt — show read-only
+          <div className="mt-6">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-[#9C8E80]">Tip (from receipt)</span>
+              <span className="font-semibold">${bill.tipAmount.toFixed(2)}</span>
+            </div>
+          </div>
+        ) : (
+          <TipSelector
+            tipPercent={bill.tipPercent}
+            tipAmount={bill.tipAmount}
+            customTipMode={customTipMode}
+            onSelectTip={(pct) => { updateTip(pct); setCustomTipMode(false); }}
+            onEnableCustom={() => setCustomTipMode(true)}
+          />
+        )}
       </div>
 
       <div className="px-4 pt-4 pb-safe border-t border-[#F5EDE3] bg-[#FBF8F4]">

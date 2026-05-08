@@ -110,7 +110,7 @@ export default function Home() {
       subtotal,
       tax,
       tipAmount,
-      tipPercent,
+      tipPercent: receipt.tip !== undefined ? undefined : tipPercent,
       total: Math.round((subtotal + tax + tipAmount) * 100) / 100,
       participants,
       createdBy: user?.uid ?? "local",

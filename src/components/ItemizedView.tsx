@@ -83,7 +83,9 @@ export function ItemizedView({
               } ${isClaimed ? "pop-animation" : ""}`}
             >
               <div className="flex-1">
-                <p className="font-medium">{item.name}</p>
+                <p className="font-medium">
+                  {item.name}{item.quantity > 1 && <span className="text-[#9C8E80]"> ({item.quantity}×)</span>}
+                </p>
                 {claimerNames.length > 0 && (
                   <div className="flex items-center gap-1 mt-1">
                     <div className="flex -space-x-1">
@@ -109,19 +111,20 @@ export function ItemizedView({
                 )}
               </div>
               <span className="font-semibold ml-4">
-                {item.quantity > 1 && <span className="text-xs text-[#9C8E80] mr-1">{item.quantity}×</span>}
                 ${(item.price * item.quantity).toFixed(2)}
               </span>
-              <span className="ml-3 text-xl">
-                {isClaimed ? "✅" : "⭕"}
+              <span className="ml-3 text-lg">
+                {isClaimed ? "✓" : "○"}
               </span>
             </button>
           );
         })}
       </div>
       {items.some((item) => item.claimedBy.length === 0) && (
-        <p className="text-xs text-orange-400 mt-3 text-center">
-          ⚠ {items.filter((item) => item.claimedBy.length === 0).length} unclaimed item{items.filter((item) => item.claimedBy.length === 0).length !== 1 ? "s" : ""} won&apos;t be included in the split
+        <p className="text-sm text-[#E8613C] mt-4 text-center font-medium">
+          {items.filter((item) => item.claimedBy.length === 0).length === items.length
+            ? "Tap each item to assign it to someone"
+            : `${items.filter((item) => item.claimedBy.length === 0).length} item${items.filter((item) => item.claimedBy.length === 0).length !== 1 ? "s" : ""} still need to be claimed`}
         </p>
       )}
     </>
