@@ -20,7 +20,7 @@ export function PartnerPairSelector({
     return (
       <div className="mx-4 my-2 p-3 bg-[#F5EDE3] rounded-xl">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium">👫 Couple mode</span>
+          <span className="text-sm font-medium">👫 Paying together</span>
           <button
             onClick={() => onSetPartnerPair(null)}
             className="text-xs text-[#E8613C] font-medium py-1 px-2"
@@ -70,7 +70,7 @@ export function PartnerPairSelector({
         }}
         className="w-full py-2.5 px-4 rounded-xl border border-dashed border-[#E8DDD0] text-sm text-[#9C8E80] hover:bg-[#F5EDE3] transition-colors"
       >
-        👫 Someone covering for another?
+        👫 Paying together? Combine two tabs
       </button>
     </div>
   );

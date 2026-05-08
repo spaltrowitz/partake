@@ -181,12 +181,6 @@ export function BillSplitter({ bill: initialBill, onBack }: { bill: Bill; onBack
       )}
       <SplitMethodSelector splitMethod={splitMethod} onSelect={setSplitMethod} />
 
-      <PartnerPairSelector
-        participants={bill.participants}
-        partnerPair={partnerPair}
-        onSetPartnerPair={setPartnerPair}
-      />
-
       {splitMethod === "itemized" && (
         <ItemizedParticipantBar
           participants={bill.participants}
@@ -195,6 +189,12 @@ export function BillSplitter({ bill: initialBill, onBack }: { bill: Bill; onBack
         />
       )}
 
+      <PartnerPairSelector
+        participants={bill.participants}
+        partnerPair={partnerPair}
+        onSetPartnerPair={setPartnerPair}
+      />
+
       <div className="flex-1 overflow-y-auto p-4">
         {splitMethod === "itemized" && (
           <ItemizedView
@@ -202,6 +202,23 @@ export function BillSplitter({ bill: initialBill, onBack }: { bill: Bill; onBack
             participants={bill.participants}
             selectedParticipant={selectedParticipant}
             onToggleClaim={toggleClaim}
+            onSplitItem={(itemId) => {
+              setBill((prev) => {
+                const item = prev.items.find((i) => i.id === itemId);
+                if (!item || item.quantity <= 1) return prev;
+                const newItems = Array.from({ length: item.quantity }, (_, idx) => ({
+                  id: idx === 0 ? item.id : crypto.randomUUID(),
+                  name: item.name,
+                  price: item.price,
+                  claimedBy: idx === 0 ? item.claimedBy : [],
+                  quantity: 1,
+                }));
+                const index = prev.items.findIndex((i) => i.id === itemId);
+                const updated = [...prev.items];
+                updated.splice(index, 1, ...newItems);
+                return { ...prev, items: updated };
+              });
+            }}
           />
         )}
         {splitMethod === "even" && (
