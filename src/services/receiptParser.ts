@@ -49,12 +49,15 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed) continue;
-    // Skip decorative lines (all dashes, asterisks, equals)
     if (/^[\-=*_~.#]{3,}$/.test(trimmed)) continue;
     if (!extractPrice(trimmed)) {
-      restaurantName = trimmed
-        .replace(/^[\-=*_~.#\s]+|[\-=*_~.#\s]+$/g, "") // strip decorations
+      const raw = trimmed
+        .replace(/^[\-=*_~.#\s]+|[\-=*_~.#\s]+$/g, "")
         .trim();
+      // Title-case if all caps (common in OCR output)
+      restaurantName = /^[A-Z\s\-'&]+$/.test(raw)
+        ? raw.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())
+        : raw;
       break;
     }
     break;
@@ -329,7 +332,14 @@ function cleanItemName(text: string): string {
   // Remove parenthesized percentages like "(50% off)"
   name = name.replace(/\(\d+%\s*off\)/i, "");
 
-  return name.trim();
+  name = name.trim();
+
+  // Title-case if all caps
+  if (/^[A-Z\s\-'&]+$/.test(name) && name.length > 2) {
+    name = name.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
+  return name;
 }
 
 function extractQuantity(text: string): number {

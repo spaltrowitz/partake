@@ -44,7 +44,7 @@ describe("receiptParser - real-world receipt formats", () => {
     expect(r.subtotal).toBeCloseTo(97, 0);
     expect(r.tax).toBeCloseTo(8.63, 1);
     expect(r.total).toBeCloseTo(105.63, 1);
-    expect(r.restaurantName).toBe("THE DEAD RABBIT");
+    expect(r.restaurantName).toBe("The Dead Rabbit");
   });
 
   it("Sushi restaurant with shared plates", () => {
