@@ -442,8 +442,33 @@ export default function Home() {
         <div className="mt-8">
           <PrimaryButton
             onClick={() => {
-              if (bill) {
-                const updatedBill = { ...bill, participants };
+              if (bill && receipt) {
+                // Rebuild items from receipt (user may have edited them)
+                const items: BillItem[] = receipt.items.map((p) => {
+                  // Preserve existing claims if item ID matches
+                  const existing = bill.items.find((i) => i.id === p.id);
+                  return {
+                    id: p.id,
+                    name: p.name,
+                    price: p.price,
+                    claimedBy: existing?.claimedBy ?? [],
+                    quantity: p.quantity,
+                  };
+                });
+                const rawSubtotal = receipt.subtotal ?? items.reduce((s, i) => s + i.price * i.quantity, 0);
+                const discount = receipt.discount ?? 0;
+                const subtotal = Math.max(0, rawSubtotal - discount);
+                const tax = receipt.tax ?? 0;
+                const tipAmount = receipt.tip ?? Math.round(subtotal * tipPercent) / 100;
+                const updatedBill = {
+                  ...bill,
+                  items,
+                  subtotal,
+                  tax,
+                  tipAmount,
+                  total: Math.round((subtotal + tax + tipAmount) * 100) / 100,
+                  participants,
+                };
                 setBill(updatedBill);
                 saveBillToHistory(updatedBill);
                 setStep("split");
