@@ -107,7 +107,7 @@ export function FeedbackWidget({ trigger }: { trigger?: "floating" | "inline" } 
                   type="text"
                   value={summary}
                   onChange={(e) => setSummary(e.target.value)}
-                  placeholder={selectedCategory?.placeholder ?? "What's on your mind?"}
+                  placeholder={selectedCategory?.placeholder ?? ""}
                   className="w-full px-4 py-3 rounded-lg border border-[#F5EDE3] bg-white
                     text-[#2D2319] placeholder:text-[#9C8E80] focus:outline-none focus:border-[#E8613C] mb-3"
                 />
