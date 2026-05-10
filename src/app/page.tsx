@@ -365,39 +365,66 @@ export default function Home() {
         <p className="text-sm text-[#9C8E80] text-center max-w-xs">
           Snap your receipt, claim what you ordered, and send payment requests.
         </p>
-        <div className="w-full max-w-md rounded-2xl bg-white border border-[#F5EDE3] p-4 text-center shadow-sm">
+        <div className="w-full max-w-md overflow-hidden rounded-[1.75rem] border border-[#F5EDE3] bg-white shadow-lg shadow-[#2D2319]/5">
           {user && !user.isAnonymous ? (
-            <div className="flex items-center justify-between gap-3">
-              <div className="text-left min-w-0">
-                <p className="text-sm font-semibold text-[#2D2319] truncate">
-                  Signed in as {user.displayName ?? user.email ?? "Google user"}
-                </p>
-                <p className="text-xs text-[#9C8E80]">Bills and friends sync across devices.</p>
+            <div className="relative flex flex-col gap-4 bg-gradient-to-br from-white via-[#F8FFF7] to-[#F5EDE3] p-5 text-left">
+              <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-[#2E7D32]/10" />
+              <div className="pointer-events-none absolute -bottom-12 -left-10 h-24 w-24 rounded-full bg-[#FFD6A5]/45" />
+              <div className="relative flex items-start gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-xl shadow-sm shadow-[#2D2319]/10">
+                  ✓
+                </div>
+                <div className="min-w-0">
+                  <p className="text-base font-bold text-[#2D2319]">Sync is on</p>
+                  <p className="mt-1 truncate text-sm font-medium text-[#6F5F51]">
+                    {user.displayName ?? user.email ?? "Google account"}
+                  </p>
+                  <p className="mt-1 text-sm leading-5 text-[#6F5F51]">
+                    Your bill history and friends are saved for the next time you open Partake.
+                  </p>
+                </div>
               </div>
-              <button
-                onClick={handleSignOut}
-                className="text-xs text-[#9C8E80] hover:text-[#E8613C] font-medium"
-              >
-                Sign out
-              </button>
+              <div className="relative flex items-center justify-between gap-3 rounded-2xl border border-white/80 bg-white/70 px-3 py-2">
+                <span className="text-xs font-semibold text-[#2E7D32]">Connected with Google</span>
+                <button
+                  onClick={handleSignOut}
+                  className="rounded-full px-3 py-1.5 text-xs font-semibold text-[#6F5F51] transition-colors hover:bg-[#F5EDE3] hover:text-[#E8613C]"
+                >
+                  Sign out
+                </button>
+              </div>
             </div>
           ) : (
-            <div className="flex flex-col gap-2">
-              <p className="text-sm font-semibold text-[#2D2319]">Save bills across devices</p>
-              <p className="text-xs text-[#9C8E80]">
-                Keep using Partake anonymously, or sign in with Google to sync history and friends.
-              </p>
+            <div className="relative flex flex-col gap-4 bg-gradient-to-br from-white via-[#FFF7EF] to-[#F5EDE3] p-5 text-left">
+              <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-[#FFD6A5]/50" />
+              <div className="pointer-events-none absolute -bottom-12 -left-10 h-24 w-24 rounded-full bg-[#E8613C]/10" />
+              <div className="relative flex items-start gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-xl shadow-sm shadow-[#2D2319]/10">
+                  ☁️
+                </div>
+                <div>
+                  <p className="text-base font-bold text-[#2D2319]">Save bills across devices</p>
+                  <p className="mt-1 text-sm leading-5 text-[#6F5F51]">
+                    Keep splitting instantly as a guest, or connect Google to bring your history and friends with you.
+                  </p>
+                </div>
+              </div>
+              <div className="relative grid grid-cols-2 gap-2 text-xs font-medium text-[#6F5F51]">
+                <div className="rounded-2xl border border-white/80 bg-white/70 px-3 py-2">✓ Guest mode stays on</div>
+                <div className="rounded-2xl border border-white/80 bg-white/70 px-3 py-2">✓ Sync when you sign in</div>
+              </div>
               <button
                 onClick={handleGoogleSignIn}
                 disabled={authLoading || signingIn}
-                className="mt-1 w-full rounded-full border border-[#E8DDD0] bg-[#FBF8F4] px-4 py-3 text-sm font-semibold text-[#2D2319] hover:border-[#E8613C] disabled:opacity-50"
+                className="relative flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-bold text-[#2D2319] shadow-md shadow-[#2D2319]/10 ring-1 ring-[#E8DDD0] transition-all hover:-translate-y-0.5 hover:ring-[#E8613C] disabled:translate-y-0 disabled:opacity-50"
               >
+                <span className="flex h-6 w-6 items-center justify-center rounded-full border border-[#E8DDD0] bg-white text-sm">G</span>
                 {signingIn ? "Signing in..." : "Continue with Google"}
               </button>
             </div>
           )}
           {authError && (
-            <p className="mt-2 text-xs text-[#E8613C]">{authError}</p>
+            <p className="border-t border-[#F5EDE3] bg-white px-4 py-3 text-center text-xs text-[#E8613C]">{authError}</p>
           )}
         </div>
         <PrimaryButton onClick={() => {
