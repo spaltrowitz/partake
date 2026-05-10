@@ -6,7 +6,7 @@ import { calculateSplits, calculateEvenSplit, calculatePercentageSplit, calculat
 import { requestPayment, copyToClipboard } from "@/services/venmo";
 import { getUserProfile } from "@/services/userProfile";
 import { saveBillToHistory } from "@/services/billHistory";
-import { PrimaryButton } from "./UI";
+import { PrimaryButton, TopBarButton } from "./UI";
 import { SplitMethodSelector } from "./SplitMethodSelector";
 import { ItemizedView, ItemizedParticipantBar } from "./ItemizedView";
 import { EvenSplitView } from "./EvenSplitView";
@@ -309,32 +309,33 @@ export function BillSplitter({
   return (
     <div className="flex flex-col h-full">
       {onBack && (
-        <div className="p-3 bg-[#FFFFFF] flex justify-between">
+        <div className="p-3 bg-[#FFFFFF] flex items-center justify-between gap-3 border-b border-[#F5EDE3]">
           {claimsLocked ? (
-            <span className="text-sm text-[#9C8E80]">Locked</span>
+            <span className="inline-flex min-h-11 items-center rounded-full border border-[#E8DDD0] bg-[#F5EDE3] px-4 py-2 text-sm font-semibold text-[#6F5F51]">
+              Locked
+            </span>
           ) : (
-            <button onClick={onBack} className="text-sm text-[#9C8E80]">
+            <TopBarButton onClick={onBack}>
               ← Back to people
-            </button>
+            </TopBarButton>
           )}
-          <div className="flex gap-3">
+          <div className="flex flex-wrap justify-end gap-2">
             <FeedbackWidget />
             {onEditReceipt && !claimsLocked && (
-              <button onClick={onEditReceipt} className="text-sm text-[#E8613C]">
+              <TopBarButton onClick={onEditReceipt} variant="accent">
                 Edit items
-              </button>
+              </TopBarButton>
             )}
             {onHome && (
-              <button
+              <TopBarButton
                 onClick={() => {
                   if (confirm("Exit this bill? You can reopen it from Recent Bills.")) {
                     onHome();
                   }
                 }}
-                className="text-sm text-[#9C8E80]"
               >
                 ✕ Done
-              </button>
+              </TopBarButton>
             )}
           </div>
         </div>

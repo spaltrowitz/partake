@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { TopBarButton } from "./UI";
 
 type Category = "bug" | "idea" | "love";
 
@@ -56,13 +57,13 @@ export function FeedbackWidget() {
 
   return (
     <>
-      <button
+      <TopBarButton
         onClick={() => setOpen(true)}
-        className="text-sm text-[#9C8E80] hover:text-[#E8613C] transition-colors"
+        className="whitespace-nowrap"
         aria-label="Send feedback"
       >
         💬 Feedback
-      </button>
+      </TopBarButton>
 
       {open && (
         <div

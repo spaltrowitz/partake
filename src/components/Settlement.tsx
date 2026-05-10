@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { Bill, BillSplit } from "@/types";
 import { copyToClipboard } from "@/services/venmo";
 import { Avatar } from "./Avatar";
-import { Card } from "./UI";
+import { Card, TopBarButton } from "./UI";
 
 function ShareLinkButton({ shareCode, billName }: { shareCode: string; billName: string }) {
   const [copied, setCopied] = useState(false);
@@ -259,12 +259,12 @@ export function Settlement({
         </div>
       )}
 
-      <button
+      <TopBarButton
         onClick={onDone}
-        className="w-full mt-6 py-3 text-[#9C8E80] hover:text-[#2D2319]"
+        className="mt-6 w-full"
       >
         ← Back to bill
-      </button>
+      </TopBarButton>
     </div>
   );
 }

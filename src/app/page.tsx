@@ -5,7 +5,7 @@ import type { ParsedReceipt, Bill, BillItem, Participant, SavedContact, AppUser 
 import { ReceiptScanner } from "@/components/ReceiptScanner";
 import { ReceiptEditor } from "@/components/ReceiptEditor";
 import { BillSplitter } from "@/components/BillSplitter";
-import { PrimaryButton } from "@/components/UI";
+import { PrimaryButton, TopBarButton } from "@/components/UI";
 import { Avatar } from "@/components/Avatar";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { getSavedContacts, saveAllParticipantsAsContacts } from "@/services/localContacts";
@@ -538,7 +538,7 @@ export default function Home() {
               That&apos;s me
             </PrimaryButton>
           </div>
-          <button onClick={() => setStep("edit")} className="text-sm text-[#9C8E80]">← Back to receipt</button>
+          <TopBarButton onClick={() => setStep("edit")}>← Back to receipt</TopBarButton>
         </main>
       );
     }
@@ -549,12 +549,12 @@ export default function Home() {
 
     return (
       <main className="p-6 max-w-md mx-auto">
-        <button
+        <TopBarButton
           onClick={() => setStep("edit")}
-          className="text-sm text-[#9C8E80] mb-4"
+          className="mb-4"
         >
           ← Back to receipt
-        </button>
+        </TopBarButton>
         <h1 className="text-2xl font-bold mb-6 text-center">Who&apos;s in?</h1>
 
         {/* Current participants */}
@@ -746,12 +746,12 @@ export default function Home() {
   if (step === "scan") {
     return (
       <main className="min-h-dvh p-6 max-w-md mx-auto">
-        <button
+        <TopBarButton
           onClick={() => setStep("landing")}
-          className="text-sm text-[#9C8E80] mb-4"
+          className="mb-4"
         >
           ← Back
-        </button>
+        </TopBarButton>
         <ErrorBoundary>
           <ReceiptScanner
             onReceipt={(r) => {
@@ -767,7 +767,7 @@ export default function Home() {
   if (step === "edit" && receipt) {
     return (
       <main className="min-h-dvh p-6 max-w-md mx-auto">
-        <button
+        <TopBarButton
           onClick={() => {
             if (receipt.items.length > 0) {
               setShowRescanConfirm(true);
@@ -775,10 +775,10 @@ export default function Home() {
               setStep("scan");
             }
           }}
-          className="text-sm text-[#9C8E80] mb-4"
+          className="mb-4"
         >
           ← Re-scan
-        </button>
+        </TopBarButton>
 
         {showRescanConfirm && (
           <div className="mb-4 p-4 bg-[#F5EDE3] rounded-xl flex flex-col gap-3">
