@@ -14,7 +14,6 @@ const categories: { key: Category; emoji: string; label: string; placeholder: st
 export function FeedbackWidget() {
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState<Category | null>(null);
-  const [summary, setSummary] = useState("");
   const [details, setDetails] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -24,7 +23,6 @@ export function FeedbackWidget() {
 
   function reset() {
     setCategory(null);
-    setSummary("");
     setDetails("");
     setSubmitting(false);
     setSubmitted(false);
@@ -32,14 +30,14 @@ export function FeedbackWidget() {
   }
 
   async function handleSubmit() {
-    if (!category || !summary.trim()) return;
+    if (!category || !details.trim()) return;
     setSubmitting(true);
     setError(null);
     try {
       const response = await fetch("/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ category, summary: summary.trim(), details: details.trim() || undefined }),
+        body: JSON.stringify({ category, details: details.trim() }),
       });
       if (!response.ok) {
         throw new Error("Feedback request failed");
@@ -111,20 +109,11 @@ export function FeedbackWidget() {
                   ))}
                 </div>
 
-                <input
-                  type="text"
-                  value={summary}
-                  onChange={(e) => setSummary(e.target.value)}
-                  placeholder={selectedCategory?.placeholder ?? ""}
-                  className="w-full px-4 py-3 rounded-lg border border-[#F5EDE3] bg-white
-                    text-[#2D2319] placeholder:text-[#9C8E80] focus:outline-none focus:border-[#E8613C] mb-3"
-                />
-
                 <textarea
                   value={details}
                   onChange={(e) => setDetails(e.target.value)}
-                  placeholder="Any additional details?"
-                  rows={3}
+                  placeholder={selectedCategory?.placeholder ?? "Tell us what happened or what you want to see."}
+                  rows={4}
                   className="w-full px-4 py-3 rounded-lg border border-[#F5EDE3] bg-white
                     text-[#2D2319] placeholder:text-[#9C8E80] focus:outline-none focus:border-[#E8613C] mb-4 resize-none"
                 />
@@ -135,7 +124,7 @@ export function FeedbackWidget() {
 
                 <button
                   onClick={handleSubmit}
-                  disabled={!category || !summary.trim() || submitting}
+                  disabled={!category || !details.trim() || submitting}
                   className="w-full py-3 px-6 rounded-full text-white font-semibold gradient-bg
                     hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                 >

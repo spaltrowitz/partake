@@ -8,18 +8,24 @@ export async function POST(req: NextRequest) {
 
   try {
     const { category, summary, details } = await req.json();
-    if (!category || !summary) {
+    const detailsText = typeof details === "string" ? details.trim() : "";
+    const summaryText = typeof summary === "string" ? summary.trim() : "";
+
+    if (!category || (!summaryText && !detailsText)) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
     const emoji = category === "bug" ? "🐛" : category === "idea" ? "💡" : "💜";
     const label = category === "bug" ? "bug" : category === "idea" ? "enhancement" : "feedback";
+    const fallbackTitle =
+      category === "bug" ? "Bug report" : category === "idea" ? "Feature idea" : "Feedback";
+    const generatedSummary = summaryText || detailsText.split("\n")[0].slice(0, 80) || fallbackTitle;
 
-    const title = `${emoji} ${summary}`;
+    const title = `${emoji} ${generatedSummary}`;
     const body = [
       `**Category:** ${category}`,
-      `**Summary:** ${summary}`,
-      details ? `**Details:** ${details}` : "",
+      summaryText ? `**Summary:** ${summaryText}` : "",
+      detailsText ? `**Details:** ${detailsText}` : "",
       "",
       "---",
       "*Submitted via Partake feedback widget*",
