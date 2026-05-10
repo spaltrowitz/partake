@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { ParsedReceipt, Bill, BillItem, Participant, SavedContact } from "@/types";
+import type { ParsedReceipt, Bill, BillItem, Participant, SavedContact, AppUser } from "@/types";
 import { ReceiptScanner } from "@/components/ReceiptScanner";
 import { ReceiptEditor } from "@/components/ReceiptEditor";
 import { BillSplitter } from "@/components/BillSplitter";
@@ -13,7 +13,7 @@ import { getBillHistory, saveBillToHistory, deleteBillFromHistory } from "@/serv
 import { getUserProfile, saveUserProfile } from "@/services/userProfile";
 import type { UserProfile } from "@/services/userProfile";
 import { useAuthContext } from "@/components/AuthProvider";
-import { getContacts, getUserBills, saveBill, saveContact } from "@/services/firestore";
+import { getContacts, getUserBills, saveBill, saveContact, saveUser } from "@/services/firestore";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 
 type Step = "landing" | "participants" | "scan" | "edit" | "split";
@@ -134,10 +134,30 @@ export default function Home() {
   const [showRescanConfirm, setShowRescanConfirm] = useState(false);
   const [rescanReasons, setRescanReasons] = useState<string[]>([]);
   const [myProfile, setMyProfile] = useState<UserProfile | null>(initialState.myProfile);
-  const { user, loading: authLoading } = useAuthContext();
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [signingIn, setSigningIn] = useState(false);
+  const { user, loading: authLoading, signInWithGoogle, signOut } = useAuthContext();
+  const googleProfileName = user && !user.isAnonymous ? user.displayName : null;
+  const effectiveProfile = myProfile ?? (
+    googleProfileName ? { name: googleProfileName } : null
+  );
 
   useEffect(() => {
     if (!user) return;
+    if (!user.isAnonymous) {
+      const appUser: AppUser = {
+        id: user.uid,
+        displayName: user.displayName ?? myProfile?.name ?? "Partake user",
+        email: user.email ?? "",
+        avatarURL: user.photoURL ?? undefined,
+        partnerGroupIds: [],
+        createdAt: new Date(),
+      };
+      saveUser(appUser).catch(() => {});
+      if (!myProfile && user.displayName) {
+        saveUserProfile({ name: user.displayName });
+      }
+    }
     getContacts(user.uid)
       .then((cloudContacts) => {
         setSavedContacts((prev) => mergeContacts(prev, cloudContacts));
@@ -148,9 +168,33 @@ export default function Home() {
         setBillHistory((prev) => mergeBills(prev, cloudBills));
       })
       .catch(() => {});
-  }, [user]);
+  }, [user, myProfile]);
 
-  function ensureMyProfileParticipant(profile = myProfile) {
+  async function handleGoogleSignIn() {
+    setSigningIn(true);
+    setAuthError(null);
+    try {
+      const signedInUser = await signInWithGoogle();
+      if (signedInUser.displayName && !effectiveProfile) {
+        const profile = { name: signedInUser.displayName };
+        saveUserProfile(profile);
+        setMyProfile(profile);
+      }
+    } catch {
+      setAuthError("Couldn't sign in with Google. Check that Google is enabled in Firebase Auth.");
+    } finally {
+      setSigningIn(false);
+    }
+  }
+
+  async function handleSignOut() {
+    setAuthError(null);
+    await signOut().catch(() => {
+      setAuthError("Couldn't sign out. Please try again.");
+    });
+  }
+
+  function ensureMyProfileParticipant(profile = effectiveProfile) {
     if (!profile) return;
     setParticipants(prev => {
       if (prev.some(p => p.name.toLowerCase() === profile.name.toLowerCase())) return prev;
@@ -303,6 +347,41 @@ export default function Home() {
         <p className="text-sm text-[#9C8E80] text-center max-w-xs">
           Snap your receipt, claim what you ordered, and send payment requests.
         </p>
+        <div className="w-full max-w-md rounded-2xl bg-white border border-[#F5EDE3] p-4 text-center shadow-sm">
+          {user && !user.isAnonymous ? (
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-left min-w-0">
+                <p className="text-sm font-semibold text-[#2D2319] truncate">
+                  Signed in as {user.displayName ?? user.email ?? "Google user"}
+                </p>
+                <p className="text-xs text-[#9C8E80]">Bills and friends sync across devices.</p>
+              </div>
+              <button
+                onClick={handleSignOut}
+                className="text-xs text-[#9C8E80] hover:text-[#E8613C] font-medium"
+              >
+                Sign out
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-semibold text-[#2D2319]">Save bills across devices</p>
+              <p className="text-xs text-[#9C8E80]">
+                Keep using Partake anonymously, or sign in with Google to sync history and friends.
+              </p>
+              <button
+                onClick={handleGoogleSignIn}
+                disabled={authLoading || signingIn}
+                className="mt-1 w-full rounded-full border border-[#E8DDD0] bg-[#FBF8F4] px-4 py-3 text-sm font-semibold text-[#2D2319] hover:border-[#E8613C] disabled:opacity-50"
+              >
+                {signingIn ? "Signing in..." : "Continue with Google"}
+              </button>
+            </div>
+          )}
+          {authError && (
+            <p className="mt-2 text-xs text-[#E8613C]">{authError}</p>
+          )}
+        </div>
         <PrimaryButton onClick={() => {
           // Clear active session for a fresh start
           try { localStorage.removeItem("partake_active_session"); } catch {}
@@ -399,7 +478,7 @@ export default function Home() {
 
   // Participants
   if (step === "participants") {
-    if (!myProfile) {
+    if (!effectiveProfile) {
       return (
         <main className="p-6 max-w-md mx-auto">
           <h1 className="text-2xl font-bold mb-2 text-center">First, who are you?</h1>
@@ -470,7 +549,7 @@ export default function Home() {
                   className="flex items-center gap-1 bg-[#F5EDE3] px-3 py-1 rounded-full text-sm"
                 >
                   {p.name}
-                  {myProfile && p.name.toLowerCase() === myProfile.name.toLowerCase() && (
+                  {effectiveProfile && p.name.toLowerCase() === effectiveProfile.name.toLowerCase() && (
                     <span className="text-xs text-[#9C8E80]">(you)</span>
                   )}
                   {p.venmoUsername && (
