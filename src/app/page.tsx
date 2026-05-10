@@ -119,6 +119,24 @@ function contactsFromParticipants(participants: Participant[], createdBy: string
   }));
 }
 
+function getAuthErrorMessage(error: unknown): string {
+  const code = (error as { code?: string }).code;
+  switch (code) {
+    case "auth/unauthorized-domain":
+      return "Google sign-in is blocked because this domain is not authorized in Firebase. Add partake-app.vercel.app in Firebase Authentication > Settings > Authorized domains.";
+    case "auth/operation-not-allowed":
+      return "Google sign-in is not enabled in Firebase Authentication.";
+    case "auth/popup-closed-by-user":
+      return "Google sign-in was closed before it finished.";
+    case "auth/cancelled-popup-request":
+      return "Google sign-in was cancelled because another sign-in window is already open.";
+    case "auth/network-request-failed":
+      return "Google sign-in could not connect. Check your connection and try again.";
+    default:
+      return "Couldn't sign in with Google. Confirm Firebase has Google enabled and partake-app.vercel.app is an authorized domain.";
+  }
+}
+
 export default function Home() {
   const [initialState] = useState(getInitialHomeState);
   const [step, setStep] = useState<Step>(initialState.step);
@@ -180,8 +198,8 @@ export default function Home() {
         saveUserProfile(profile);
         setMyProfile(profile);
       }
-    } catch {
-      setAuthError("Couldn't sign in with Google. Check that Google is enabled in Firebase Auth.");
+    } catch (error) {
+      setAuthError(getAuthErrorMessage(error));
     } finally {
       setSigningIn(false);
     }
