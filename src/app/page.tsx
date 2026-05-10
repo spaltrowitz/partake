@@ -351,172 +351,226 @@ export default function Home() {
   // Landing
   if (step === "landing") {
     return (
-      <main className="min-h-dvh flex flex-col items-center gap-8 p-6 pt-16">
-        {/* Logo mark — overlapping circles representing people sharing */}
-        <div className="flex -space-x-3">
-          <div className="w-12 h-12 rounded-full bg-[#E8613C] opacity-90" />
-          <div className="w-12 h-12 rounded-full bg-[#F4A261] opacity-90" />
-          <div className="w-12 h-12 rounded-full bg-[#FFD6A5] opacity-90" />
-        </div>
-        <h1 className="text-5xl font-bold gradient-text tracking-tight">Partake</h1>
-        <p className="text-lg text-[#9C8E80] text-center max-w-sm">
-          Split the bill in seconds.
-        </p>
-        <p className="text-sm text-[#9C8E80] text-center max-w-xs">
-          Snap your receipt, claim what you ordered, and send payment requests.
-        </p>
-        <div className="w-full max-w-md overflow-hidden rounded-[1.75rem] border border-[#F5EDE3] bg-white shadow-lg shadow-[#2D2319]/5">
-          {user && !user.isAnonymous ? (
-            <div className="relative flex flex-col gap-4 bg-gradient-to-br from-white via-[#F8FFF7] to-[#F5EDE3] p-5 text-left">
-              <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-[#2E7D32]/10" />
-              <div className="pointer-events-none absolute -bottom-12 -left-10 h-24 w-24 rounded-full bg-[#FFD6A5]/45" />
-              <div className="relative flex items-start gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-xl shadow-sm shadow-[#2D2319]/10">
-                  ✓
+      <main className="relative min-h-dvh overflow-hidden px-5 pb-10 pt-10">
+        <div className="pointer-events-none absolute -left-24 top-10 h-56 w-56 rounded-full bg-[#FFD6A5]/45 blur-3xl" />
+        <div className="pointer-events-none absolute -right-24 top-32 h-64 w-64 rounded-full bg-[#E8613C]/15 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-56 w-56 -translate-x-1/2 rounded-full bg-white/70 blur-3xl" />
+
+        <section className="relative mx-auto flex w-full max-w-md flex-col items-center gap-6">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <div className="relative h-24 w-24">
+              <div className="absolute inset-0 rounded-[2rem] bg-white shadow-2xl shadow-[#2D2319]/10" />
+              <div className="absolute left-4 top-5 h-12 w-12 rounded-full bg-[#E8613C] shadow-lg shadow-[#E8613C]/25" />
+              <div className="absolute right-4 top-5 h-12 w-12 rounded-full bg-[#F4A261] shadow-lg shadow-[#F4A261]/25" />
+              <div className="absolute bottom-4 left-1/2 h-12 w-12 -translate-x-1/2 rounded-full bg-[#FFD6A5] shadow-lg shadow-[#FFD6A5]/30" />
+            </div>
+            <div>
+              <p className="mb-2 text-xs font-bold uppercase tracking-[0.3em] text-[#E8613C]">Receipt to request</p>
+              <h1 className="text-6xl font-black gradient-text tracking-[-0.06em]">Partake</h1>
+            </div>
+            <div className="max-w-sm">
+              <h2 className="text-3xl font-black leading-[0.95] tracking-[-0.04em] text-[#2D2319]">
+                Split dinner without the group-chat math.
+              </h2>
+              <p className="mt-3 text-base leading-6 text-[#6F5F51]">
+                Snap a receipt, tap who ordered what, and send clean payment requests in seconds.
+              </p>
+            </div>
+          </div>
+
+          <div className="w-full rounded-[2rem] border border-white/80 bg-white/75 p-3 shadow-xl shadow-[#2D2319]/10 backdrop-blur">
+            <div className="rounded-[1.5rem] bg-[#2D2319] p-4 text-white shadow-inner">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-white/50">Tonight&apos;s receipt</p>
+                  <p className="text-sm font-bold">Luca&apos;s Trattoria</p>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-base font-bold text-[#2D2319]">Sync is on</p>
-                  <p className="mt-1 truncate text-sm font-medium text-[#6F5F51]">
-                    {user.displayName ?? user.email ?? "Google account"}
-                  </p>
-                  <p className="mt-1 text-sm leading-5 text-[#6F5F51]">
-                    Your bill history and friends are saved for the next time you open Partake.
-                  </p>
+                <div className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold">3 people</div>
+              </div>
+              <div className="space-y-2 text-sm">
+                {["Burrata", "Rigatoni", "Tiramisu"].map((item, index) => (
+                  <div key={item} className="flex items-center justify-between rounded-2xl bg-white/10 px-3 py-2">
+                    <span>{item}</span>
+                    <div className="flex -space-x-2">
+                      {[0, 1, 2].slice(0, index + 1).map((avatar) => (
+                        <span
+                          key={avatar}
+                          className="h-6 w-6 rounded-full border-2 border-[#2D2319]"
+                          style={{ backgroundColor: ["#E8613C", "#F4A261", "#FFD6A5"][avatar] }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3">
+                <span className="text-xs text-white/50">Ready to request</span>
+                <span className="text-lg font-black">$86.42</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="w-full">
+            <PrimaryButton onClick={() => {
+              try { localStorage.removeItem("partake_active_session"); } catch {}
+              setBill(null);
+              setReceipt(null);
+              setParticipants([]);
+              setStep("scan");
+            }} className="min-h-14 text-base shadow-xl shadow-[#E8613C]/20">
+              Scan the receipt
+            </PrimaryButton>
+            <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs font-semibold text-[#6F5F51]">
+              <span className="rounded-full bg-white/75 px-2 py-2 shadow-sm">Scan</span>
+              <span className="rounded-full bg-white/75 px-2 py-2 shadow-sm">Claim</span>
+              <span className="rounded-full bg-white/75 px-2 py-2 shadow-sm">Request</span>
+            </div>
+          </div>
+
+          <div className="w-full overflow-hidden rounded-[1.75rem] border border-[#F5EDE3] bg-white shadow-lg shadow-[#2D2319]/5">
+            {user && !user.isAnonymous ? (
+              <div className="relative flex flex-col gap-4 bg-gradient-to-br from-white via-[#F8FFF7] to-[#F5EDE3] p-5 text-left">
+                <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-[#2E7D32]/10" />
+                <div className="pointer-events-none absolute -bottom-12 -left-10 h-24 w-24 rounded-full bg-[#FFD6A5]/45" />
+                <div className="relative flex items-start gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-xl shadow-sm shadow-[#2D2319]/10">
+                    ✓
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-base font-bold text-[#2D2319]">Sync is on</p>
+                    <p className="mt-1 truncate text-sm font-medium text-[#6F5F51]">
+                      {user.displayName ?? user.email ?? "Google account"}
+                    </p>
+                    <p className="mt-1 text-sm leading-5 text-[#6F5F51]">
+                      Your bill history and friends are saved for the next time you open Partake.
+                    </p>
+                  </div>
+                </div>
+                <div className="relative flex items-center justify-between gap-3 rounded-2xl border border-white/80 bg-white/70 px-3 py-2">
+                  <span className="text-xs font-semibold text-[#2E7D32]">Connected with Google</span>
+                  <button
+                    onClick={handleSignOut}
+                    className="rounded-full px-3 py-1.5 text-xs font-semibold text-[#6F5F51] transition-colors hover:bg-[#F5EDE3] hover:text-[#E8613C]"
+                  >
+                    Sign out
+                  </button>
                 </div>
               </div>
-              <div className="relative flex items-center justify-between gap-3 rounded-2xl border border-white/80 bg-white/70 px-3 py-2">
-                <span className="text-xs font-semibold text-[#2E7D32]">Connected with Google</span>
+            ) : (
+              <div className="relative flex flex-col gap-4 bg-gradient-to-br from-white via-[#FFF7EF] to-[#F5EDE3] p-5 text-left">
+                <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-[#FFD6A5]/50" />
+                <div className="pointer-events-none absolute -bottom-12 -left-10 h-24 w-24 rounded-full bg-[#E8613C]/10" />
+                <div className="relative flex items-start gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-xl shadow-sm shadow-[#2D2319]/10">
+                    ☁️
+                  </div>
+                  <div>
+                    <p className="text-base font-bold text-[#2D2319]">Save bills across devices</p>
+                    <p className="mt-1 text-sm leading-5 text-[#6F5F51]">
+                      Keep splitting instantly as a guest, or connect Google to bring your history and friends with you.
+                    </p>
+                  </div>
+                </div>
+                <div className="relative grid grid-cols-2 gap-2 text-xs font-medium text-[#6F5F51]">
+                  <div className="rounded-2xl border border-white/80 bg-white/70 px-3 py-2">✓ Guest mode stays on</div>
+                  <div className="rounded-2xl border border-white/80 bg-white/70 px-3 py-2">✓ Sync when you sign in</div>
+                </div>
                 <button
-                  onClick={handleSignOut}
-                  className="rounded-full px-3 py-1.5 text-xs font-semibold text-[#6F5F51] transition-colors hover:bg-[#F5EDE3] hover:text-[#E8613C]"
+                  onClick={handleGoogleSignIn}
+                  disabled={authLoading || signingIn}
+                  className="relative flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-bold text-[#2D2319] shadow-md shadow-[#2D2319]/10 ring-1 ring-[#E8DDD0] transition-all hover:-translate-y-0.5 hover:ring-[#E8613C] disabled:translate-y-0 disabled:opacity-50"
                 >
-                  Sign out
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full border border-[#E8DDD0] bg-white text-sm">G</span>
+                  {signingIn ? "Signing in..." : "Continue with Google"}
                 </button>
               </div>
-            </div>
-          ) : (
-            <div className="relative flex flex-col gap-4 bg-gradient-to-br from-white via-[#FFF7EF] to-[#F5EDE3] p-5 text-left">
-              <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-[#FFD6A5]/50" />
-              <div className="pointer-events-none absolute -bottom-12 -left-10 h-24 w-24 rounded-full bg-[#E8613C]/10" />
-              <div className="relative flex items-start gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-xl shadow-sm shadow-[#2D2319]/10">
-                  ☁️
-                </div>
-                <div>
-                  <p className="text-base font-bold text-[#2D2319]">Save bills across devices</p>
-                  <p className="mt-1 text-sm leading-5 text-[#6F5F51]">
-                    Keep splitting instantly as a guest, or connect Google to bring your history and friends with you.
-                  </p>
-                </div>
-              </div>
-              <div className="relative grid grid-cols-2 gap-2 text-xs font-medium text-[#6F5F51]">
-                <div className="rounded-2xl border border-white/80 bg-white/70 px-3 py-2">✓ Guest mode stays on</div>
-                <div className="rounded-2xl border border-white/80 bg-white/70 px-3 py-2">✓ Sync when you sign in</div>
-              </div>
-              <button
-                onClick={handleGoogleSignIn}
-                disabled={authLoading || signingIn}
-                className="relative flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-bold text-[#2D2319] shadow-md shadow-[#2D2319]/10 ring-1 ring-[#E8DDD0] transition-all hover:-translate-y-0.5 hover:ring-[#E8613C] disabled:translate-y-0 disabled:opacity-50"
-              >
-                <span className="flex h-6 w-6 items-center justify-center rounded-full border border-[#E8DDD0] bg-white text-sm">G</span>
-                {signingIn ? "Signing in..." : "Continue with Google"}
-              </button>
-            </div>
-          )}
-          {authError && (
-            <p className="border-t border-[#F5EDE3] bg-white px-4 py-3 text-center text-xs text-[#E8613C]">{authError}</p>
-          )}
-        </div>
-        <PrimaryButton onClick={() => {
-          // Clear active session for a fresh start
-          try { localStorage.removeItem("partake_active_session"); } catch {}
-          setBill(null);
-          setReceipt(null);
-          setParticipants([]);
-          setStep("scan");
-        }} className="max-w-xs">
-          Scan the receipt
-        </PrimaryButton>
-
-
-        {/* Bill history */}
-        {billHistory.length > 0 && (
-          <div className="w-full max-w-md mt-4">
-            <h2 className="text-sm font-semibold text-[#9C8E80] mb-3">Recent bills</h2>
-            <div className="flex flex-col gap-2">
-              {billHistory.slice(0, 5).map((b) => (
-                <div
-                  key={b.id}
-                  className="flex items-center gap-2 bg-[#FFFFFF] rounded-xl hover:bg-[#F5EDE3] transition-colors"
-                >
-                  <button
-                    onClick={() => {
-                      setBill(b);
-                      setReceipt(reconstructReceiptFromBill(b));
-                      setParticipants(b.participants);
-                      setStep("split");
-                    }}
-                    className="flex items-center justify-between flex-1 p-3 text-left"
-                  >
-                    <div>
-                      <p className="font-medium text-sm">{b.name || "Untitled bill"}</p>
-                      <p className="text-xs text-[#9C8E80]">
-                        {b.participants.length} people · {new Date(b.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <span className="font-bold text-sm">${b.total.toFixed(2)}</span>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteBillFromHistory(b.id);
-                      setBillHistory(prev => prev.filter(bill => bill.id !== b.id));
-                    }}
-                    className="p-3 text-[#9C8E80] hover:text-[#E8613C] transition-colors text-sm"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
+            )}
+            {authError && (
+              <p className="border-t border-[#F5EDE3] bg-white px-4 py-3 text-center text-xs text-[#E8613C]">{authError}</p>
+            )}
           </div>
-        )}
 
-        {process.env.NODE_ENV === "development" && (
+          {billHistory.length > 0 && (
+            <div className="w-full">
+              <div className="mb-3 flex items-center justify-between px-1">
+                <h2 className="text-sm font-bold text-[#2D2319]">Recent bills</h2>
+                <span className="text-xs font-medium text-[#9C8E80]">Tap to reopen</span>
+              </div>
+              <div className="flex flex-col gap-2.5">
+                {billHistory.slice(0, 5).map((b) => (
+                  <div
+                    key={b.id}
+                    className="flex items-center gap-2 rounded-2xl border border-[#F5EDE3] bg-white/85 shadow-sm shadow-[#2D2319]/5 transition-colors hover:bg-[#FFF7EF]"
+                  >
+                    <button
+                      onClick={() => {
+                        setBill(b);
+                        setReceipt(reconstructReceiptFromBill(b));
+                        setParticipants(b.participants);
+                        setStep("split");
+                      }}
+                      className="flex min-h-16 flex-1 items-center justify-between p-3 text-left"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-[#2D2319]">{b.name || "Untitled bill"}</p>
+                        <p className="text-xs text-[#9C8E80]">
+                          {b.participants.length} people · {new Date(b.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <span className="ml-3 rounded-full bg-[#F5EDE3] px-3 py-1 text-sm font-black text-[#2D2319]">${b.total.toFixed(2)}</span>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteBillFromHistory(b.id);
+                        setBillHistory(prev => prev.filter(bill => bill.id !== b.id));
+                      }}
+                      className="mr-2 flex min-h-11 min-w-11 items-center justify-center rounded-full text-sm text-[#9C8E80] transition-colors hover:bg-[#F5EDE3] hover:text-[#E8613C]"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <button
-            onClick={loadTestData}
-            className="text-xs text-[#C4B5A6] hover:text-[#9C8E80] transition-colors mt-4"
+            onClick={() => {
+              const text = "Split bills instantly — just scan the receipt 🧾";
+              const url = "https://partake-app.vercel.app";
+              if (navigator.share) {
+                navigator.share({ title: "Partake", text, url }).catch(() => {});
+              } else {
+                navigator.clipboard?.writeText(`${text}\n${url}`).then(() => {
+                  alert("Link copied!");
+                }).catch(() => {});
+              }
+            }}
+            className="rounded-full border border-[#FFD6A5] bg-white/70 px-4 py-2 text-sm font-semibold text-[#E8613C] shadow-sm transition-colors hover:bg-[#FFF7EF]"
           >
-            🧪 Test mode — skip to splitting with sample data
+            📤 Share Partake with a friend
           </button>
-        )}
 
-        <button
-          onClick={() => {
-            const text = "Split bills instantly — just scan the receipt 🧾";
-            const url = "https://partake-app.vercel.app";
-            if (navigator.share) {
-              navigator.share({ title: "Partake", text, url }).catch(() => {});
-            } else {
-              navigator.clipboard?.writeText(`${text}\n${url}`).then(() => {
-                alert("Link copied!");
-              }).catch(() => {});
-            }
-          }}
-          className="text-sm text-[#E8613C] font-medium mt-4"
-        >
-          📤 Share Partake with a friend
-        </button>
+          {process.env.NODE_ENV === "development" && (
+            <button
+              onClick={loadTestData}
+              className="text-xs text-[#C4B5A6] transition-colors hover:text-[#9C8E80]"
+            >
+              🧪 Test mode — skip to splitting with sample data
+            </button>
+          )}
 
-        <footer className="mt-8 pt-4 border-t border-[#E8DFD4] w-full max-w-md text-center">
-          <div className="flex justify-center gap-4 text-xs text-[#C4B5A6] items-center">
-            <FeedbackWidget />
-            <span>·</span>
-            <a href="/privacy" className="hover:text-[#9C8E80] transition-colors">Privacy</a>
-            <span>·</span>
-            <a href="/terms" className="hover:text-[#9C8E80] transition-colors">Terms</a>
-          </div>
-        </footer>
+          <footer className="w-full border-t border-[#E8DFD4] pt-4 text-center">
+            <div className="flex items-center justify-center gap-4 text-xs text-[#C4B5A6]">
+              <FeedbackWidget />
+              <span>·</span>
+              <a href="/privacy" className="transition-colors hover:text-[#9C8E80]">Privacy</a>
+              <span>·</span>
+              <a href="/terms" className="transition-colors hover:text-[#9C8E80]">Terms</a>
+            </div>
+          </footer>
+        </section>
       </main>
     );
   }
