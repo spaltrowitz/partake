@@ -365,7 +365,7 @@ export default function Home() {
               <div className="absolute bottom-4 left-1/2 h-12 w-12 -translate-x-1/2 rounded-full bg-[#FFD6A5] shadow-lg shadow-[#FFD6A5]/30" />
             </div>
             <div>
-              <p className="mb-2 text-xs font-bold uppercase tracking-[0.3em] text-[#E8613C]">Receipt to request</p>
+              <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-[#E8613C]">From receipt to request</p>
               <h1 className="text-6xl font-black gradient-text tracking-[-0.06em]">Partake</h1>
             </div>
             <div className="max-w-sm">
@@ -379,23 +379,23 @@ export default function Home() {
           </div>
 
           <div className="w-full rounded-[2rem] border border-white/80 bg-white/75 p-3 shadow-xl shadow-[#2D2319]/10 backdrop-blur">
-            <div className="rounded-[1.5rem] bg-[#2D2319] p-4 text-white shadow-inner">
-              <div className="mb-4 flex items-center justify-between">
+            <div className="rounded-[1.5rem] border border-[#F5EDE3] bg-[#FFF9F1] p-4 text-[#2D2319] shadow-inner shadow-white/60">
+              <div className="mb-5 flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs text-white/50">Tonight&apos;s receipt</p>
-                  <p className="text-sm font-bold">Luca&apos;s Trattoria</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#A87957]">Tonight&apos;s receipt</p>
+                  <p className="mt-1 text-base font-black tracking-[-0.02em]">Luca&apos;s Trattoria</p>
                 </div>
-                <div className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold">3 people</div>
+                <div className="rounded-full border border-[#F0DFC9] bg-white px-3 py-1 text-xs font-bold text-[#6F5F51]">3 people</div>
               </div>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-2.5 text-sm">
                 {["Burrata", "Rigatoni", "Tiramisu"].map((item, index) => (
-                  <div key={item} className="flex items-center justify-between rounded-2xl bg-white/10 px-3 py-2">
-                    <span>{item}</span>
+                  <div key={item} className="flex items-center justify-between rounded-2xl border border-[#F5EDE3] bg-white px-3 py-2.5 shadow-sm shadow-[#2D2319]/5">
+                    <span className="font-semibold text-[#3B2D20]">{item}</span>
                     <div className="flex -space-x-2">
                       {[0, 1, 2].slice(0, index + 1).map((avatar) => (
                         <span
                           key={avatar}
-                          className="h-6 w-6 rounded-full border-2 border-[#2D2319]"
+                          className="h-6 w-6 rounded-full border-2 border-white shadow-sm"
                           style={{ backgroundColor: ["#E8613C", "#F4A261", "#FFD6A5"][avatar] }}
                         />
                       ))}
@@ -403,9 +403,9 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3">
-                <span className="text-xs text-white/50">Ready to request</span>
-                <span className="text-lg font-black">$86.42</span>
+              <div className="mt-5 flex items-center justify-between border-t border-[#F0DFC9] pt-4">
+                <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#A87957]">Ready to request</span>
+                <span className="text-xl font-black tracking-[-0.03em]">$86.42</span>
               </div>
             </div>
           </div>
@@ -420,11 +420,6 @@ export default function Home() {
             }} className="min-h-14 text-base shadow-xl shadow-[#E8613C]/20">
               Scan the receipt
             </PrimaryButton>
-            <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs font-semibold text-[#6F5F51]">
-              <span className="rounded-full bg-white/75 px-2 py-2 shadow-sm">Scan</span>
-              <span className="rounded-full bg-white/75 px-2 py-2 shadow-sm">Claim</span>
-              <span className="rounded-full bg-white/75 px-2 py-2 shadow-sm">Request</span>
-            </div>
           </div>
 
           <div className="w-full overflow-hidden rounded-[1.75rem] border border-[#F5EDE3] bg-white shadow-lg shadow-[#2D2319]/5">
