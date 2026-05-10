@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
-    const emoji = category === "bug" ? "🐛" : category === "idea" ? "💡" : "💜";
+    const emoji = category === "bug" ? "🐛" : category === "idea" ? "💡" : "🧡";
     const label = category === "bug" ? "bug" : category === "idea" ? "enhancement" : "feedback";
     const fallbackTitle =
       category === "bug" ? "Bug report" : category === "idea" ? "Feature idea" : "Feedback";

@@ -8,7 +8,7 @@ type Category = "bug" | "idea" | "love";
 const categories: { key: Category; emoji: string; label: string; placeholder: string }[] = [
   { key: "bug", emoji: "🐛", label: "Bug", placeholder: "What went wrong?" },
   { key: "idea", emoji: "💡", label: "Idea", placeholder: "What would make Partake better?" },
-  { key: "love", emoji: "💜", label: "Love it", placeholder: "What do you love about Partake?" },
+  { key: "love", emoji: "🧡", label: "Love it", placeholder: "What do you love about Partake?" },
 ];
 
 export function FeedbackWidget() {
