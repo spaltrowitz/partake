@@ -34,13 +34,14 @@ export function removeSavedContact(id: string): void {
 }
 
 export function saveAllParticipantsAsContacts(
-  participants: { id: string; name: string; venmoUsername?: string }[]
+  participants: { id: string; name: string; venmoUsername?: string; cashAppUsername?: string }[]
 ): void {
   for (const p of participants) {
     addSavedContact({
       id: p.id,
       name: p.name,
       venmoUsername: p.venmoUsername,
+      cashAppUsername: p.cashAppUsername,
       createdBy: "local",
     });
   }

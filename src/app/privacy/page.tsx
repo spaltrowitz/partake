@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function PrivacyPage() {
   return (
     <main className="min-h-dvh flex flex-col items-center p-6 pt-16 max-w-2xl mx-auto">
@@ -58,7 +60,7 @@ export default function PrivacyPage() {
           <ul className="list-disc pl-5 space-y-1">
             <li>Bill data stored in Firebase Firestore and browser localStorage (last 50 bills)</li>
             <li>Receipt images stored in Firebase Cloud Storage</li>
-            <li>Contacts stored in browser localStorage</li>
+            <li>Contacts stored in browser localStorage and Firebase when authenticated</li>
           </ul>
         </section>
 
@@ -78,8 +80,8 @@ export default function PrivacyPage() {
       </div>
 
       <div className="mt-10 pt-4 border-t border-[#E8DFD4] w-full flex justify-between">
-        <a href="/" className="text-sm text-[#E8613C] hover:text-[#C4502F] font-semibold">← Home</a>
-        <a href="/terms" className="text-sm text-[#E8613C] hover:text-[#C4502F] font-semibold">Terms →</a>
+        <Link href="/" className="text-sm text-[#E8613C] hover:text-[#C4502F] font-semibold">← Home</Link>
+        <Link href="/terms" className="text-sm text-[#E8613C] hover:text-[#C4502F] font-semibold">Terms →</Link>
       </div>
     </main>
   );

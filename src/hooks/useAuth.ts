@@ -7,11 +7,10 @@ import { firebaseConfigured } from "@/lib/firebase";
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(firebaseConfigured);
 
   useEffect(() => {
     if (!firebaseConfigured) {
-      setLoading(false);
       return;
     }
 

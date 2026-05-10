@@ -43,6 +43,7 @@ export interface Bill {
   createdAt: Date;
   status: BillStatus;
   shareCode?: string;
+  sharedWithUserIds?: string[];
   birthdayPersonId?: string;
 }
 

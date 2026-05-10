@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function TermsPage() {
   return (
     <main className="min-h-dvh flex flex-col items-center p-6 pt-16 max-w-2xl mx-auto">
@@ -56,8 +58,8 @@ export default function TermsPage() {
       </div>
 
       <div className="mt-10 pt-4 border-t border-[#E8DFD4] w-full flex justify-between">
-        <a href="/" className="text-sm text-[#E8613C] hover:text-[#C4502F] font-semibold">← Home</a>
-        <a href="/privacy" className="text-sm text-[#E8613C] hover:text-[#C4502F] font-semibold">Privacy →</a>
+        <Link href="/" className="text-sm text-[#E8613C] hover:text-[#C4502F] font-semibold">← Home</Link>
+        <Link href="/privacy" className="text-sm text-[#E8613C] hover:text-[#C4502F] font-semibold">Privacy →</Link>
       </div>
     </main>
   );

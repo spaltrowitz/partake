@@ -6,14 +6,14 @@ import {
   collection,
   query,
   where,
-  orderBy,
   limit,
   onSnapshot,
   deleteDoc,
+  runTransaction,
   type Unsubscribe,
 } from "firebase/firestore";
 import { db, firebaseConfigured } from "@/lib/firebase";
-import type { Bill, AppUser, SavedContact, PartnerGroup } from "@/types";
+import type { Bill, AppUser, SavedContact, PartnerGroup, Participant } from "@/types";
 
 function ensureDb() {
   if (!firebaseConfigured) {
@@ -51,13 +51,31 @@ export async function getBillByShareCode(code: string): Promise<Bill | null> {
 
 export async function getUserBills(userId: string): Promise<Bill[]> {
   ensureDb();
-  const q = query(
+  const createdByQuery = query(
     collection(db, "bills"),
-    where("createdBy", "==", userId),
-    orderBy("createdAt", "desc")
+    where("createdBy", "==", userId)
   );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => d.data() as Bill);
+  const sharedWithQuery = query(
+    collection(db, "bills"),
+    where("sharedWithUserIds", "array-contains", userId)
+  );
+  const [createdBySnap, sharedWithSnap] = await Promise.all([
+    getDocs(createdByQuery),
+    getDocs(sharedWithQuery),
+  ]);
+
+  const billsById = new Map<string, Bill>();
+  for (const docSnap of [...createdBySnap.docs, ...sharedWithSnap.docs]) {
+    const bill = docSnap.data() as Bill;
+    billsById.set(bill.id, {
+      ...bill,
+      createdAt: new Date(bill.createdAt),
+    });
+  }
+
+  return Array.from(billsById.values()).sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
 }
 
 export function listenToBill(
@@ -67,6 +85,87 @@ export function listenToBill(
   ensureDb();
   return onSnapshot(doc(db, "bills", id), (snap) => {
     callback(snap.exists() ? (snap.data() as Bill) : null);
+  });
+}
+
+export async function toggleBillItemClaim(
+  billId: string,
+  itemId: string,
+  participant: Participant,
+  legacyClaimName?: string,
+  userId?: string
+): Promise<Bill> {
+  ensureDb();
+  const billRef = doc(db, "bills", billId);
+
+  return runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(billRef);
+    if (!snap.exists()) {
+      throw new Error("Bill not found");
+    }
+
+    const bill = snap.data() as Bill;
+    if (bill.status === "settled") {
+      throw new Error("Claims are locked");
+    }
+
+    const hasParticipant = bill.participants.some((p) => p.id === participant.id);
+    const participants = hasParticipant
+      ? bill.participants
+      : [...bill.participants, participant];
+    const sharedWithUserIds = userId && !bill.sharedWithUserIds?.includes(userId)
+      ? [...(bill.sharedWithUserIds ?? []), userId]
+      : bill.sharedWithUserIds ?? [];
+
+    const legacyKeys = new Set([participant.id]);
+    if (legacyClaimName?.trim()) legacyKeys.add(legacyClaimName.trim());
+
+    const items = bill.items.map((item) => {
+      if (item.id !== itemId) return item;
+      const isClaimed = item.claimedBy.some((claim) => legacyKeys.has(claim));
+      return {
+        ...item,
+        claimedBy: isClaimed
+          ? item.claimedBy.filter((claim) => !legacyKeys.has(claim))
+          : [...item.claimedBy.filter((claim) => claim !== participant.id), participant.id],
+      };
+    });
+
+    const updatedBill = { ...bill, participants, items, sharedWithUserIds };
+    transaction.update(billRef, { participants, items, sharedWithUserIds });
+    return updatedBill;
+  });
+}
+
+export async function joinSharedBill(
+  billId: string,
+  participant: Participant,
+  userId?: string
+): Promise<Bill> {
+  ensureDb();
+  const billRef = doc(db, "bills", billId);
+
+  return runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(billRef);
+    if (!snap.exists()) {
+      throw new Error("Bill not found");
+    }
+
+    const bill = snap.data() as Bill;
+    if (bill.status === "settled") {
+      throw new Error("Claims are locked");
+    }
+    const hasParticipant = bill.participants.some((p) => p.id === participant.id);
+    const participants = hasParticipant
+      ? bill.participants
+      : [...bill.participants, participant];
+    const sharedWithUserIds = userId && !bill.sharedWithUserIds?.includes(userId)
+      ? [...(bill.sharedWithUserIds ?? []), userId]
+      : bill.sharedWithUserIds ?? [];
+    const updatedBill = { ...bill, participants, sharedWithUserIds };
+
+    transaction.update(billRef, { participants, sharedWithUserIds });
+    return updatedBill;
   });
 }
 

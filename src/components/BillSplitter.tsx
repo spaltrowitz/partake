@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import type { Bill, BillSplit, SplitMethod } from "@/types";
 import { calculateSplits, calculateEvenSplit, calculatePercentageSplit, calculateSharesSplit, calculateExactSplit } from "@/services/splitCalculator";
 import { requestPayment, copyToClipboard } from "@/services/venmo";
 import { getUserProfile } from "@/services/userProfile";
+import { saveBillToHistory } from "@/services/billHistory";
 import { PrimaryButton } from "./UI";
 import { SplitMethodSelector } from "./SplitMethodSelector";
 import { ItemizedView, ItemizedParticipantBar } from "./ItemizedView";
@@ -17,7 +18,19 @@ import { Settlement } from "./Settlement";
 import { PartnerGroupSelector } from "./PartnerPairSelector";
 import { FeedbackWidget } from "./FeedbackWidget";
 
-export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome }: { bill: Bill; onBack?: () => void; onEditReceipt?: () => void; onHome?: () => void }) {
+export function BillSplitter({
+  bill: initialBill,
+  onBack,
+  onEditReceipt,
+  onHome,
+  onBillChange,
+}: {
+  bill: Bill;
+  onBack?: () => void;
+  onEditReceipt?: () => void;
+  onHome?: () => void;
+  onBillChange?: (bill: Bill) => void;
+}) {
   const [bill, setBill] = useState(initialBill);
   const [splitMethod, setSplitMethod] = useState<SplitMethod>("itemized");
   const [selectedParticipant, setSelectedParticipant] = useState<string>(
@@ -38,10 +51,13 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome 
     Object.fromEntries(bill.participants.map((p) => [p.id, 0]))
   );
   const [payingGroups, setPayingGroups] = useState<{ payerId: string; memberIds: string[] }[]>([]);
+  const skippedInitialCloudSave = useRef(false);
+  const applyingRemoteUpdate = useRef(false);
   const claimsLocked = bill.status === "settled";
 
   // Sync bill when participants change (e.g., user goes back and adds someone)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBill(prev => {
       if (prev.participants.length !== initialBill.participants.length ||
           prev.participants.some((p, i) => p.id !== initialBill.participants[i]?.id)) {
@@ -72,16 +88,55 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome 
       }
       return updated;
     });
-  }, [initialBill]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [initialBill]);
+
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+    let cancelled = false;
+
+    import("@/services/firestore").then(({ listenToBill }) => {
+      if (cancelled) return;
+      try {
+        unsubscribe = listenToBill(initialBill.id, (updated) => {
+          if (!updated) return;
+          setBill((prev) => {
+            const remote = JSON.stringify(updated);
+            const local = JSON.stringify(prev);
+            if (remote === local) return prev;
+            applyingRemoteUpdate.current = true;
+            return updated;
+          });
+        });
+      } catch {}
+    }).catch(() => {});
+
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
+  }, [initialBill.id]);
 
   // Persist bill state so it survives Venmo redirect + sync to Firestore
   useEffect(() => {
+    onBillChange?.(bill);
     try { localStorage.setItem("partake_active_session", JSON.stringify({ bill })); } catch {}
+    saveBillToHistory(bill);
+    const isInitialSave = !skippedInitialCloudSave.current;
+    if (isInitialSave) {
+      skippedInitialCloudSave.current = true;
+    }
+    if (applyingRemoteUpdate.current) {
+      applyingRemoteUpdate.current = false;
+      return;
+    }
+    if (isInitialSave) {
+      return;
+    }
     // Sync claims to Firestore for shared links
     import("@/services/firestore").then(({ saveBill }) => {
       saveBill(bill).catch(() => {});
     }).catch(() => {});
-  }, [bill]);
+  }, [bill, onBillChange]);
 
   const effectiveBill = (() => {
     if (payingGroups.length === 0) return bill;
@@ -111,6 +166,34 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome 
     return { ...bill, items: updatedItems, participants: updatedParticipants };
   })();
 
+  const activePercentages = Object.fromEntries(
+    effectiveBill.participants.map((p) => {
+      const group = payingGroups.find((g) => g.payerId === p.id);
+      const coveredTotal = group?.memberIds
+        .filter((id) => id !== p.id)
+        .reduce((sum, id) => sum + (percentages[id] ?? 0), 0) ?? 0;
+      return [p.id, (percentages[p.id] ?? 0) + coveredTotal];
+    })
+  );
+  const activeShares = Object.fromEntries(
+    effectiveBill.participants.map((p) => {
+      const group = payingGroups.find((g) => g.payerId === p.id);
+      const coveredTotal = group?.memberIds
+        .filter((id) => id !== p.id)
+        .reduce((sum, id) => sum + (shares[id] ?? 1), 0) ?? 0;
+      return [p.id, (shares[p.id] ?? 1) + coveredTotal];
+    })
+  );
+  const activeExactAmounts = Object.fromEntries(
+    effectiveBill.participants.map((p) => {
+      const group = payingGroups.find((g) => g.payerId === p.id);
+      const coveredTotal = group?.memberIds
+        .filter((id) => id !== p.id)
+        .reduce((sum, id) => sum + (exactAmounts[id] ?? 0), 0) ?? 0;
+      return [p.id, (exactAmounts[p.id] ?? 0) + coveredTotal];
+    })
+  );
+
   const splits = (() => {
     // Always use effectiveBill — it has partner removed when paired
     const b = effectiveBill;
@@ -118,11 +201,11 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome 
       case "even":
         return calculateEvenSplit(b);
       case "percentage":
-        return calculatePercentageSplit(b, percentages);
+        return calculatePercentageSplit(b, activePercentages);
       case "shares":
-        return calculateSharesSplit(b, shares);
+        return calculateSharesSplit(b, activeShares);
       case "exact":
-        return calculateExactSplit(b, exactAmounts);
+        return calculateExactSplit(b, activeExactAmounts);
       default:
         return calculateSplits(b);
     }
@@ -148,17 +231,20 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome 
     [claimsLocked, selectedParticipant]
   );
 
-  async function lockClaims(): Promise<boolean> {
-    if (bill.status === "settled") return true;
+  async function lockClaims(): Promise<Bill | null> {
+    if (bill.status === "settled") return bill;
     const lockedBill = { ...bill, status: "settled" as const };
     setBill(lockedBill);
     try {
       const { saveBill } = await import("@/services/firestore");
       await saveBill(lockedBill);
-      return true;
+      try { localStorage.setItem("partake_active_session", JSON.stringify({ bill: lockedBill })); } catch {}
+      return lockedBill;
     } catch (error) {
       console.error("Failed to persist claim lock state", error);
-      return false;
+      setBill(bill);
+      try { localStorage.setItem("partake_active_session", JSON.stringify({ bill })); } catch {}
+      return null;
     }
   }
 
@@ -175,19 +261,18 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome 
   }
 
   async function handlePayment(split: BillSplit) {
-    const locked = await lockClaims();
-    if (!locked) {
+    const lockedBill = await lockClaims();
+    if (!lockedBill) {
       setClaimLockError("Couldn't lock claims. Check your connection and try again.");
       return;
     }
     setClaimLockError(null);
-    const note = `🧾 ${bill.name || "Bill split"} via Partake`;
-    // Save state before navigating away to Venmo
-    try { localStorage.setItem("partake_active_session", JSON.stringify({ bill })); } catch {}
+    const note = `🧾 ${lockedBill.name || "Bill split"} via Partake`;
+    try { localStorage.setItem("partake_active_session", JSON.stringify({ bill: lockedBill })); } catch {}
     if (split.venmoUsername) {
       requestPayment("venmo", split.venmoUsername, split.total, note);
     } else {
-      const participant = bill.participants.find((p) => p.id === split.participantId);
+      const participant = lockedBill.participants.find((p) => p.id === split.participantId);
       if (participant?.cashAppUsername) {
         requestPayment("cashapp", participant.cashAppUsername, split.total, note);
       } else {
@@ -207,8 +292,8 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome 
         myName={getUserProfile()?.name}
         onPayment={handlePayment}
         onCopy={async (split) => {
-          const locked = await lockClaims();
-          if (!locked) {
+          const lockedBill = await lockClaims();
+          if (!lockedBill) {
             setClaimLockError("Couldn't lock claims. Check your connection and try again.");
             return;
           }
@@ -225,11 +310,16 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome 
     <div className="flex flex-col h-full">
       {onBack && (
         <div className="p-3 bg-[#FFFFFF] flex justify-between">
-          <button onClick={onBack} className="text-sm text-[#9C8E80]">
-            ← Back to people
-          </button>
+          {claimsLocked ? (
+            <span className="text-sm text-[#9C8E80]">Locked</span>
+          ) : (
+            <button onClick={onBack} className="text-sm text-[#9C8E80]">
+              ← Back to people
+            </button>
+          )}
           <div className="flex gap-3">
-            {onEditReceipt && (
+            <FeedbackWidget />
+            {onEditReceipt && !claimsLocked && (
               <button onClick={onEditReceipt} className="text-sm text-[#E8613C]">
                 Edit items
               </button>
@@ -249,7 +339,10 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome 
           </div>
         </div>
       )}
-      <SplitMethodSelector splitMethod={splitMethod} onSelect={setSplitMethod} />
+      <SplitMethodSelector
+        splitMethod={splitMethod}
+        onSelect={claimsLocked ? () => {} : setSplitMethod}
+      />
 
       {splitMethod === "itemized" && (
         <ItemizedParticipantBar
@@ -259,11 +352,13 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome 
         />
       )}
 
-      <PartnerGroupSelector
-        participants={bill.participants}
-        payingGroups={payingGroups}
-        onSetPayingGroups={setPayingGroups}
-      />
+      {!claimsLocked && (
+        <PartnerGroupSelector
+          participants={bill.participants}
+          payingGroups={payingGroups}
+          onSetPayingGroups={setPayingGroups}
+        />
+      )}
 
       <div className="flex-1 overflow-y-auto p-4">
         {splitMethod === "itemized" && (
@@ -300,26 +395,26 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome 
         )}
         {splitMethod === "percentage" && (
           <PercentageSplitView
-            participants={bill.participants}
-            percentages={percentages}
-            total={bill.total}
-            onChangePercentage={(id, value) => setPercentages((prev) => ({ ...prev, [id]: value }))}
+            participants={effectiveBill.participants}
+            percentages={activePercentages}
+            total={effectiveBill.total}
+            onChangePercentage={claimsLocked ? () => {} : (id, value) => setPercentages((prev) => ({ ...prev, [id]: value }))}
           />
         )}
         {splitMethod === "shares" && (
           <SharesSplitView
-            participants={bill.participants}
-            shares={shares}
-            total={bill.total}
-            onChangeShares={(id, value) => setShares((prev) => ({ ...prev, [id]: value }))}
+            participants={effectiveBill.participants}
+            shares={activeShares}
+            total={effectiveBill.total}
+            onChangeShares={claimsLocked ? () => {} : (id, value) => setShares((prev) => ({ ...prev, [id]: value }))}
           />
         )}
         {splitMethod === "exact" && (
           <ExactSplitView
-            participants={bill.participants}
-            exactAmounts={exactAmounts}
-            total={bill.total}
-            onChangeAmount={(id, value) => setExactAmounts((prev) => ({ ...prev, [id]: value }))}
+            participants={effectiveBill.participants}
+            exactAmounts={activeExactAmounts}
+            total={effectiveBill.total}
+            onChangeAmount={claimsLocked ? () => {} : (id, value) => setExactAmounts((prev) => ({ ...prev, [id]: value }))}
           />
         )}
 
@@ -328,6 +423,13 @@ export function BillSplitter({ bill: initialBill, onBack, onEditReceipt, onHome 
           <div className="mt-6">
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-[#9C8E80]">Tip (from receipt)</span>
+              <span className="font-semibold">${bill.tipAmount.toFixed(2)}</span>
+            </div>
+          </div>
+        ) : claimsLocked ? (
+          <div className="mt-6">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-[#9C8E80]">Tip</span>
               <span className="font-semibold">${bill.tipAmount.toFixed(2)}</span>
             </div>
           </div>

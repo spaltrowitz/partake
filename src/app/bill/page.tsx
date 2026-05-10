@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { firebaseConfigured } from "@/lib/firebase";
-import { getBillByShareCode, listenToBill, saveBill } from "@/services/firestore";
+import { getBillByShareCode, joinSharedBill, listenToBill, toggleBillItemClaim } from "@/services/firestore";
+import { useAuthContext } from "@/components/AuthProvider";
 import { Avatar } from "@/components/Avatar";
 import { Card } from "@/components/UI";
-import type { Bill, BillItem } from "@/types";
+import { saveBillToHistory } from "@/services/billHistory";
+import type { Bill, BillItem, Participant } from "@/types";
 
 const GUEST_NAME_KEY = "partake-guest-name";
 
@@ -19,6 +21,39 @@ function storeName(name: string) {
   localStorage.setItem(GUEST_NAME_KEY, name);
 }
 
+function getInitialGuest() {
+  const name = getStoredName();
+  return { name, confirmed: !!name };
+}
+
+function normalizeName(name: string): string {
+  return name.trim().toLowerCase();
+}
+
+function participantIdForGuestName(name: string): string {
+  const normalized = normalizeName(name)
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  return `guest-${normalized || "friend"}`;
+}
+
+function resolveClaimName(bill: Bill, claim: string): string {
+  return bill.participants.find((p) => p.id === claim)?.name ?? claim;
+}
+
+function resolveGuestParticipant(bill: Bill, name: string): Participant {
+  const trimmedName = name.trim();
+  const existing = bill.participants.find(
+    (p) => normalizeName(p.name) === normalizeName(trimmedName)
+  );
+  if (existing) return existing;
+  return {
+    id: participantIdForGuestName(trimmedName),
+    name: trimmedName,
+    isAppUser: false,
+  };
+}
+
 function calculateOwes(bill: Bill): { name: string; amount: number }[] {
   const participantTotals = new Map<string, number>();
 
@@ -26,51 +61,37 @@ function calculateOwes(bill: Bill): { name: string; amount: number }[] {
     if (item.claimedBy.length === 0) continue;
     const lineTotal = item.price * item.quantity;
     const perPerson = lineTotal / item.claimedBy.length;
-    for (const name of item.claimedBy) {
-      participantTotals.set(name, (participantTotals.get(name) || 0) + perPerson);
+    for (const claim of item.claimedBy) {
+      participantTotals.set(claim, (participantTotals.get(claim) || 0) + perPerson);
     }
   }
 
   const claimedSubtotal = Array.from(participantTotals.values()).reduce((a, b) => a + b, 0);
   if (claimedSubtotal === 0) return [];
 
-  return Array.from(participantTotals.entries()).map(([name, itemTotal]) => {
+  return Array.from(participantTotals.entries()).map(([claim, itemTotal]) => {
     const share = itemTotal / claimedSubtotal;
     const taxShare = bill.tax * share;
     const tipShare = bill.tipAmount * share;
-    return { name, amount: itemTotal + taxShare + tipShare };
+    return { name: resolveClaimName(bill, claim), amount: itemTotal + taxShare + tipShare };
   }).sort((a, b) => b.amount - a.amount);
 }
 
 function SharedBillContent() {
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
+  const [initialGuest] = useState(getInitialGuest);
+  const { user } = useAuthContext();
 
   const [bill, setBill] = useState<Bill | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [guestName, setGuestName] = useState("");
-  const [nameConfirmed, setNameConfirmed] = useState(false);
+  const [guestName, setGuestName] = useState(initialGuest.name);
+  const [nameConfirmed, setNameConfirmed] = useState(initialGuest.confirmed);
+  const joinedBillKey = useRef<string | null>(null);
 
   useEffect(() => {
-    const stored = getStoredName();
-    if (stored) {
-      setGuestName(stored);
-      setNameConfirmed(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!code) {
-      setError("No bill code provided.");
-      setLoading(false);
-      return;
-    }
-    if (!firebaseConfigured) {
-      setError("Firebase is not configured. The bill owner needs to set up Firebase.");
-      setLoading(false);
-      return;
-    }
+    if (!code || !firebaseConfigured) return;
 
     let unsubscribe: (() => void) | null = null;
 
@@ -82,9 +103,13 @@ function SharedBillContent() {
           return;
         }
         setBill(found);
+        saveBillToHistory(found);
         setLoading(false);
         unsubscribe = listenToBill(found.id, (updated) => {
-          if (updated) setBill(updated);
+          if (updated) {
+            setBill(updated);
+            saveBillToHistory(updated);
+          }
         });
       })
       .catch(() => {
@@ -97,31 +122,74 @@ function SharedBillContent() {
     };
   }, [code]);
 
-  const toggleClaim = useCallback(
-    async (item: BillItem) => {
-      if (!bill || bill.status === "settled" || !nameConfirmed || !guestName.trim()) return;
-      const name = guestName.trim();
-      const isClaimed = item.claimedBy.includes(name);
-      const updatedItems = bill.items.map((i) =>
-        i.id === item.id
-          ? {
-              ...i,
-              claimedBy: isClaimed
-                ? i.claimedBy.filter((n) => n !== name)
-                : [...i.claimedBy, name],
-            }
-          : i
-      );
-      const updatedBill = { ...bill, items: updatedItems };
-      setBill(updatedBill);
-      try {
-        await saveBill(updatedBill);
-      } catch {
-        setBill(bill);
-      }
-    },
-    [bill, guestName, nameConfirmed]
-  );
+  useEffect(() => {
+    if (!bill || bill.status === "settled" || !nameConfirmed || !guestName.trim()) return;
+    const participant = resolveGuestParticipant(bill, guestName);
+    const joinKey = `${bill.id}:${participant.id}:${user?.uid ?? "local"}`;
+    if (joinedBillKey.current === joinKey) return;
+    joinedBillKey.current = joinKey;
+    joinSharedBill(bill.id, participant, user?.uid)
+      .then((updatedBill) => {
+        setBill(updatedBill);
+        saveBillToHistory(updatedBill);
+      })
+      .catch(() => {
+        joinedBillKey.current = null;
+      });
+  }, [bill?.id, guestName, nameConfirmed, user?.uid]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!code) {
+    return (
+      <div className="min-h-dvh flex items-center justify-center p-4">
+        <Card className="max-w-sm text-center">
+          <p className="text-2xl mb-2">😕</p>
+          <p className="text-[#9C8E80]">No bill code provided.</p>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!firebaseConfigured) {
+    return (
+      <div className="min-h-dvh flex items-center justify-center p-4">
+        <Card className="max-w-sm text-center">
+          <p className="text-2xl mb-2">😕</p>
+          <p className="text-[#9C8E80]">Firebase is not configured. The bill owner needs to set up Firebase.</p>
+        </Card>
+      </div>
+    );
+  }
+
+  async function toggleClaim(item: BillItem) {
+    if (!bill || bill.status === "settled" || !nameConfirmed || !guestName.trim()) return;
+    const name = guestName.trim();
+    const participant = resolveGuestParticipant(bill, name);
+    const isClaimed = item.claimedBy.includes(participant.id) || item.claimedBy.includes(name);
+    const participants = bill.participants.some((p) => p.id === participant.id)
+      ? bill.participants
+      : [...bill.participants, participant];
+    const updatedItems = bill.items.map((i) =>
+      i.id === item.id
+        ? {
+            ...i,
+            claimedBy: isClaimed
+              ? i.claimedBy.filter((claim) => claim !== participant.id && claim !== name)
+              : [...i.claimedBy.filter((claim) => claim !== participant.id), participant.id],
+          }
+        : i
+    );
+    const updatedBill = { ...bill, participants, items: updatedItems };
+    setBill(updatedBill);
+    saveBillToHistory(updatedBill);
+    try {
+      const savedBill = await toggleBillItemClaim(bill.id, item.id, participant, name, user?.uid);
+      setBill(savedBill);
+      saveBillToHistory(savedBill);
+    } catch {
+      setBill(bill);
+      saveBillToHistory(bill);
+    }
+  }
 
   const confirmName = () => {
     if (!guestName.trim()) return;
@@ -217,7 +285,11 @@ function SharedBillContent() {
       )}
       <div className="flex flex-col gap-2 mb-6">
         {bill.items.map((item) => {
-          const isMine = nameConfirmed && item.claimedBy.includes(guestName.trim());
+          const participant = nameConfirmed && guestName.trim()
+            ? resolveGuestParticipant(bill, guestName)
+            : null;
+          const isMine = !!participant &&
+            (item.claimedBy.includes(participant.id) || item.claimedBy.includes(guestName.trim()));
           const lineTotal = item.price * item.quantity;
           return (
             <button
@@ -238,7 +310,7 @@ function SharedBillContent() {
                   </p>
                   {item.claimedBy.length > 0 && (
                     <p className="text-xs text-[#9C8E80] mt-1">
-                      {item.claimedBy.join(", ")}
+                      {item.claimedBy.map((claim) => resolveClaimName(bill, claim)).join(", ")}
                       {item.claimedBy.length > 1 &&
                         ` · $${(lineTotal / item.claimedBy.length).toFixed(2)} each`}
                     </p>

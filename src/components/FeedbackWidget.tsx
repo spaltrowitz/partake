@@ -10,13 +10,14 @@ const categories: { key: Category; emoji: string; label: string; placeholder: st
   { key: "love", emoji: "💜", label: "Love it", placeholder: "What do you love about Partake?" },
 ];
 
-export function FeedbackWidget({ trigger }: { trigger?: "floating" | "inline" } = {}) {
+export function FeedbackWidget() {
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState<Category | null>(null);
   const [summary, setSummary] = useState("");
   const [details, setDetails] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const selectedCategory = categories.find((c) => c.key === category);
 
@@ -26,17 +27,22 @@ export function FeedbackWidget({ trigger }: { trigger?: "floating" | "inline" } 
     setDetails("");
     setSubmitting(false);
     setSubmitted(false);
+    setError(null);
   }
 
   async function handleSubmit() {
     if (!category || !summary.trim()) return;
     setSubmitting(true);
+    setError(null);
     try {
-      await fetch("/api/feedback", {
+      const response = await fetch("/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ category, summary: summary.trim(), details: details.trim() || undefined }),
       });
+      if (!response.ok) {
+        throw new Error("Feedback request failed");
+      }
       setSubmitted(true);
       setTimeout(() => {
         setOpen(false);
@@ -44,6 +50,7 @@ export function FeedbackWidget({ trigger }: { trigger?: "floating" | "inline" } 
       }, 2000);
     } catch {
       setSubmitting(false);
+      setError("Couldn't send feedback. Please try again.");
     }
   }
 
@@ -120,6 +127,10 @@ export function FeedbackWidget({ trigger }: { trigger?: "floating" | "inline" } 
                   className="w-full px-4 py-3 rounded-lg border border-[#F5EDE3] bg-white
                     text-[#2D2319] placeholder:text-[#9C8E80] focus:outline-none focus:border-[#E8613C] mb-4 resize-none"
                 />
+
+                {error && (
+                  <p className="text-sm text-[#E8613C] mb-3">{error}</p>
+                )}
 
                 <button
                   onClick={handleSubmit}

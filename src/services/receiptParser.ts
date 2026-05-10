@@ -153,8 +153,6 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
         if (allPrices.length >= kwCount) {
           // Take the LAST kwCount prices (keyword values come after item prices)
           const kwPrices = allPrices.slice(allPrices.length - kwCount);
-          const itemPrices = allPrices.slice(0, allPrices.length - kwCount);
-
           // Assign keyword values
           for (let k = 0; k < kwCount; k++) {
             const kw = pendingKeywords[k];

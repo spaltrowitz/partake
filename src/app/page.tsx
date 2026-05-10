@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { ParsedReceipt, Bill, BillItem, Participant, SavedContact } from "@/types";
 import { ReceiptScanner } from "@/components/ReceiptScanner";
 import { ReceiptEditor } from "@/components/ReceiptEditor";
@@ -13,62 +13,155 @@ import { getBillHistory, saveBillToHistory, deleteBillFromHistory } from "@/serv
 import { getUserProfile, saveUserProfile } from "@/services/userProfile";
 import type { UserProfile } from "@/services/userProfile";
 import { useAuthContext } from "@/components/AuthProvider";
-import { saveBill } from "@/services/firestore";
+import { getContacts, getUserBills, saveBill, saveContact } from "@/services/firestore";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 
 type Step = "landing" | "participants" | "scan" | "edit" | "split";
 
+function reconstructReceiptFromBill(bill: Bill): ParsedReceipt {
+  return {
+    items: bill.items.map((i) => ({
+      id: i.id,
+      name: i.name,
+      price: i.price,
+      confidence: 1,
+      quantity: i.quantity,
+    })),
+    tax: bill.tax,
+    tip: bill.tipAmount,
+    subtotal: bill.subtotal,
+    total: bill.total,
+    restaurantName: bill.restaurantName,
+  };
+}
+
+function participantFromProfile(profile: UserProfile): Participant {
+  const paymentHandle = (profile.venmoUsername || profile.cashAppUsername || "").replace(/^@/, "");
+  const isCashApp = paymentHandle.startsWith("$");
+  return {
+    id: crypto.randomUUID(),
+    name: profile.name,
+    venmoUsername: !isCashApp && paymentHandle ? paymentHandle : undefined,
+    cashAppUsername: isCashApp ? paymentHandle : undefined,
+    isAppUser: true,
+  };
+}
+
+function getInitialHomeState(): {
+  step: Step;
+  bill: Bill | null;
+  participants: Participant[];
+  savedContacts: SavedContact[];
+  billHistory: Bill[];
+  myProfile: UserProfile | null;
+} {
+  let bill: Bill | null = null;
+  let participants: Participant[] = [];
+  let step: Step = "landing";
+
+  try {
+    const saved = typeof window !== "undefined"
+      ? localStorage.getItem("partake_active_session")
+      : null;
+    if (saved) {
+      const session = JSON.parse(saved) as { bill?: Bill };
+      if (session.bill) {
+        bill = { ...session.bill, createdAt: new Date(session.bill.createdAt) };
+        participants = session.bill.participants;
+        step = "split";
+      }
+    }
+  } catch {}
+
+  return {
+    step,
+    bill,
+    participants,
+    savedContacts: getSavedContacts(),
+    billHistory: getBillHistory(),
+    myProfile: getUserProfile(),
+  };
+}
+
+function mergeContacts(existing: SavedContact[], incoming: SavedContact[]): SavedContact[] {
+  const seen = new Set(existing.map((c) => c.name.trim().toLowerCase()));
+  const merged = [...existing];
+  for (const contact of incoming) {
+    const key = contact.name.trim().toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      merged.push(contact);
+    }
+  }
+  return merged;
+}
+
+function mergeBills(existing: Bill[], incoming: Bill[]): Bill[] {
+  const billsById = new Map<string, Bill>();
+  for (const bill of [...existing, ...incoming]) {
+    billsById.set(bill.id, {
+      ...bill,
+      createdAt: new Date(bill.createdAt),
+    });
+  }
+  return Array.from(billsById.values())
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 50);
+}
+
+function contactsFromParticipants(participants: Participant[], createdBy: string): SavedContact[] {
+  return participants.map((participant) => ({
+    id: `contact-${participant.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || participant.id}`,
+    name: participant.name,
+    venmoUsername: participant.venmoUsername,
+    cashAppUsername: participant.cashAppUsername,
+    createdBy,
+  }));
+}
+
 export default function Home() {
-  const [step, setStep] = useState<Step>("landing");
-  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [initialState] = useState(getInitialHomeState);
+  const [step, setStep] = useState<Step>(initialState.step);
+  const [participants, setParticipants] = useState<Participant[]>(initialState.participants);
   const [newName, setNewName] = useState("");
   const [newVenmo, setNewVenmo] = useState("");
   const [receipt, setReceipt] = useState<ParsedReceipt | null>(null);
-  const [bill, setBill] = useState<Bill | null>(null);
+  const [bill, setBill] = useState<Bill | null>(initialState.bill);
   const [tipPercent] = useState(20);
-  const [savedContacts, setSavedContacts] = useState<SavedContact[]>([]);
+  const [savedContacts, setSavedContacts] = useState<SavedContact[]>(initialState.savedContacts);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [billHistory, setBillHistory] = useState<Bill[]>([]);
+  const [billHistory, setBillHistory] = useState<Bill[]>(initialState.billHistory);
   const [showRescanConfirm, setShowRescanConfirm] = useState(false);
   const [rescanReasons, setRescanReasons] = useState<string[]>([]);
-  const [myProfile, setMyProfile] = useState<UserProfile | null>(null);
+  const [myProfile, setMyProfile] = useState<UserProfile | null>(initialState.myProfile);
   const { user, loading: authLoading } = useAuthContext();
 
   useEffect(() => {
-    setSavedContacts(getSavedContacts());
-    setBillHistory(getBillHistory());
-    setMyProfile(getUserProfile());
+    if (!user) return;
+    getContacts(user.uid)
+      .then((cloudContacts) => {
+        setSavedContacts((prev) => mergeContacts(prev, cloudContacts));
+      })
+      .catch(() => {});
+    getUserBills(user.uid)
+      .then((cloudBills) => {
+        setBillHistory((prev) => mergeBills(prev, cloudBills));
+      })
+      .catch(() => {});
+  }, [user]);
 
-    // Restore active session (e.g., after Venmo redirect)
-    try {
-      const saved = localStorage.getItem("partake_active_session");
-      if (saved) {
-        const session = JSON.parse(saved);
-        if (session.bill) {
-          setBill({ ...session.bill, createdAt: new Date(session.bill.createdAt) });
-          setParticipants(session.bill.participants);
-          setStep("split");
-        }
-      }
-    } catch {}
-  }, []);
+  function ensureMyProfileParticipant(profile = myProfile) {
+    if (!profile) return;
+    setParticipants(prev => {
+      if (prev.some(p => p.name.toLowerCase() === profile.name.toLowerCase())) return prev;
+      return [participantFromProfile(profile), ...prev];
+    });
+  }
 
-  useEffect(() => {
-    if (step === "participants" && myProfile) {
-      setParticipants(prev => {
-        if (prev.some(p => p.name.toLowerCase() === myProfile.name.toLowerCase())) return prev;
-        const paymentHandle = (myProfile.venmoUsername || myProfile.cashAppUsername || "").replace(/^@/, "");
-        const isCashApp = paymentHandle.startsWith("$");
-        return [{
-          id: crypto.randomUUID(),
-          name: myProfile.name,
-          venmoUsername: !isCashApp && paymentHandle ? paymentHandle : undefined,
-          cashAppUsername: isCashApp ? paymentHandle : undefined,
-          isAppUser: true,
-        }, ...prev];
-      });
-    }
-  }, [step, myProfile]); // eslint-disable-line react-hooks/exhaustive-deps
+  function goToParticipants() {
+    ensureMyProfileParticipant();
+    setStep("participants");
+  }
 
   function addParticipant() {
     if (!newName.trim()) return;
@@ -132,6 +225,7 @@ export default function Home() {
       createdAt: new Date(),
       status: "splitting",
       shareCode,
+      sharedWithUserIds: user ? [user.uid] : [],
     };
 
     setBill(newBill);
@@ -141,6 +235,11 @@ export default function Home() {
       setTimeout(() => saveBill(newBill).catch((err) => console.warn("Cloud sync failed:", err)), 2000);
     });
     saveAllParticipantsAsContacts(participants);
+    if (user) {
+      const contacts = contactsFromParticipants(participants, user.uid);
+      for (const contact of contacts) saveContact(user.uid, contact).catch(() => {});
+      setSavedContacts((prev) => mergeContacts(prev, contacts));
+    }
     setStep("split");
   }
 
@@ -227,7 +326,12 @@ export default function Home() {
                   className="flex items-center gap-2 bg-[#FFFFFF] rounded-xl hover:bg-[#F5EDE3] transition-colors"
                 >
                   <button
-                    onClick={() => { setBill(b); setParticipants(b.participants); setStep("split"); }}
+                    onClick={() => {
+                      setBill(b);
+                      setReceipt(reconstructReceiptFromBill(b));
+                      setParticipants(b.participants);
+                      setStep("split");
+                    }}
                     className="flex items-center justify-between flex-1 p-3 text-left"
                   >
                     <div>
@@ -328,6 +432,7 @@ export default function Home() {
                 };
                 saveUserProfile(profile);
                 setMyProfile(profile);
+                ensureMyProfileParticipant(profile);
                 setNewName("");
                 setNewVenmo("");
               }}
@@ -514,6 +619,13 @@ export default function Home() {
                 };
                 setBill(updatedBill);
                 saveBillToHistory(updatedBill);
+                saveBill(updatedBill).catch((err) => console.warn("Cloud sync failed:", err));
+                saveAllParticipantsAsContacts(participants);
+                if (user) {
+                  const contacts = contactsFromParticipants(participants, user.uid);
+                  for (const contact of contacts) saveContact(user.uid, contact).catch(() => {});
+                  setSavedContacts((prev) => mergeContacts(prev, contacts));
+                }
                 setStep("split");
               } else {
                 createBill();
@@ -553,24 +665,6 @@ export default function Home() {
         </ErrorBoundary>
       </main>
     );
-  }
-
-  // Edit receipt — reconstruct from bill if receipt is null (e.g., loaded from history)
-  if (step === "edit" && !receipt && bill) {
-    setReceipt({
-      items: bill.items.map((i) => ({
-        id: i.id,
-        name: i.name,
-        price: i.price,
-        confidence: 1,
-        quantity: i.quantity,
-      })),
-      tax: bill.tax,
-      tip: bill.tipAmount,
-      subtotal: bill.subtotal,
-      total: bill.total,
-      restaurantName: bill.restaurantName,
-    });
   }
 
   if (step === "edit" && receipt) {
@@ -642,7 +736,7 @@ export default function Home() {
         <ReceiptEditor receipt={receipt} onChange={setReceipt} />
         <div className="mt-6">
           <PrimaryButton
-            onClick={() => setStep("participants")}
+            onClick={goToParticipants}
             disabled={receipt.items.length === 0}
           >
             Next: Who&apos;s in?
@@ -657,7 +751,10 @@ export default function Home() {
     return (
       <main className="min-h-dvh max-w-md mx-auto">
         <ErrorBoundary>
-          <BillSplitter bill={bill} onBack={() => setStep("participants")} onEditReceipt={() => setStep("edit")} onHome={() => {
+          <BillSplitter bill={bill} onBack={goToParticipants} onEditReceipt={() => {
+            setReceipt(reconstructReceiptFromBill(bill));
+            setStep("edit");
+          }} onBillChange={setBill} onHome={() => {
             try { localStorage.removeItem("partake_active_session"); } catch {}
             setBill(null);
             setReceipt(null);
