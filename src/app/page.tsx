@@ -358,14 +358,21 @@ export default function Home() {
 
         <section className="relative mx-auto flex w-full max-w-md flex-col items-center gap-6">
           <div className="flex flex-col items-center gap-4 text-center">
-            <div className="relative h-24 w-24">
+            <div className="relative h-28 w-28" aria-hidden="true">
               <div className="absolute inset-0 rounded-[2rem] bg-white shadow-2xl shadow-[#2D2319]/10" />
-              <div className="absolute left-4 top-5 h-12 w-12 rounded-full bg-[#E8613C] shadow-lg shadow-[#E8613C]/25" />
-              <div className="absolute right-4 top-5 h-12 w-12 rounded-full bg-[#F4A261] shadow-lg shadow-[#F4A261]/25" />
-              <div className="absolute bottom-4 left-1/2 h-12 w-12 -translate-x-1/2 rounded-full bg-[#FFD6A5] shadow-lg shadow-[#FFD6A5]/30" />
+              <div className="absolute inset-2 rounded-[1.6rem] border border-[#F5EDE3] bg-[#FFF9F1]" />
+              <div className="absolute left-1/2 top-6 h-11 w-11 -translate-x-1/2 rounded-full border-4 border-white bg-[#F4A261] shadow-lg shadow-[#F4A261]/25" />
+              <div className="absolute left-6 top-9 h-10 w-10 rounded-full border-4 border-white bg-[#E8613C] shadow-lg shadow-[#E8613C]/25" />
+              <div className="absolute right-6 top-9 h-10 w-10 rounded-full border-4 border-white bg-[#FFD6A5] shadow-lg shadow-[#FFD6A5]/25" />
+              <div className="absolute bottom-7 left-1/2 h-11 w-[4.75rem] -translate-x-1/2 rounded-t-[2rem] bg-[#F4A261]" />
+              <div className="absolute bottom-6 left-5 h-10 w-14 rounded-t-[1.75rem] bg-[#E8613C]" />
+              <div className="absolute bottom-6 right-5 h-10 w-14 rounded-t-[1.75rem] bg-[#FFD6A5]" />
+              <div className="absolute bottom-4 left-1/2 h-6 w-20 -translate-x-1/2 rounded-full bg-white/80" />
             </div>
             <div>
-              <p className="mb-2 text-xs font-bold uppercase tracking-[0.22em] text-[#E8613C]">From receipt to request</p>
+              <p className="mx-auto mb-2 inline-flex rounded-full border border-[#FFD6A5] bg-white/80 px-3 py-1 text-xs font-bold text-[#E8613C] shadow-sm">
+                From receipt to request
+              </p>
               <h1 className="text-6xl font-black gradient-text tracking-[-0.06em]">Partake</h1>
             </div>
             <div className="max-w-sm">
@@ -420,38 +427,27 @@ export default function Home() {
             }} className="min-h-14 text-base shadow-xl shadow-[#E8613C]/20">
               Scan the receipt
             </PrimaryButton>
+            {user && !user.isAnonymous && (
+              <div className="mt-3 flex items-center justify-between gap-3 rounded-full border border-[#F5EDE3] bg-white/80 px-3 py-2 shadow-sm shadow-[#2D2319]/5">
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#2E7D32] text-xs font-black text-white">✓</span>
+                  <span className="truncate text-xs font-semibold text-[#6F5F51]">
+                    Synced as {user.displayName ?? user.email ?? "Google"}
+                  </span>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  className="shrink-0 rounded-full px-2 py-1 text-xs font-semibold text-[#9C8E80] transition-colors hover:bg-[#F5EDE3] hover:text-[#E8613C]"
+                >
+                  Sign out
+                </button>
+              </div>
+            )}
           </div>
 
-          <div className="w-full overflow-hidden rounded-[1.75rem] border border-[#F5EDE3] bg-white shadow-lg shadow-[#2D2319]/5">
-            {user && !user.isAnonymous ? (
-              <div className="relative flex flex-col gap-4 bg-gradient-to-br from-white via-[#F8FFF7] to-[#F5EDE3] p-5 text-left">
-                <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-[#2E7D32]/10" />
-                <div className="pointer-events-none absolute -bottom-12 -left-10 h-24 w-24 rounded-full bg-[#FFD6A5]/45" />
-                <div className="relative flex items-start gap-3">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-xl shadow-sm shadow-[#2D2319]/10">
-                    ✓
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-base font-bold text-[#2D2319]">Sync is on</p>
-                    <p className="mt-1 truncate text-sm font-medium text-[#6F5F51]">
-                      {user.displayName ?? user.email ?? "Google account"}
-                    </p>
-                    <p className="mt-1 text-sm leading-5 text-[#6F5F51]">
-                      Your bill history and friends are saved for the next time you open Partake.
-                    </p>
-                  </div>
-                </div>
-                <div className="relative flex items-center justify-between gap-3 rounded-2xl border border-white/80 bg-white/70 px-3 py-2">
-                  <span className="text-xs font-semibold text-[#2E7D32]">Connected with Google</span>
-                  <button
-                    onClick={handleSignOut}
-                    className="rounded-full px-3 py-1.5 text-xs font-semibold text-[#6F5F51] transition-colors hover:bg-[#F5EDE3] hover:text-[#E8613C]"
-                  >
-                    Sign out
-                  </button>
-                </div>
-              </div>
-            ) : (
+          {(!user || user.isAnonymous || authError) && (
+            <div className="w-full overflow-hidden rounded-[1.75rem] border border-[#F5EDE3] bg-white shadow-lg shadow-[#2D2319]/5">
+              {(!user || user.isAnonymous) && (
               <div className="relative flex flex-col gap-4 bg-gradient-to-br from-white via-[#FFF7EF] to-[#F5EDE3] p-5 text-left">
                 <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-[#FFD6A5]/50" />
                 <div className="pointer-events-none absolute -bottom-12 -left-10 h-24 w-24 rounded-full bg-[#E8613C]/10" />
@@ -479,11 +475,12 @@ export default function Home() {
                   {signingIn ? "Signing in..." : "Continue with Google"}
                 </button>
               </div>
-            )}
-            {authError && (
-              <p className="border-t border-[#F5EDE3] bg-white px-4 py-3 text-center text-xs text-[#E8613C]">{authError}</p>
-            )}
-          </div>
+              )}
+              {authError && (
+                <p className="border-t border-[#F5EDE3] bg-white px-4 py-3 text-center text-xs text-[#E8613C]">{authError}</p>
+              )}
+            </div>
+          )}
 
           {billHistory.length > 0 && (
             <div className="w-full">
