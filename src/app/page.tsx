@@ -430,18 +430,13 @@ export default function Home() {
                 <path d="m110 119 9 9 17-21" fill="none" stroke="#ffffff" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <div>
-              <p className="mx-auto mb-2 inline-flex rounded-full border border-[#FBBF24] bg-white/80 px-3 py-1 text-xs font-bold text-[#D97706] shadow-sm">
-                From receipt to request
-              </p>
-              <h1 className="text-6xl font-black gradient-text tracking-[-0.06em]">Partake</h1>
-            </div>
+            <h1 className="text-6xl font-black gradient-text tracking-[-0.06em]">Partake</h1>
             <div className="max-w-sm">
               <h2 className="text-3xl font-black leading-[0.95] tracking-[-0.04em] text-[#2D2416]">
                 Split dinner without the group-chat math.
               </h2>
               <p className="mt-3 text-base leading-6 text-[#6B4F2A]">
-                Snap a receipt, tap who ordered what, and send Venmo-ready payment requests in seconds.
+                Scan a receipt, claim items, and send Venmo requests.
               </p>
             </div>
           </div>
