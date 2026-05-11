@@ -98,8 +98,8 @@ export function ItemizedView({
                 disabled={claimsLocked}
                 className={`w-full flex items-center justify-between p-3 rounded-lg transition-all text-left ${
                   isClaimed
-                    ? "bg-[#E8F5E9]"
-                    : "bg-[#FDE68A] hover:bg-[#FDE68A]"
+                    ? "bg-[#FEF3C7] border border-[#FBBF24]"
+                    : "bg-white border border-[#FDE68A] hover:bg-[#FFFBEB]"
                 } ${isClaimed ? "pop-animation" : ""} ${claimsLocked ? "opacity-70 cursor-not-allowed" : ""}`}
               >
                 <div className="flex-1">
@@ -148,7 +148,7 @@ export function ItemizedView({
                 </button>
               )}
               {isExpanded && !claimsLocked && item.quantity > 1 && onSplitItem && (
-                <div className="p-3 mb-1 rounded-lg bg-[#FDE68A] flex flex-col gap-2">
+                <div className="p-3 mb-1 rounded-lg bg-white border border-[#FDE68A] flex flex-col gap-2">
                   <p className="text-xs text-[#8A7353]">How many portions? (receipt says {item.quantity}, but you can change it)</p>
                   <div className="flex items-center justify-center gap-3">
                     <button

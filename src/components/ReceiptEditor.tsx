@@ -138,7 +138,7 @@ export function ReceiptEditor({
       <div className="flex flex-col gap-2">
         {receipt.items.map((item, index) => (
           editingId === item.id ? (
-            <div key={item.id} className="flex flex-col gap-2 p-3 rounded-xl bg-[#FDE68A] border-2 border-[#D97706]">
+            <div key={item.id} className="flex flex-col gap-2 p-3 rounded-xl bg-white border-2 border-[#D97706] shadow-sm">
               <input
                 type="text"
                 value={editName}
@@ -194,7 +194,7 @@ export function ReceiptEditor({
               key={item.id}
               onClick={() => startEdit(item)}
               className={`flex items-center justify-between p-3 rounded-xl cursor-pointer hover:ring-1 hover:ring-[#D97706] transition-all ${
-                item.confidence < 0.7 ? "bg-[#FFFBEB] border border-amber-700" : "bg-[#FDE68A]"
+                item.confidence < 0.7 ? "bg-[#FFFBEB] border border-amber-700" : "bg-white border border-[#FDE68A] shadow-sm"
               }`}
             >
               <div className="flex items-center gap-3 flex-1">
@@ -203,7 +203,7 @@ export function ReceiptEditor({
                   {item.name}{item.quantity > 1 && <span className="text-[#8A7353]"> ({item.quantity}×)</span>}
                 </span>
               </div>
-              <span className="font-bold text-[#F59E0B] ml-3">
+              <span className="font-bold text-[#A16207] ml-3">
                 ${(item.price * item.quantity).toFixed(2)}
               </span>
               <button
@@ -217,7 +217,7 @@ export function ReceiptEditor({
         ))}
 
         {/* Add item input */}
-        <div className="flex items-center gap-2 p-3 rounded-xl border-2 border-dashed border-[#FDE68A] focus-within:border-[#D97706] transition-colors">
+        <div className="flex items-center gap-2 p-3 rounded-xl border-2 border-dashed border-[#FBBF24] bg-white focus-within:border-[#D97706] transition-colors">
           <span className="text-xs text-[#D97706]">+</span>
           <input
             ref={nameInputRef}
@@ -274,7 +274,7 @@ export function ReceiptEditor({
             <span className="font-semibold">${subtotal.toFixed(2)}</span>
           </div>
 
-          <div className="flex items-center justify-between p-3 bg-[#FDE68A] rounded-xl">
+          <div className="flex items-center justify-between p-3 bg-white rounded-xl border border-[#FDE68A]">
             <span className="text-sm">Tax</span>
             <div className="flex items-center gap-1">
               <span className="text-sm text-[#8A7353]">$</span>
@@ -308,7 +308,7 @@ export function ReceiptEditor({
           )}
 
           {/* Tip */}
-          <div className="flex items-center justify-between p-3 bg-[#FDE68A] rounded-xl">
+          <div className="flex items-center justify-between p-3 bg-white rounded-xl border border-[#FDE68A]">
             <div className="flex flex-col">
               <span className="text-sm">Tip</span>
               <span className="text-xs text-[#8A7353]">Adjust on split screen if needed</span>
@@ -330,7 +330,7 @@ export function ReceiptEditor({
           </div>
 
           {/* Discount */}
-          <div className="flex items-center justify-between p-3 bg-[#FDE68A] rounded-xl">
+          <div className="flex items-center justify-between p-3 bg-white rounded-xl border border-[#FDE68A]">
             <div className="flex flex-col">
               <span className="text-sm">Discount</span>
               <span className="text-xs text-[#8A7353]">Birthday, coupon, comp, etc.</span>

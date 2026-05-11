@@ -239,6 +239,14 @@ export default function Home() {
     setStep("scan");
   }
 
+  function requestRescan() {
+    if (receipt?.items.length) {
+      setShowRescanConfirm(true);
+    } else {
+      setStep("scan");
+    }
+  }
+
   function addParticipant() {
     if (!newName.trim()) return;
     if (participants.some((p) => p.name.toLowerCase() === newName.trim().toLowerCase())) return;
@@ -902,18 +910,14 @@ export default function Home() {
   if (step === "edit" && receipt) {
     return (
       <main className="min-h-dvh p-6 max-w-md md:max-w-2xl mx-auto">
-        <TopBarButton
-          onClick={() => {
-            if (receipt.items.length > 0) {
-              setShowRescanConfirm(true);
-            } else {
-              setStep("scan");
-            }
-          }}
-          className="mb-4"
-        >
-          ← Re-scan
-        </TopBarButton>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <TopBarButton onClick={goToParticipants}>
+            ← Back to people
+          </TopBarButton>
+          <TopBarButton onClick={requestRescan} variant="accent">
+            Re-scan receipt
+          </TopBarButton>
+        </div>
 
         {showRescanConfirm && (
           <div className="mb-4 p-4 bg-[#FDE68A] rounded-xl flex flex-col gap-3">

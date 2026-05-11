@@ -54,6 +54,11 @@ export function BillSplitter({
   const skippedInitialCloudSave = useRef(false);
   const applyingRemoteUpdate = useRef(false);
   const claimsLocked = bill.status === "settled";
+  const goHome = () => {
+    if (onHome) {
+      onHome();
+    }
+  };
 
   // Sync bill when participants change (e.g., user goes back and adds someone)
   useEffect(() => {
@@ -308,33 +313,31 @@ export function BillSplitter({
 
   return (
     <div className="flex flex-col h-full">
-      {onBack && (
+      {(onBack || onHome) && (
         <div className="p-3 bg-[#FFFFFF] flex flex-col items-stretch gap-3 border-b border-[#FDE68A] sm:flex-row sm:items-center sm:justify-between">
-          {claimsLocked ? (
+          {onHome ? (
+            <TopBarButton onClick={goHome}>
+              ← Home
+            </TopBarButton>
+          ) : claimsLocked ? (
             <span className="inline-flex min-h-11 items-center rounded-full border border-[#FBBF24] bg-[#FDE68A] px-4 py-2 text-sm font-semibold text-[#6B4F2A]">
               Locked
             </span>
-          ) : (
+          ) : onBack ? (
             <TopBarButton onClick={onBack}>
               ← Back to people
             </TopBarButton>
-          )}
+          ) : null}
           <div className="flex flex-wrap gap-2 sm:justify-end">
             <FeedbackWidget />
+            {onBack && !claimsLocked && (
+              <TopBarButton onClick={onBack}>
+                Edit people
+              </TopBarButton>
+            )}
             {onEditReceipt && !claimsLocked && (
               <TopBarButton onClick={onEditReceipt} variant="accent">
                 Edit items
-              </TopBarButton>
-            )}
-            {onHome && (
-              <TopBarButton
-                onClick={() => {
-                  if (confirm("Exit this bill? You can reopen it from Recent Bills.")) {
-                    onHome();
-                  }
-                }}
-              >
-                ✕ Done
               </TopBarButton>
             )}
           </div>
@@ -445,7 +448,7 @@ export function BillSplitter({
         )}
       </div>
 
-      <div className="px-4 pt-4 pb-safe border-t border-[#FDE68A] bg-[#FFF8E1]">
+      <div className="px-4 pt-4 pb-safe border-t border-[#FDE68A] bg-white">
         <div className="flex justify-between items-center mb-3">
           <span className="font-semibold">Total</span>
           <span className="text-xl font-bold">${bill.total.toFixed(2)}</span>
