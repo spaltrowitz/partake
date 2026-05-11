@@ -2,8 +2,6 @@ import Link from "next/link";
 
 const VENMO_TIP_URL =
   "https://venmo.com/shari-paltrowitz?txn=pay&amount=5&note=Partake%20%F0%9F%8D%95";
-const VENMO_TIP_OPEN_URL =
-  "https://venmo.com/shari-paltrowitz?txn=pay&note=Partake%20%F0%9F%8D%95";
 
 export default function AboutPage() {
   return (
@@ -53,16 +51,11 @@ export default function AboutPage() {
                 rel="noopener noreferrer"
                 className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-full bg-[#E8613C] px-5 py-3 text-sm font-black text-white shadow-lg shadow-[#E8613C]/20 transition-transform hover:-translate-y-0.5"
               >
-                🍕 Cover my share — $5
+                🍕 Cover my share
               </a>
-              <a
-                href={VENMO_TIP_OPEN_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-semibold text-[#A87957] hover:text-[#E8613C] transition-colors"
-              >
-                or pick your own amount →
-              </a>
+              <p className="text-center text-xs font-medium text-[#A87957] sm:text-right">
+                Opens Venmo with $5 prefilled.
+              </p>
             </div>
           </div>
         </div>
