@@ -226,6 +226,19 @@ export default function Home() {
     setStep("participants");
   }
 
+  function goBackToReceipt() {
+    if (receipt) {
+      setStep("edit");
+      return;
+    }
+    if (bill) {
+      setReceipt(reconstructReceiptFromBill(bill));
+      setStep("edit");
+      return;
+    }
+    setStep("scan");
+  }
+
   function addParticipant() {
     if (!newName.trim()) return;
     if (participants.some((p) => p.name.toLowerCase() === newName.trim().toLowerCase())) return;
@@ -654,7 +667,7 @@ export default function Home() {
               That&apos;s me
             </PrimaryButton>
           </div>
-          <TopBarButton onClick={() => setStep("edit")}>← Back to receipt</TopBarButton>
+          <TopBarButton onClick={goBackToReceipt}>← Back to receipt</TopBarButton>
         </main>
       );
     }
@@ -666,7 +679,7 @@ export default function Home() {
     return (
       <main className="p-6 max-w-md md:max-w-2xl mx-auto">
         <TopBarButton
-          onClick={() => setStep("edit")}
+          onClick={goBackToReceipt}
           className="mb-4"
         >
           ← Back to receipt
