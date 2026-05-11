@@ -428,26 +428,32 @@ export default function Home() {
               Scan the receipt
             </PrimaryButton>
             {user && !user.isAnonymous && (
-              <div className="mt-3 flex items-center justify-between gap-3 rounded-full border border-[#F5EDE3] bg-white/80 px-3 py-2 shadow-sm shadow-[#2D2319]/5">
-                <div className="flex min-w-0 items-center gap-2">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#2E7D32] text-xs font-black text-white">✓</span>
-                  <span className="truncate text-xs font-semibold text-[#6F5F51]">
-                    Synced as {user.displayName ?? user.email ?? "Google"}
-                  </span>
+              <>
+                <div className="mt-3 flex items-center justify-between gap-3 rounded-full border border-[#F5EDE3] bg-white/80 px-3 py-2 shadow-sm shadow-[#2D2319]/5">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#2E7D32] text-xs font-black text-white">✓</span>
+                    <span className="truncate text-xs font-semibold text-[#6F5F51]">
+                      Synced as {user.displayName ?? user.email ?? "Google"}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="shrink-0 rounded-full px-2 py-1 text-xs font-semibold text-[#9C8E80] transition-colors hover:bg-[#F5EDE3] hover:text-[#E8613C]"
+                  >
+                    Sign out
+                  </button>
                 </div>
-                <button
-                  onClick={handleSignOut}
-                  className="shrink-0 rounded-full px-2 py-1 text-xs font-semibold text-[#9C8E80] transition-colors hover:bg-[#F5EDE3] hover:text-[#E8613C]"
-                >
-                  Sign out
-                </button>
-              </div>
+                {authError && (
+                  <p className="mt-2 rounded-2xl border border-[#FFD6A5] bg-white/80 px-3 py-2 text-center text-xs text-[#E8613C]">
+                    {authError}
+                  </p>
+                )}
+              </>
             )}
           </div>
 
-          {(!user || user.isAnonymous || authError) && (
+          {(!user || user.isAnonymous) && (
             <div className="w-full overflow-hidden rounded-[1.75rem] border border-[#F5EDE3] bg-white shadow-lg shadow-[#2D2319]/5">
-              {(!user || user.isAnonymous) && (
               <div className="relative flex flex-col gap-4 bg-gradient-to-br from-white via-[#FFF7EF] to-[#F5EDE3] p-5 text-left">
                 <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-[#FFD6A5]/50" />
                 <div className="pointer-events-none absolute -bottom-12 -left-10 h-24 w-24 rounded-full bg-[#E8613C]/10" />
@@ -475,7 +481,6 @@ export default function Home() {
                   {signingIn ? "Signing in..." : "Continue with Google"}
                 </button>
               </div>
-              )}
               {authError && (
                 <p className="border-t border-[#F5EDE3] bg-white px-4 py-3 text-center text-xs text-[#E8613C]">{authError}</p>
               )}
