@@ -8,7 +8,7 @@
 |-------|---------|
 | **Hosting** | Vercel (Next.js 16) |
 | **Database** | Firebase Firestore (bills, users, contacts, partnerGroups) |
-| **Auth** | Firebase Authentication (anonymous sign-in) |
+| **Auth** | Firebase Authentication (Google Sign-In + anonymous fallback, popup → redirect on iOS Safari) |
 | **Storage** | Firebase Cloud Storage (receipt images) |
 | **OCR** | Google Cloud Vision API (primary) + Tesseract.js (client fallback) |
 | **Geolocation** | Browser Geolocation API + OpenStreetMap Nominatim (reverse geocoding) |
@@ -32,11 +32,12 @@ flowchart TB
 
     subgraph Firebase["🔥 Firebase"]
         Firestore["Firestore\n• bills/{id}\n• users/{uid}/contacts\n• users/{uid}/partnerGroups"]
-        FBAuth["Firebase Auth\n(Anonymous sign-in)"]
+        FBAuth["Firebase Auth\n• Google Sign-In (popup/redirect)\n• Anonymous fallback\n• linkWithPopup upgrade"]
         FBStorage["Cloud Storage\n(Receipt images)"]
     end
 
     subgraph External["🔌 External APIs"]
+        GoogleAuth["Google OAuth\naccounts.google.com"]
         Vision["Google Cloud Vision\nTEXT_DETECTION"]
         Tesseract["Tesseract.js\n(client-side fallback)"]
         Nominatim["OpenStreetMap Nominatim\nReverse geocoding"]
@@ -63,7 +64,8 @@ flowchart TB
     TaxTable -->|"tax rate %"| App
 
     App <-->|"bills, contacts"| Firestore
-    App <-->|"anonymous auth"| FBAuth
+    App <-->|"Google / anonymous"| FBAuth
+    FBAuth <-->|"OAuth"| GoogleAuth
     App -->|"receipt photos"| FBStorage
     App -->|"offline cache"| LS
 
@@ -82,6 +84,7 @@ flowchart TB
 
 1. **Receipt Scan**: Camera → image → Vercel API proxy → Google Cloud Vision → parsed items → bill split UI
 2. **Tax Lookup**: Browser geolocation → Nominatim reverse geocode → state → hardcoded tax rate applied
-3. **Bill Sharing**: Bill saved to Firestore with shareCode → share link → guest opens → anonymous auth
-4. **Settlement**: Calculated split → deep link to Venmo/Cash App → payment outside app
-5. **Offline**: Bills cached in localStorage (max 50) → contacts persisted locally
+3. **Sign-In**: User taps Google Sign-In → `signInWithPopup` → falls back to `signInWithRedirect` on iOS Safari / blocked popups → anonymous guests can upgrade via `linkWithPopup` to preserve bill history
+4. **Bill Sharing**: Bill saved to Firestore with shareCode → share link (with OG image) → guest opens → anonymous or Google auth
+5. **Settlement**: Calculated split → deep link to Venmo/Cash App → payment outside app → items locked after payment request sent
+6. **Offline**: Bills cached in localStorage (max 50) → contacts persisted locally
