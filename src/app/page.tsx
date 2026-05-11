@@ -360,16 +360,23 @@ export default function Home() {
         <section className="relative mx-auto flex w-full max-w-md flex-col items-center gap-6 md:max-w-2xl md:gap-8">
           <div className="flex flex-col items-center gap-4 text-center">
             <div className="h-28 w-28 rounded-[2rem] bg-white p-2 shadow-2xl shadow-[#0F172A]/10" aria-hidden="true">
-              <svg viewBox="0 0 112 112" className="h-full w-full" role="img">
-                <rect x="6" y="6" width="100" height="100" rx="26" fill="#ECFDF5" stroke="#CCFBF1" strokeWidth="2" />
-                <path d="M27 82H85" stroke="#99F6E4" strokeWidth="8" strokeLinecap="round" />
-                <path d="M27 88H85" stroke="white" strokeWidth="10" strokeLinecap="round" opacity="0.85" />
-                <circle cx="56" cy="35" r="16" fill="#14B8A6" stroke="white" strokeWidth="5" />
-                <circle cx="34" cy="45" r="14" fill="#0F766E" stroke="white" strokeWidth="5" />
-                <circle cx="78" cy="45" r="14" fill="#99F6E4" stroke="white" strokeWidth="5" />
-                <path d="M33 82C35 65 43 55 56 55C69 55 77 65 79 82Z" fill="#14B8A6" />
-                <path d="M16 82C19 68 26 60 36 60C47 60 54 68 57 82Z" fill="#0F766E" />
-                <path d="M55 82C58 68 65 60 76 60C86 60 93 68 96 82Z" fill="#99F6E4" />
+              <svg viewBox="0 0 192 192" className="h-full w-full" role="img">
+                <defs>
+                  <linearGradient id="hero-logo-bg" x1="24" y1="24" x2="168" y2="168" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stopColor="#0b1020" />
+                    <stop offset="1" stopColor="#0f766e" />
+                  </linearGradient>
+                  <linearGradient id="hero-logo-receipt" x1="54" y1="42" x2="138" y2="150" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stopColor="#ccfbf1" />
+                    <stop offset="1" stopColor="#5eead4" />
+                  </linearGradient>
+                </defs>
+                <rect width="192" height="192" rx="42" fill="#f0fdfa" />
+                <rect x="18" y="18" width="156" height="156" rx="36" fill="url(#hero-logo-bg)" />
+                <path d="M58 42h76a8 8 0 0 1 8 8v96l-15-9-15 9-16-9-16 9-15-9-15 9V50a8 8 0 0 1 8-8Z" fill="url(#hero-logo-receipt)" />
+                <path d="M74 72h44M74 95h44M74 118h24" fill="none" stroke="#0f766e" strokeWidth="8" strokeLinecap="round" />
+                <circle cx="122" cy="119" r="24" fill="#14b8a6" />
+                <path d="m110 119 9 9 17-21" fill="none" stroke="#ffffff" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             <div>
@@ -430,6 +437,30 @@ export default function Home() {
             }} className="min-h-14 text-base shadow-xl shadow-[#0F766E]/20">
               Scan the receipt
             </PrimaryButton>
+          </div>
+
+          <div className="w-full rounded-[1.75rem] border border-[#CCFBF1] bg-white/80 p-4 text-left shadow-lg shadow-[#0F172A]/5">
+            <div className="flex items-center gap-4">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#ECFDF5] shadow-inner shadow-white" aria-hidden="true">
+                <svg viewBox="0 0 112 112" className="h-14 w-14" role="img">
+                  <rect x="6" y="6" width="100" height="100" rx="26" fill="#ECFDF5" stroke="#CCFBF1" strokeWidth="2" />
+                  <path d="M27 82H85" stroke="#99F6E4" strokeWidth="8" strokeLinecap="round" />
+                  <path d="M27 88H85" stroke="white" strokeWidth="10" strokeLinecap="round" opacity="0.85" />
+                  <circle cx="56" cy="35" r="16" fill="#14B8A6" stroke="white" strokeWidth="5" />
+                  <circle cx="34" cy="45" r="14" fill="#0F766E" stroke="white" strokeWidth="5" />
+                  <circle cx="78" cy="45" r="14" fill="#99F6E4" stroke="white" strokeWidth="5" />
+                  <path d="M33 82C35 65 43 55 56 55C69 55 77 65 79 82Z" fill="#14B8A6" />
+                  <path d="M16 82C19 68 26 60 36 60C47 60 54 68 57 82Z" fill="#0F766E" />
+                  <path d="M55 82C58 68 65 60 76 60C86 60 93 68 96 82Z" fill="#99F6E4" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-black text-[#0F172A]">Built for group dinners</p>
+                <p className="mt-1 text-sm leading-5 text-[#334155]">
+                  Add everyone at the table, claim items together, and send requests without awkward math.
+                </p>
+              </div>
+            </div>
           </div>
 
           {(!user || user.isAnonymous) && (
