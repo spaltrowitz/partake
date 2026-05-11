@@ -376,9 +376,9 @@ export default function Home() {
               <svg viewBox="0 0 192 192" className="h-full w-full" role="img">
                 <defs>
                   <linearGradient id="hero-logo-bg" x1="24" y1="24" x2="168" y2="168" gradientUnits="userSpaceOnUse">
-                    <stop offset="0" stopColor="#F4A261" />
-                    <stop offset="0.55" stopColor="#F4A261" />
-                    <stop offset="1" stopColor="#E8613C" />
+                    <stop offset="0" stopColor="#FEF3C7" />
+                    <stop offset="0.55" stopColor="#FDE047" />
+                    <stop offset="1" stopColor="#EAB308" />
                   </linearGradient>
                   <linearGradient id="hero-logo-receipt" x1="54" y1="42" x2="138" y2="150" gradientUnits="userSpaceOnUse">
                     <stop offset="0" stopColor="#ffffff" />
@@ -388,8 +388,8 @@ export default function Home() {
                 <rect width="192" height="192" rx="42" fill="#fff8e1" />
                 <rect x="18" y="18" width="156" height="156" rx="36" fill="url(#hero-logo-bg)" />
                 <path d="M58 42h76a8 8 0 0 1 8 8v96l-15-9-15 9-16-9-16 9-15-9-15 9V50a8 8 0 0 1 8-8Z" fill="url(#hero-logo-receipt)" />
-                <path d="M74 72h44M74 95h44M74 118h24" fill="none" stroke="#D97706" strokeWidth="8" strokeLinecap="round" />
-                <circle cx="122" cy="119" r="24" fill="#D97706" />
+                <path d="M74 72h44M74 95h44M74 118h24" fill="none" stroke="#A16207" strokeWidth="8" strokeLinecap="round" />
+                <circle cx="122" cy="119" r="24" fill="#A16207" />
                 <path d="m110 119 9 9 17-21" fill="none" stroke="#ffffff" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
