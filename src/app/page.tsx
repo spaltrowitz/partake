@@ -353,68 +353,68 @@ export default function Home() {
   if (step === "landing") {
     return (
       <main className="relative min-h-dvh overflow-hidden px-5 pb-10 pt-10">
-        <div className="pointer-events-none absolute -left-24 top-10 h-56 w-56 rounded-full bg-[#FFD6A5]/45 blur-3xl" />
-        <div className="pointer-events-none absolute -right-24 top-32 h-64 w-64 rounded-full bg-[#E8613C]/15 blur-3xl" />
+        <div className="pointer-events-none absolute -left-24 top-10 h-56 w-56 rounded-full bg-[#99F6E4]/45 blur-3xl" />
+        <div className="pointer-events-none absolute -right-24 top-32 h-64 w-64 rounded-full bg-[#0F766E]/15 blur-3xl" />
         <div className="pointer-events-none absolute bottom-0 left-1/2 h-56 w-56 -translate-x-1/2 rounded-full bg-white/70 blur-3xl" />
 
         <section className="relative mx-auto flex w-full max-w-md flex-col items-center gap-6 md:max-w-2xl md:gap-8">
           <div className="flex flex-col items-center gap-4 text-center">
-            <div className="h-28 w-28 rounded-[2rem] bg-white p-2 shadow-2xl shadow-[#2D2319]/10" aria-hidden="true">
+            <div className="h-28 w-28 rounded-[2rem] bg-white p-2 shadow-2xl shadow-[#0F172A]/10" aria-hidden="true">
               <svg viewBox="0 0 112 112" className="h-full w-full" role="img">
-                <rect x="6" y="6" width="100" height="100" rx="26" fill="#FFF9F1" stroke="#F5EDE3" strokeWidth="2" />
-                <path d="M27 82H85" stroke="#F0DFC9" strokeWidth="8" strokeLinecap="round" />
+                <rect x="6" y="6" width="100" height="100" rx="26" fill="#ECFDF5" stroke="#CCFBF1" strokeWidth="2" />
+                <path d="M27 82H85" stroke="#99F6E4" strokeWidth="8" strokeLinecap="round" />
                 <path d="M27 88H85" stroke="white" strokeWidth="10" strokeLinecap="round" opacity="0.85" />
-                <circle cx="56" cy="35" r="16" fill="#F4A261" stroke="white" strokeWidth="5" />
-                <circle cx="34" cy="45" r="14" fill="#E8613C" stroke="white" strokeWidth="5" />
-                <circle cx="78" cy="45" r="14" fill="#FFD6A5" stroke="white" strokeWidth="5" />
-                <path d="M33 82C35 65 43 55 56 55C69 55 77 65 79 82Z" fill="#F4A261" />
-                <path d="M16 82C19 68 26 60 36 60C47 60 54 68 57 82Z" fill="#E8613C" />
-                <path d="M55 82C58 68 65 60 76 60C86 60 93 68 96 82Z" fill="#FFD6A5" />
+                <circle cx="56" cy="35" r="16" fill="#14B8A6" stroke="white" strokeWidth="5" />
+                <circle cx="34" cy="45" r="14" fill="#0F766E" stroke="white" strokeWidth="5" />
+                <circle cx="78" cy="45" r="14" fill="#99F6E4" stroke="white" strokeWidth="5" />
+                <path d="M33 82C35 65 43 55 56 55C69 55 77 65 79 82Z" fill="#14B8A6" />
+                <path d="M16 82C19 68 26 60 36 60C47 60 54 68 57 82Z" fill="#0F766E" />
+                <path d="M55 82C58 68 65 60 76 60C86 60 93 68 96 82Z" fill="#99F6E4" />
               </svg>
             </div>
             <div>
-              <p className="mx-auto mb-2 inline-flex rounded-full border border-[#FFD6A5] bg-white/80 px-3 py-1 text-xs font-bold text-[#E8613C] shadow-sm">
+              <p className="mx-auto mb-2 inline-flex rounded-full border border-[#99F6E4] bg-white/80 px-3 py-1 text-xs font-bold text-[#0F766E] shadow-sm">
                 From receipt to request
               </p>
               <h1 className="text-6xl font-black gradient-text tracking-[-0.06em]">Partake</h1>
             </div>
             <div className="max-w-sm">
-              <h2 className="text-3xl font-black leading-[0.95] tracking-[-0.04em] text-[#2D2319]">
+              <h2 className="text-3xl font-black leading-[0.95] tracking-[-0.04em] text-[#0F172A]">
                 Split dinner without the group-chat math.
               </h2>
-              <p className="mt-3 text-base leading-6 text-[#6F5F51]">
+              <p className="mt-3 text-base leading-6 text-[#334155]">
                 Snap a receipt, tap who ordered what, and send clean payment requests in seconds.
               </p>
             </div>
           </div>
 
-          <div className="w-full rounded-[2rem] border border-white/80 bg-white/75 p-3 shadow-xl shadow-[#2D2319]/10 backdrop-blur">
-            <div className="rounded-[1.5rem] border border-[#F5EDE3] bg-[#FFF9F1] p-4 text-[#2D2319] shadow-inner shadow-white/60">
+          <div className="w-full rounded-[2rem] border border-white/80 bg-white/75 p-3 shadow-xl shadow-[#0F172A]/10 backdrop-blur">
+            <div className="rounded-[1.5rem] border border-[#CCFBF1] bg-[#ECFDF5] p-4 text-[#0F172A] shadow-inner shadow-white/60">
               <div className="mb-5 flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#A87957]">Tonight&apos;s receipt</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0F766E]">Tonight&apos;s receipt</p>
                   <p className="mt-1 text-base font-black tracking-[-0.02em]">Luca&apos;s Trattoria</p>
                 </div>
-                <div className="rounded-full border border-[#F0DFC9] bg-white px-3 py-1 text-xs font-bold text-[#6F5F51]">3 people</div>
+                <div className="rounded-full border border-[#99F6E4] bg-white px-3 py-1 text-xs font-bold text-[#334155]">3 people</div>
               </div>
               <div className="space-y-2.5 text-sm">
                 {["Burrata", "Rigatoni", "Tiramisu"].map((item, index) => (
-                  <div key={item} className="flex items-center justify-between rounded-2xl border border-[#F5EDE3] bg-white px-3 py-2.5 shadow-sm shadow-[#2D2319]/5">
+                  <div key={item} className="flex items-center justify-between rounded-2xl border border-[#CCFBF1] bg-white px-3 py-2.5 shadow-sm shadow-[#0F172A]/5">
                     <span className="font-semibold text-[#3B2D20]">{item}</span>
                     <div className="flex -space-x-2">
                       {[0, 1, 2].slice(0, index + 1).map((avatar) => (
                         <span
                           key={avatar}
                           className="h-6 w-6 rounded-full border-2 border-white shadow-sm"
-                          style={{ backgroundColor: ["#E8613C", "#F4A261", "#FFD6A5"][avatar] }}
+                          style={{ backgroundColor: ["#0F766E", "#14B8A6", "#99F6E4"][avatar] }}
                         />
                       ))}
                     </div>
                   </div>
                 ))}
               </div>
-              <div className="mt-5 flex items-center justify-between border-t border-[#F0DFC9] pt-4">
-                <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#A87957]">Ready to request</span>
+              <div className="mt-5 flex items-center justify-between border-t border-[#99F6E4] pt-4">
+                <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#0F766E]">Ready to request</span>
                 <span className="text-xl font-black tracking-[-0.03em]">$86.42</span>
               </div>
             </div>
@@ -427,42 +427,42 @@ export default function Home() {
               setReceipt(null);
               setParticipants([]);
               setStep("scan");
-            }} className="min-h-14 text-base shadow-xl shadow-[#E8613C]/20">
+            }} className="min-h-14 text-base shadow-xl shadow-[#0F766E]/20">
               Scan the receipt
             </PrimaryButton>
           </div>
 
           {(!user || user.isAnonymous) && (
-            <div className="w-full overflow-hidden rounded-[1.75rem] border border-[#F5EDE3] bg-white shadow-lg shadow-[#2D2319]/5">
-              <div className="relative flex flex-col gap-4 bg-gradient-to-br from-white via-[#FFF7EF] to-[#F5EDE3] p-5 text-left">
-                <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-[#FFD6A5]/50" />
-                <div className="pointer-events-none absolute -bottom-12 -left-10 h-24 w-24 rounded-full bg-[#E8613C]/10" />
+            <div className="w-full overflow-hidden rounded-[1.75rem] border border-[#CCFBF1] bg-white shadow-lg shadow-[#0F172A]/5">
+              <div className="relative flex flex-col gap-4 bg-gradient-to-br from-white via-[#F0FDFA] to-[#CCFBF1] p-5 text-left">
+                <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-[#99F6E4]/50" />
+                <div className="pointer-events-none absolute -bottom-12 -left-10 h-24 w-24 rounded-full bg-[#0F766E]/10" />
                 <div className="relative flex items-start gap-3">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-xl shadow-sm shadow-[#2D2319]/10">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-xl shadow-sm shadow-[#0F172A]/10">
                     ☁️
                   </div>
                   <div>
-                    <p className="text-base font-bold text-[#2D2319]">Save bills across devices</p>
-                    <p className="mt-1 text-sm leading-5 text-[#6F5F51]">
+                    <p className="text-base font-bold text-[#0F172A]">Save bills across devices</p>
+                    <p className="mt-1 text-sm leading-5 text-[#334155]">
                       Keep splitting instantly as a guest, or connect Google to bring your history and friends with you.
                     </p>
                   </div>
                 </div>
-                <div className="relative grid grid-cols-2 gap-2 text-xs font-medium text-[#6F5F51]">
+                <div className="relative grid grid-cols-2 gap-2 text-xs font-medium text-[#334155]">
                   <div className="rounded-2xl border border-white/80 bg-white/70 px-3 py-2">✓ Guest mode stays on</div>
                   <div className="rounded-2xl border border-white/80 bg-white/70 px-3 py-2">✓ Sync when you sign in</div>
                 </div>
                 <button
                   onClick={handleGoogleSignIn}
                   disabled={authLoading || signingIn}
-                  className="relative flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-bold text-[#2D2319] shadow-md shadow-[#2D2319]/10 ring-1 ring-[#E8DDD0] transition-all hover:-translate-y-0.5 hover:ring-[#E8613C] disabled:translate-y-0 disabled:opacity-50"
+                  className="relative flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-bold text-[#0F172A] shadow-md shadow-[#0F172A]/10 ring-1 ring-[#99F6E4] transition-all hover:-translate-y-0.5 hover:ring-[#0F766E] disabled:translate-y-0 disabled:opacity-50"
                 >
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full border border-[#E8DDD0] bg-white text-sm">G</span>
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full border border-[#99F6E4] bg-white text-sm">G</span>
                   {signingIn ? "Signing in..." : "Continue with Google"}
                 </button>
               </div>
               {authError && (
-                <p className="border-t border-[#F5EDE3] bg-white px-4 py-3 text-center text-xs text-[#E8613C]">{authError}</p>
+                <p className="border-t border-[#CCFBF1] bg-white px-4 py-3 text-center text-xs text-[#0F766E]">{authError}</p>
               )}
             </div>
           )}
@@ -470,14 +470,14 @@ export default function Home() {
           {billHistory.length > 0 && (
             <div className="w-full">
               <div className="mb-3 flex items-center justify-between px-1">
-                <h2 className="text-sm font-bold text-[#2D2319]">Recent bills</h2>
-                <span className="text-xs font-medium text-[#9C8E80]">Tap to reopen</span>
+                <h2 className="text-sm font-bold text-[#0F172A]">Recent bills</h2>
+                <span className="text-xs font-medium text-[#64748B]">Tap to reopen</span>
               </div>
               <div className="flex flex-col gap-2.5">
                 {billHistory.slice(0, 5).map((b) => (
                   <div
                     key={b.id}
-                    className="flex items-center gap-2 rounded-2xl border border-[#F5EDE3] bg-white/85 shadow-sm shadow-[#2D2319]/5 transition-colors hover:bg-[#FFF7EF]"
+                    className="flex items-center gap-2 rounded-2xl border border-[#CCFBF1] bg-white/85 shadow-sm shadow-[#0F172A]/5 transition-colors hover:bg-[#F0FDFA]"
                   >
                     <button
                       onClick={() => {
@@ -489,12 +489,12 @@ export default function Home() {
                       className="flex min-h-16 flex-1 items-center justify-between p-3 text-left"
                     >
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-bold text-[#2D2319]">{b.name || "Untitled bill"}</p>
-                        <p className="text-xs text-[#9C8E80]">
+                        <p className="truncate text-sm font-bold text-[#0F172A]">{b.name || "Untitled bill"}</p>
+                        <p className="text-xs text-[#64748B]">
                           {b.participants.length} people · {new Date(b.createdAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <span className="ml-3 rounded-full bg-[#F5EDE3] px-3 py-1 text-sm font-black text-[#2D2319]">${b.total.toFixed(2)}</span>
+                      <span className="ml-3 rounded-full bg-[#CCFBF1] px-3 py-1 text-sm font-black text-[#0F172A]">${b.total.toFixed(2)}</span>
                     </button>
                     <button
                       onClick={(e) => {
@@ -502,7 +502,7 @@ export default function Home() {
                         deleteBillFromHistory(b.id);
                         setBillHistory(prev => prev.filter(bill => bill.id !== b.id));
                       }}
-                      className="mr-2 flex min-h-11 min-w-11 items-center justify-center rounded-full text-sm text-[#9C8E80] transition-colors hover:bg-[#F5EDE3] hover:text-[#E8613C]"
+                      className="mr-2 flex min-h-11 min-w-11 items-center justify-center rounded-full text-sm text-[#64748B] transition-colors hover:bg-[#CCFBF1] hover:text-[#0F766E]"
                     >
                       ✕
                     </button>
@@ -524,29 +524,29 @@ export default function Home() {
                 }).catch(() => {});
               }
             }}
-            className="min-h-11 rounded-full border border-[#FFD6A5] bg-white/70 px-4 py-2 text-sm font-semibold text-[#E8613C] shadow-sm transition-colors hover:bg-[#FFF7EF]"
+            className="min-h-11 rounded-full border border-[#99F6E4] bg-white/70 px-4 py-2 text-sm font-semibold text-[#0F766E] shadow-sm transition-colors hover:bg-[#F0FDFA]"
           >
             📤 Share Partake with a friend
           </button>
 
           {user && !user.isAnonymous && (
-            <div className="w-full rounded-2xl border border-[#F5EDE3] bg-white/70 px-4 py-3 text-left shadow-sm shadow-[#2D2319]/5">
+            <div className="w-full rounded-2xl border border-[#CCFBF1] bg-white/70 px-4 py-3 text-left shadow-sm shadow-[#0F172A]/5">
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#A87957]">Synced</p>
-                  <p className="mt-1 truncate text-sm font-semibold text-[#6F5F51]">
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#0F766E]">Synced</p>
+                  <p className="mt-1 truncate text-sm font-semibold text-[#334155]">
                     {user.email ?? user.displayName ?? "Connected with Google"}
                   </p>
                 </div>
                 <button
                   onClick={handleSignOut}
-                  className="shrink-0 rounded-full border border-[#E8DDD0] bg-white px-3 py-2 text-xs font-semibold text-[#9C8E80] transition-colors hover:border-[#F4A261] hover:text-[#E8613C]"
+                  className="shrink-0 rounded-full border border-[#99F6E4] bg-white px-3 py-2 text-xs font-semibold text-[#64748B] transition-colors hover:border-[#14B8A6] hover:text-[#0F766E]"
                 >
                   Sign out
                 </button>
               </div>
               {authError && (
-                <p className="mt-3 rounded-xl border border-[#FFD6A5] bg-white/80 px-3 py-2 text-center text-xs text-[#E8613C]">
+                <p className="mt-3 rounded-xl border border-[#99F6E4] bg-white/80 px-3 py-2 text-center text-xs text-[#0F766E]">
                   {authError}
                 </p>
               )}
@@ -556,21 +556,21 @@ export default function Home() {
           {process.env.NODE_ENV === "development" && (
             <button
               onClick={loadTestData}
-              className="text-xs text-[#C4B5A6] transition-colors hover:text-[#9C8E80]"
+              className="text-xs text-[#94A3B8] transition-colors hover:text-[#64748B]"
             >
               🧪 Test mode — skip to splitting with sample data
             </button>
           )}
 
-          <footer className="w-full border-t border-[#E8DFD4] pt-4 pb-safe text-center">
-            <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-[#C4B5A6]">
+          <footer className="w-full border-t border-[#BAE6FD] pt-4 pb-safe text-center">
+            <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-[#94A3B8]">
               <FeedbackWidget />
               <span>·</span>
-              <a href="/about" className="transition-colors hover:text-[#9C8E80]">About</a>
+              <a href="/about" className="transition-colors hover:text-[#64748B]">About</a>
               <span>·</span>
-              <a href="/privacy" className="transition-colors hover:text-[#9C8E80]">Privacy</a>
+              <a href="/privacy" className="transition-colors hover:text-[#64748B]">Privacy</a>
               <span>·</span>
-              <a href="/terms" className="transition-colors hover:text-[#9C8E80]">Terms</a>
+              <a href="/terms" className="transition-colors hover:text-[#64748B]">Terms</a>
             </div>
           </footer>
         </section>
@@ -584,14 +584,14 @@ export default function Home() {
       return (
         <main className="p-6 max-w-md md:max-w-2xl mx-auto">
           <h1 className="text-2xl font-bold mb-2 text-center">First, who are you?</h1>
-          <p className="text-sm text-[#9C8E80] text-center mb-6">We&apos;ll remember you for next time</p>
+          <p className="text-sm text-[#64748B] text-center mb-6">We&apos;ll remember you for next time</p>
           <div className="flex flex-col gap-3 mb-6">
             <input
               type="text"
               placeholder="Your name"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-               className="px-4 py-3 rounded-xl border border-[#F5EDE3] bg-transparent text-center focus:outline-none focus:ring-2 focus:ring-[#E8613C]"
+               className="px-4 py-3 rounded-xl border border-[#CCFBF1] bg-transparent text-center focus:outline-none focus:ring-2 focus:ring-[#0F766E]"
               autoFocus
             />
             <input
@@ -599,7 +599,7 @@ export default function Home() {
               placeholder="Venmo or $CashApp (optional)"
               value={newVenmo}
               onChange={(e) => setNewVenmo(e.target.value)}
-               className="px-4 py-3 rounded-xl border border-[#F5EDE3] bg-transparent text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#E8613C]"
+               className="px-4 py-3 rounded-xl border border-[#CCFBF1] bg-transparent text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#0F766E]"
             />
             <PrimaryButton
               onClick={() => {
@@ -648,18 +648,18 @@ export default function Home() {
               {participants.map((p) => (
                 <span
                   key={p.id}
-                  className="flex items-center gap-1 bg-[#F5EDE3] px-3 py-1 rounded-full text-sm"
+                  className="flex items-center gap-1 bg-[#CCFBF1] px-3 py-1 rounded-full text-sm"
                 >
                   {p.name}
                   {effectiveProfile && p.name.toLowerCase() === effectiveProfile.name.toLowerCase() && (
-                    <span className="text-xs text-[#9C8E80]">(you)</span>
+                    <span className="text-xs text-[#64748B]">(you)</span>
                   )}
                   {p.venmoUsername && (
                     <a
                       href={`https://venmo.com/${p.venmoUsername.replace(/^@/, "")}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[#9C8E80] hover:text-[#E8613C] text-xs"
+                      className="text-[#64748B] hover:text-[#0F766E] text-xs"
                       onClick={(e) => e.stopPropagation()}
                     >
                       @{p.venmoUsername.replace(/^@/, "")} ↗
@@ -667,7 +667,7 @@ export default function Home() {
                   )}
                   <button
                     onClick={() => removeParticipant(p.id)}
-                    className="-mr-2 ml-1 inline-flex min-h-11 min-w-11 items-center justify-center rounded-full text-[#9C8E80] hover:bg-white/60 hover:text-[#E8613C]"
+                    className="-mr-2 ml-1 inline-flex min-h-11 min-w-11 items-center justify-center rounded-full text-[#64748B] hover:bg-white/60 hover:text-[#0F766E]"
                   >
                     ✕
                   </button>
@@ -680,7 +680,7 @@ export default function Home() {
         {/* Saved contacts — quick tap to add */}
         {unusedContacts.length > 0 && (
           <div className="mb-6">
-            <p className="text-sm text-[#9C8E80] mb-2 text-center">Tap to add</p>
+            <p className="text-sm text-[#64748B] mb-2 text-center">Tap to add</p>
             <div className="flex gap-3 overflow-x-auto pb-2 justify-center">
               {unusedContacts.map((contact, i) => (
                 <button
@@ -696,7 +696,7 @@ export default function Home() {
                       },
                     ]);
                   }}
-                  className="flex min-h-[90px] min-w-[80px] flex-col items-center justify-center gap-2 rounded-xl p-2 transition-colors hover:bg-[#F5EDE3]"
+                  className="flex min-h-[90px] min-w-[80px] flex-col items-center justify-center gap-2 rounded-xl p-2 transition-colors hover:bg-[#CCFBF1]"
                 >
                   <Avatar name={contact.name} index={i} size={48} />
                   <span className="max-w-[72px] truncate text-xs">{contact.name}</span>
@@ -708,14 +708,14 @@ export default function Home() {
 
         {/* Add new person — collapsed by default */}
         {showAddForm ? (
-          <div className="flex flex-col gap-3 mb-6 p-4 bg-[#F5EDE3] rounded-xl">
+          <div className="flex flex-col gap-3 mb-6 p-4 bg-[#CCFBF1] rounded-xl">
             <p className="text-sm font-semibold text-center">Add a friend</p>
             <input
               type="text"
               placeholder="Their name"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              className="px-4 py-3 rounded-xl border border-[#E8DDD0] bg-white text-center focus:outline-none focus:ring-2 focus:ring-[#E8613C]"
+              className="px-4 py-3 rounded-xl border border-[#99F6E4] bg-white text-center focus:outline-none focus:ring-2 focus:ring-[#0F766E]"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === "Enter" && newName.trim()) {
@@ -737,11 +737,11 @@ export default function Home() {
                   }
                   setNewVenmo(val);
                 }}
-                className="px-4 py-3 rounded-xl border border-[#E8DDD0] bg-white text-sm text-center w-full focus:outline-none focus:ring-2 focus:ring-[#E8613C]"
+                className="px-4 py-3 rounded-xl border border-[#99F6E4] bg-white text-sm text-center w-full focus:outline-none focus:ring-2 focus:ring-[#0F766E]"
                 onKeyDown={(e) => e.key === "Enter" && addParticipant()}
               />
               {newVenmo && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#9C8E80]">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#64748B]">
                   {newVenmo.startsWith("$") ? "Cash App" : "Venmo"}
                 </span>
               )}
@@ -759,7 +759,7 @@ export default function Home() {
                 setNewVenmo("");
                 setTimeout(() => addPersonButtonRef.current?.focus(), 0);
               }}
-              className="min-h-11 rounded-full text-center text-sm text-[#9C8E80] hover:bg-white/60"
+              className="min-h-11 rounded-full text-center text-sm text-[#64748B] hover:bg-white/60"
             >
               Cancel
             </button>
@@ -768,7 +768,7 @@ export default function Home() {
           <button
             ref={addPersonButtonRef}
             onClick={() => setShowAddForm(true)}
-            className="mb-6 min-h-12 w-full rounded-xl border-2 border-dashed border-[#E8DDD0] py-3 text-center font-semibold text-[#E8613C] transition-colors hover:bg-[#F5EDE3]"
+            className="mb-6 min-h-12 w-full rounded-xl border-2 border-dashed border-[#99F6E4] py-3 text-center font-semibold text-[#0F766E] transition-colors hover:bg-[#CCFBF1]"
           >
             + Add another person
           </button>
@@ -823,7 +823,7 @@ export default function Home() {
             Split the bill
           </PrimaryButton>
           {participants.length < 1 && (
-            <p className="text-xs text-[#9C8E80] text-center mt-2">
+            <p className="text-xs text-[#64748B] text-center mt-2">
               Add at least 1 person
             </p>
           )}
@@ -871,7 +871,7 @@ export default function Home() {
         </TopBarButton>
 
         {showRescanConfirm && (
-          <div className="mb-4 p-4 bg-[#F5EDE3] rounded-xl flex flex-col gap-3">
+          <div className="mb-4 p-4 bg-[#CCFBF1] rounded-xl flex flex-col gap-3">
             <p className="text-sm font-medium">What went wrong? (select all that apply)</p>
             <div className="flex flex-wrap gap-2">
               {["Wrong items", "Wrong prices", "Missing items", "Couldn\u0027t read it", "Other"].map((reason) => (
@@ -883,7 +883,7 @@ export default function Home() {
                   className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
                     rescanReasons.includes(reason)
                       ? "gradient-bg text-white"
-                      : "bg-white border border-[#E8DDD0] text-[#9C8E80]"
+                      : "bg-white border border-[#99F6E4] text-[#64748B]"
                   }`}
                 >
                   {reason}
@@ -913,7 +913,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => { setShowRescanConfirm(false); setRescanReasons([]); }}
-              className="text-sm text-[#9C8E80] text-center"
+              className="text-sm text-[#64748B] text-center"
             >
               Cancel
             </button>

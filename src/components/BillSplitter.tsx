@@ -309,9 +309,9 @@ export function BillSplitter({
   return (
     <div className="flex flex-col h-full">
       {onBack && (
-        <div className="p-3 bg-[#FFFFFF] flex flex-col items-stretch gap-3 border-b border-[#F5EDE3] sm:flex-row sm:items-center sm:justify-between">
+        <div className="p-3 bg-[#FFFFFF] flex flex-col items-stretch gap-3 border-b border-[#CCFBF1] sm:flex-row sm:items-center sm:justify-between">
           {claimsLocked ? (
-            <span className="inline-flex min-h-11 items-center rounded-full border border-[#E8DDD0] bg-[#F5EDE3] px-4 py-2 text-sm font-semibold text-[#6F5F51]">
+            <span className="inline-flex min-h-11 items-center rounded-full border border-[#99F6E4] bg-[#CCFBF1] px-4 py-2 text-sm font-semibold text-[#334155]">
               Locked
             </span>
           ) : (
@@ -423,14 +423,14 @@ export function BillSplitter({
           // Tip was pre-filled from receipt — show read-only
           <div className="mt-6">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-[#9C8E80]">Tip (from receipt)</span>
+              <span className="text-sm font-semibold text-[#64748B]">Tip (from receipt)</span>
               <span className="font-semibold">${bill.tipAmount.toFixed(2)}</span>
             </div>
           </div>
         ) : claimsLocked ? (
           <div className="mt-6">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-[#9C8E80]">Tip</span>
+              <span className="text-sm font-semibold text-[#64748B]">Tip</span>
               <span className="font-semibold">${bill.tipAmount.toFixed(2)}</span>
             </div>
           </div>
@@ -445,18 +445,18 @@ export function BillSplitter({
         )}
       </div>
 
-      <div className="px-4 pt-4 pb-safe border-t border-[#F5EDE3] bg-[#FBF8F4]">
+      <div className="px-4 pt-4 pb-safe border-t border-[#CCFBF1] bg-[#F0FDFA]">
         <div className="flex justify-between items-center mb-3">
           <span className="font-semibold">Total</span>
           <span className="text-xl font-bold">${bill.total.toFixed(2)}</span>
         </div>
         {claimsLocked && (
-          <p className="text-xs text-[#9C8E80] mb-2">
+          <p className="text-xs text-[#64748B] mb-2">
             Claims are locked because payment requests were already sent.
           </p>
         )}
         {claimLockError && (
-          <p className="text-xs text-[#E8613C] mb-2">{claimLockError}</p>
+          <p className="text-xs text-[#0F766E] mb-2">{claimLockError}</p>
         )}
         <PrimaryButton onClick={() => setShowSettlement(true)}>
           See the split

@@ -21,7 +21,7 @@ export function ItemizedParticipantBar({
           onClick={() => onSelectParticipant(p.id)}
           aria-label={`Assign items to ${p.name}`}
           aria-pressed={selectedParticipant === p.id}
-          className="flex min-h-[90px] min-w-[80px] snap-start flex-col items-center justify-center gap-2 rounded-xl p-2 transition-colors hover:bg-[#F5EDE3] focus:outline-none focus:ring-2 focus:ring-[#E8613C]"
+          className="flex min-h-[90px] min-w-[80px] snap-start flex-col items-center justify-center gap-2 rounded-xl p-2 transition-colors hover:bg-[#CCFBF1] focus:outline-none focus:ring-2 focus:ring-[#0F766E]"
         >
           <div
              className={`rounded-full transition-all ${
@@ -41,7 +41,7 @@ export function ItemizedParticipantBar({
              className={`max-w-[72px] truncate text-xs ${
               selectedParticipant === p.id
                 ? "font-semibold"
-                : "text-[#9C8E80]"
+                : "text-[#64748B]"
             }`}
           >
             {p.name}
@@ -74,13 +74,13 @@ export function ItemizedView({
   return (
     <>
       {unclaimedCount > 0 && (
-        <p className="text-sm text-[#E8613C] mb-3 text-center font-medium">
+        <p className="text-sm text-[#0F766E] mb-3 text-center font-medium">
           {unclaimedCount === items.length
             ? "Tap each item to assign it to someone"
             : `${unclaimedCount} item${unclaimedCount !== 1 ? "s" : ""} still need to be claimed`}
         </p>
       )}
-      <p className="text-xs text-[#9C8E80] mb-3">
+      <p className="text-xs text-[#64748B] mb-3">
         Select a person above, then tap their items. Tap the same item for multiple people to split it.
       </p>
       <div className="flex flex-col gap-1">
@@ -99,12 +99,12 @@ export function ItemizedView({
                 className={`w-full flex items-center justify-between p-3 rounded-lg transition-all text-left ${
                   isClaimed
                     ? "bg-[#E8F5E9]"
-                    : "bg-[#F5EDE3] hover:bg-[#F5EDE3]"
+                    : "bg-[#CCFBF1] hover:bg-[#CCFBF1]"
                 } ${isClaimed ? "pop-animation" : ""} ${claimsLocked ? "opacity-70 cursor-not-allowed" : ""}`}
               >
                 <div className="flex-1">
                   <p className="font-medium">
-                    {item.name}{item.quantity > 1 && <span className="text-[#9C8E80]"> ({item.quantity}×)</span>}
+                    {item.name}{item.quantity > 1 && <span className="text-[#64748B]"> ({item.quantity}×)</span>}
                   </p>
                   {claimerNames.length > 0 && (
                     <div className="flex items-center gap-1 mt-1">
@@ -116,7 +116,7 @@ export function ItemizedView({
                           return (
                             <div
                               key={cid}
-                              className="w-4 h-4 rounded-full border border-[#F5EDE3]"
+                              className="w-4 h-4 rounded-full border border-[#CCFBF1]"
                               style={{
                                 backgroundColor: getParticipantColor(idx),
                               }}
@@ -124,7 +124,7 @@ export function ItemizedView({
                           );
                         })}
                       </div>
-                      <span className="text-xs text-[#9C8E80]">
+                      <span className="text-xs text-[#64748B]">
                         {claimerNames.length === 1 ? claimerNames[0] : `Split ${claimerNames.length} ways`}
                       </span>
                     </div>
@@ -142,18 +142,18 @@ export function ItemizedView({
                 <button
                   disabled={claimsLocked}
                   onClick={(e) => { e.stopPropagation(); setExpandedItem(isExpanded ? null : item.id); setSplitCount(item.quantity); }}
-                  className="w-full min-h-11 text-xs font-medium text-[#9C8E80] py-2 hover:text-[#E8613C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full min-h-11 text-xs font-medium text-[#64748B] py-2 hover:text-[#0F766E] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isExpanded ? "Cancel" : `Need to split these individually?`}
                 </button>
               )}
               {isExpanded && !claimsLocked && item.quantity > 1 && onSplitItem && (
-                <div className="p-3 mb-1 rounded-lg bg-[#F5EDE3] flex flex-col gap-2">
-                  <p className="text-xs text-[#9C8E80]">How many portions? (receipt says {item.quantity}, but you can change it)</p>
+                <div className="p-3 mb-1 rounded-lg bg-[#CCFBF1] flex flex-col gap-2">
+                  <p className="text-xs text-[#64748B]">How many portions? (receipt says {item.quantity}, but you can change it)</p>
                   <div className="flex items-center justify-center gap-3">
                     <button
                       onClick={() => setSplitCount(Math.max(2, splitCount - 1))}
-                      className="w-11 h-11 rounded-full bg-white border border-[#E8DDD0] text-sm font-bold"
+                      className="w-11 h-11 rounded-full bg-white border border-[#99F6E4] text-sm font-bold"
                     >−</button>
                     <input
                       type="number"
@@ -162,14 +162,14 @@ export function ItemizedView({
                       value={splitCount}
                       onChange={(e) => setSplitCount(Math.max(2, parseInt(e.target.value, 10) || 2))}
                       aria-label="Number of portions"
-                      className="min-h-11 w-16 rounded-lg border border-[#E8DDD0] bg-white px-2 text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-[#E8613C]"
+                      className="min-h-11 w-16 rounded-lg border border-[#99F6E4] bg-white px-2 text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-[#0F766E]"
                     />
                     <button
                       onClick={() => setSplitCount(splitCount + 1)}
-                      className="w-11 h-11 rounded-full bg-white border border-[#E8DDD0] text-sm font-bold"
+                      className="w-11 h-11 rounded-full bg-white border border-[#99F6E4] text-sm font-bold"
                     >+</button>
                   </div>
-                  <p className="text-xs text-[#9C8E80] text-center">
+                  <p className="text-xs text-[#64748B] text-center">
                     ${(item.price * item.quantity).toFixed(2)} ÷ {splitCount} = <strong>${((item.price * item.quantity) / splitCount).toFixed(2)} each</strong>
                   </p>
                   <button

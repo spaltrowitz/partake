@@ -31,7 +31,7 @@ function ShareLinkButton({ shareCode, billName }: { shareCode: string; billName:
     <Card className="mt-2">
       <button
         onClick={handleShare}
-        className="w-full py-2 text-sm font-medium text-[#2E7D32] hover:bg-[#F5EDE3] rounded-lg transition-colors flex items-center justify-center gap-2"
+        className="w-full py-2 text-sm font-medium text-[#2E7D32] hover:bg-[#CCFBF1] rounded-lg transition-colors flex items-center justify-center gap-2"
       >
         {copied ? "✓ Link copied!" : "🔗 Share bill link"}
       </button>
@@ -86,12 +86,12 @@ export function Settlement({
         <h2 className="text-2xl font-bold">
           {bill.name || "The split"}
         </h2>
-        <p className="text-[#9C8E80]">${bill.total.toFixed(2)} total</p>
+        <p className="text-[#64748B]">${bill.total.toFixed(2)} total</p>
       </div>
 
       {payableSplits.length > 1 && (
         <div className="mb-4">
-          <p className="mb-2 text-center text-xs text-[#9C8E80]">
+          <p className="mb-2 text-center text-xs text-[#64748B]">
             💡 Best on desktop — on mobile, tap individual requests if only the first app link opens.
           </p>
           <button
@@ -115,9 +115,9 @@ export function Settlement({
               <div className="flex-1">
                 <p className="font-semibold">
                   {split.participantName}
-                  {coveredNames.length > 0 && <span className="text-xs text-[#9C8E80] ml-1">+ {coveredNames.join(" & ")}</span>}
+                  {coveredNames.length > 0 && <span className="text-xs text-[#64748B] ml-1">+ {coveredNames.join(" & ")}</span>}
                 </p>
-                <p className="text-xs text-[#9C8E80]">
+                <p className="text-xs text-[#64748B]">
                   {split.items.length} item{split.items.length !== 1 && "s"}
                   {coveredNames.length > 0 && ` (covering ${coveredNames.join(" & ")})`}
                 </p>
@@ -128,7 +128,7 @@ export function Settlement({
             </div>
 
             {/* Item breakdown */}
-            <div className="text-xs text-[#9C8E80] space-y-1 mb-3">
+            <div className="text-xs text-[#64748B] space-y-1 mb-3">
               {split.items.map((item) => {
                 const lineTotal = item.price * item.quantity;
                 const yourShare = item.claimedBy.length > 1
@@ -145,7 +145,7 @@ export function Settlement({
                 </div>
                 );
               })}
-              <hr className="border-[#F5EDE3]" />
+              <hr className="border-[#CCFBF1]" />
               <div className="flex justify-between">
                 <span>Tax</span>
                 <span>${split.taxShare.toFixed(2)}</span>
@@ -185,7 +185,7 @@ export function Settlement({
                   ) : (
                     <button
                       onClick={() => onCopy(split)}
-                      className="w-full min-h-11 py-2 text-sm font-medium text-[#E8613C] hover:bg-[#F5EDE3] rounded-lg transition-colors"
+                      className="w-full min-h-11 py-2 text-sm font-medium text-[#0F766E] hover:bg-[#CCFBF1] rounded-lg transition-colors"
                     >
                       {settledIds.has(split.participantId)
                         ? "✓ Copied"
@@ -196,7 +196,7 @@ export function Settlement({
               </>
             )}
             {myName && split.participantName.toLowerCase() === myName.toLowerCase() && split.total > 0 && (
-              <p className="text-xs text-[#9C8E80] text-center py-1">Your share</p>
+              <p className="text-xs text-[#64748B] text-center py-1">Your share</p>
             )}
           </Card>
           );
@@ -214,7 +214,7 @@ export function Settlement({
                   <Avatar name={member.name} index={bill.participants.findIndex(p => p.id === memberId)} size={40} allNames={bill.participants.map(p => p.name)} />
                   <div className="flex-1">
                     <p className="font-semibold">{member.name}</p>
-                    <p className="text-xs text-[#9C8E80]">Covered by {payer.name} 👫</p>
+                    <p className="text-xs text-[#64748B]">Covered by {payer.name} 👫</p>
                   </div>
                   <span className="text-lg font-bold text-[#2E7D32]">$0.00</span>
                 </div>
@@ -243,7 +243,7 @@ export function Settlement({
               copyToClipboard(text);
             }
           }}
-          className="w-full min-h-11 py-2 text-sm font-medium text-[#E8613C] hover:bg-[#F5EDE3] rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full min-h-11 py-2 text-sm font-medium text-[#0F766E] hover:bg-[#CCFBF1] rounded-lg transition-colors flex items-center justify-center gap-2"
         >
           📤 Share the breakdown
         </button>

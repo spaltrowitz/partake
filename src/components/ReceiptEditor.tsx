@@ -122,7 +122,7 @@ export function ReceiptEditor({
       {/* Header */}
       {isManualEntry ? (
         <div className="text-center">
-          <p className="text-[#9C8E80] text-sm">
+          <p className="text-[#64748B] text-sm">
             Add each item from the receipt
           </p>
         </div>
@@ -138,18 +138,18 @@ export function ReceiptEditor({
       <div className="flex flex-col gap-2">
         {receipt.items.map((item, index) => (
           editingId === item.id ? (
-            <div key={item.id} className="flex flex-col gap-2 p-3 rounded-xl bg-[#F5EDE3] border-2 border-[#E8613C]">
+            <div key={item.id} className="flex flex-col gap-2 p-3 rounded-xl bg-[#CCFBF1] border-2 border-[#0F766E]">
               <input
                 type="text"
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 aria-label="Item name"
-                className="px-3 py-2 rounded-lg bg-white text-sm font-medium outline-none focus:ring-2 focus:ring-[#E8613C]"
+                className="px-3 py-2 rounded-lg bg-white text-sm font-medium outline-none focus:ring-2 focus:ring-[#0F766E]"
                 autoFocus
               />
               <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-2">
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs font-medium text-[#9C8E80]">Qty</span>
+                  <span className="text-xs font-medium text-[#64748B]">Qty</span>
                   <input
                     type="number"
                     inputMode="numeric"
@@ -157,18 +157,18 @@ export function ReceiptEditor({
                     value={editQty}
                     onChange={(e) => setEditQty(e.target.value)}
                     aria-label="Item quantity"
-                    className="min-h-11 min-w-12 rounded-lg bg-white px-3 py-2 text-center text-sm outline-none focus:ring-2 focus:ring-[#E8613C]"
+                    className="min-h-11 min-w-12 rounded-lg bg-white px-3 py-2 text-center text-sm outline-none focus:ring-2 focus:ring-[#0F766E]"
                   />
                 </label>
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs font-medium text-[#9C8E80]">Total $</span>
+                  <span className="text-xs font-medium text-[#64748B]">Total $</span>
                   <input
                     type="text"
                     inputMode="decimal"
                     value={editPrice}
                     onChange={(e) => setEditPrice(e.target.value.replace(/[^0-9.]/g, ""))}
                     aria-label="Item total price"
-                    className="min-h-11 min-w-24 rounded-lg bg-white px-3 py-2 text-right text-sm font-bold outline-none focus:ring-2 focus:ring-[#E8613C]"
+                    className="min-h-11 min-w-24 rounded-lg bg-white px-3 py-2 text-right text-sm font-bold outline-none focus:ring-2 focus:ring-[#0F766E]"
                   />
                 </label>
               </div>
@@ -179,12 +179,12 @@ export function ReceiptEditor({
                 {item.quantity > 1 && (
                   <button
                     onClick={() => splitIntoIndividual(item)}
-                    className="min-h-11 flex-1 rounded-lg border border-[#E8613C] px-3 text-sm font-medium text-[#E8613C]"
+                    className="min-h-11 flex-1 rounded-lg border border-[#0F766E] px-3 text-sm font-medium text-[#0F766E]"
                   >
                     Split into {item.quantity} items
                   </button>
                 )}
-                <button onClick={() => setEditingId(null)} className="min-h-11 rounded-lg px-3 text-sm text-[#9C8E80]">
+                <button onClick={() => setEditingId(null)} className="min-h-11 rounded-lg px-3 text-sm text-[#64748B]">
                   Cancel
                 </button>
               </div>
@@ -193,22 +193,22 @@ export function ReceiptEditor({
             <div
               key={item.id}
               onClick={() => startEdit(item)}
-              className={`flex items-center justify-between p-3 rounded-xl cursor-pointer hover:ring-1 hover:ring-[#E8613C] transition-all ${
-                item.confidence < 0.7 ? "bg-[#FFF3E0] border border-orange-800" : "bg-[#F5EDE3]"
+              className={`flex items-center justify-between p-3 rounded-xl cursor-pointer hover:ring-1 hover:ring-[#0F766E] transition-all ${
+                item.confidence < 0.7 ? "bg-[#ECFDF5] border border-amber-700" : "bg-[#CCFBF1]"
               }`}
             >
               <div className="flex items-center gap-3 flex-1">
-                <span className="text-xs text-[#9C8E80] w-5">{index + 1}</span>
+                <span className="text-xs text-[#64748B] w-5">{index + 1}</span>
                  <span className="font-medium">
-                  {item.name}{item.quantity > 1 && <span className="text-[#9C8E80]"> ({item.quantity}×)</span>}
+                  {item.name}{item.quantity > 1 && <span className="text-[#64748B]"> ({item.quantity}×)</span>}
                 </span>
               </div>
-              <span className="font-bold text-[#F4A261] ml-3">
+              <span className="font-bold text-[#14B8A6] ml-3">
                 ${(item.price * item.quantity).toFixed(2)}
               </span>
               <button
                 onClick={(e) => { e.stopPropagation(); removeItem(item.id); }}
-                 className="ml-3 inline-flex min-h-11 min-w-11 items-center justify-center rounded-full text-sm text-[#9C8E80] transition-colors hover:bg-white/60 hover:text-[#E8613C]"
+                 className="ml-3 inline-flex min-h-11 min-w-11 items-center justify-center rounded-full text-sm text-[#64748B] transition-colors hover:bg-white/60 hover:text-[#0F766E]"
               >
                 ✕
               </button>
@@ -217,8 +217,8 @@ export function ReceiptEditor({
         ))}
 
         {/* Add item input */}
-        <div className="flex items-center gap-2 p-3 rounded-xl border-2 border-dashed border-[#F5EDE3] focus-within:border-[#E8613C] transition-colors">
-          <span className="text-xs text-[#E8613C]">+</span>
+        <div className="flex items-center gap-2 p-3 rounded-xl border-2 border-dashed border-[#CCFBF1] focus-within:border-[#0F766E] transition-colors">
+          <span className="text-xs text-[#0F766E]">+</span>
           <input
             ref={nameInputRef}
             type="text"
@@ -227,7 +227,7 @@ export function ReceiptEditor({
             onChange={(e) => setNewName(e.target.value)}
             maxLength={80}
             aria-label="New item name"
-            className="min-h-11 flex-1 bg-transparent text-sm outline-none placeholder:text-[#C4B5A6] focus:ring-2 focus:ring-[#E8613C]"
+            className="min-h-11 flex-1 bg-transparent text-sm outline-none placeholder:text-[#94A3B8] focus:ring-2 focus:ring-[#0F766E]"
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 if (newName && newPrice) {
@@ -239,7 +239,7 @@ export function ReceiptEditor({
               }
             }}
           />
-          <span className="text-[#9C8E80] text-sm">$</span>
+          <span className="text-[#64748B] text-sm">$</span>
           <input
             type="text"
             inputMode="decimal"
@@ -247,20 +247,20 @@ export function ReceiptEditor({
             value={newPrice}
             onChange={(e) => setNewPrice(e.target.value.replace(/[^0-9.]/g, ""))}
             aria-label="New item price"
-            className="min-h-11 min-w-24 bg-transparent text-right text-sm font-bold outline-none placeholder:text-[#C4B5A6] placeholder:font-normal focus:ring-2 focus:ring-[#E8613C]"
+            className="min-h-11 min-w-24 bg-transparent text-right text-sm font-bold outline-none placeholder:text-[#94A3B8] placeholder:font-normal focus:ring-2 focus:ring-[#0F766E]"
             onKeyDown={(e) => e.key === "Enter" && addItem()}
           />
           <button
             onClick={addItem}
             disabled={!newName.trim() || !newPrice}
-            className="min-h-11 rounded-full px-3 text-sm font-bold text-[#E8613C] transition-opacity disabled:opacity-20"
+            className="min-h-11 rounded-full px-3 text-sm font-bold text-[#0F766E] transition-opacity disabled:opacity-20"
           >
             Add
           </button>
         </div>
 
         {receipt.items.length === 0 && (
-          <p className="text-xs text-[#9C8E80] text-center mt-1">
+          <p className="text-xs text-[#64748B] text-center mt-1">
             Type a name and price, then hit Enter or +
           </p>
         )}
@@ -268,16 +268,16 @@ export function ReceiptEditor({
 
       {/* Running subtotal + tax */}
       {receipt.items.length > 0 && (
-        <div className="flex flex-col gap-2 pt-2 border-t border-[#F5EDE3]">
+        <div className="flex flex-col gap-2 pt-2 border-t border-[#CCFBF1]">
           <div className="flex items-center justify-between px-1">
-            <span className="text-sm text-[#9C8E80]">Subtotal ({receipt.items.length} item{receipt.items.length !== 1 ? "s" : ""})</span>
+            <span className="text-sm text-[#64748B]">Subtotal ({receipt.items.length} item{receipt.items.length !== 1 ? "s" : ""})</span>
             <span className="font-semibold">${subtotal.toFixed(2)}</span>
           </div>
 
-          <div className="flex items-center justify-between p-3 bg-[#F5EDE3] rounded-xl">
+          <div className="flex items-center justify-between p-3 bg-[#CCFBF1] rounded-xl">
             <span className="text-sm">Tax</span>
             <div className="flex items-center gap-1">
-              <span className="text-sm text-[#9C8E80]">$</span>
+              <span className="text-sm text-[#64748B]">$</span>
               <input
                 type="number"
                 inputMode="decimal"
@@ -286,7 +286,7 @@ export function ReceiptEditor({
                 onChange={(e) => updateTax(e.target.value)}
                 placeholder="0.00"
                 aria-label="Tax amount"
-                className="min-h-11 min-w-24 rounded-lg bg-white px-2 text-right text-sm font-bold outline-none placeholder:text-[#C4B5A6] placeholder:font-normal focus:ring-2 focus:ring-[#E8613C]"
+                className="min-h-11 min-w-24 rounded-lg bg-white px-2 text-right text-sm font-bold outline-none placeholder:text-[#94A3B8] placeholder:font-normal focus:ring-2 focus:ring-[#0F766E]"
               />
             </div>
           </div>
@@ -298,23 +298,23 @@ export function ReceiptEditor({
                 const taxAmount = Math.round(subtotal * suggestedRate.rate) / 100;
                 onChange({ ...receipt, tax: Math.round(taxAmount * 100) / 100 });
               }}
-              className="flex min-h-11 items-center justify-between rounded-lg p-2 text-xs text-[#9C8E80] transition-colors hover:bg-[#F5EDE3]"
+              className="flex min-h-11 items-center justify-between rounded-lg p-2 text-xs text-[#64748B] transition-colors hover:bg-[#CCFBF1]"
             >
               <span>💡 Use {suggestedRate.rate}% ({suggestedRate.jurisdiction})?</span>
-              <span className="text-[#E8613C] font-semibold ml-2">
+              <span className="text-[#0F766E] font-semibold ml-2">
                 +${(Math.round(subtotal * suggestedRate.rate) / 100).toFixed(2)}
               </span>
             </button>
           )}
 
           {/* Tip */}
-          <div className="flex items-center justify-between p-3 bg-[#F5EDE3] rounded-xl">
+          <div className="flex items-center justify-between p-3 bg-[#CCFBF1] rounded-xl">
             <div className="flex flex-col">
               <span className="text-sm">Tip</span>
-              <span className="text-xs text-[#9C8E80]">Adjust on split screen if needed</span>
+              <span className="text-xs text-[#64748B]">Adjust on split screen if needed</span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="text-sm text-[#9C8E80]">$</span>
+              <span className="text-sm text-[#64748B]">$</span>
               <input
                 type="number"
                 inputMode="decimal"
@@ -324,19 +324,19 @@ export function ReceiptEditor({
                 onChange={(e) => updateTip(e.target.value)}
                 placeholder="0.00"
                 aria-label="Tip amount"
-                className="min-h-11 min-w-24 rounded-lg bg-white px-2 text-right text-sm font-bold outline-none placeholder:text-[#C4B5A6] placeholder:font-normal focus:ring-2 focus:ring-[#E8613C]"
+                className="min-h-11 min-w-24 rounded-lg bg-white px-2 text-right text-sm font-bold outline-none placeholder:text-[#94A3B8] placeholder:font-normal focus:ring-2 focus:ring-[#0F766E]"
               />
             </div>
           </div>
 
           {/* Discount */}
-          <div className="flex items-center justify-between p-3 bg-[#F5EDE3] rounded-xl">
+          <div className="flex items-center justify-between p-3 bg-[#CCFBF1] rounded-xl">
             <div className="flex flex-col">
               <span className="text-sm">Discount</span>
-              <span className="text-xs text-[#9C8E80]">Birthday, coupon, comp, etc.</span>
+              <span className="text-xs text-[#64748B]">Birthday, coupon, comp, etc.</span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="text-sm text-[#9C8E80]">−$</span>
+              <span className="text-sm text-[#64748B]">−$</span>
               <input
                 type="number"
                 inputMode="decimal"
@@ -349,7 +349,7 @@ export function ReceiptEditor({
                 }}
                 placeholder="0.00"
                 aria-label="Discount amount"
-                className="min-h-11 min-w-24 rounded-lg bg-white px-2 text-right text-sm font-bold outline-none placeholder:text-[#C4B5A6] placeholder:font-normal focus:ring-2 focus:ring-[#E8613C]"
+                className="min-h-11 min-w-24 rounded-lg bg-white px-2 text-right text-sm font-bold outline-none placeholder:text-[#94A3B8] placeholder:font-normal focus:ring-2 focus:ring-[#0F766E]"
               />
             </div>
           </div>

@@ -4,8 +4,8 @@
   "description": "Split bills the easy way",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FBF8F4",
-  "theme_color": "#E8613C",
+  "background_color": "#F0FDFA",
+  "theme_color": "#0F766E",
   "icons": [
     {
       "src": "/icon.svg",

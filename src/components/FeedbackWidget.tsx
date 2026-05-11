@@ -76,15 +76,15 @@ export function FeedbackWidget() {
             }
           }}
         >
-          <div className="bg-[#FBF8F4] w-full sm:max-w-md sm:rounded-xl rounded-t-xl p-5 pb-safe max-h-[90vh] overflow-y-auto">
+          <div className="bg-[#F0FDFA] w-full sm:max-w-md sm:rounded-xl rounded-t-xl p-5 pb-safe max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h2 id="feedback-title" className="text-lg font-bold text-[#2D2319]">Send Feedback</h2>
+              <h2 id="feedback-title" className="text-lg font-bold text-[#0F172A]">Send Feedback</h2>
               <button
                 onClick={() => {
                   setOpen(false);
                   reset();
                 }}
-                className="flex min-h-11 min-w-11 items-center justify-center rounded-full text-[#9C8E80] hover:bg-[#F5EDE3] hover:text-[#2D2319] text-xl"
+                className="flex min-h-11 min-w-11 items-center justify-center rounded-full text-[#64748B] hover:bg-[#CCFBF1] hover:text-[#0F172A] text-xl"
                 aria-label="Close"
               >
                 ✕
@@ -105,7 +105,7 @@ export function FeedbackWidget() {
                         ${
                           category === c.key
                             ? "gradient-bg text-white border-transparent"
-                            : "bg-white border-[#F5EDE3] text-[#2D2319] hover:border-[#E8613C]"
+                            : "bg-white border-[#CCFBF1] text-[#0F172A] hover:border-[#0F766E]"
                         }`}
                     >
                       <span>{c.emoji}</span>
@@ -120,12 +120,12 @@ export function FeedbackWidget() {
                   placeholder={selectedCategory?.placeholder ?? "Tell us what happened or what you want to see."}
                   rows={5}
                   aria-label="Feedback details"
-                  className="w-full min-h-32 px-4 py-3 rounded-lg border border-[#F5EDE3] bg-white
-                    text-[#2D2319] placeholder:text-[#9C8E80] focus:outline-none focus:border-[#E8613C] focus:ring-2 focus:ring-[#E8613C] mb-4 resize-none"
+                  className="w-full min-h-32 px-4 py-3 rounded-lg border border-[#CCFBF1] bg-white
+                    text-[#0F172A] placeholder:text-[#64748B] focus:outline-none focus:border-[#0F766E] focus:ring-2 focus:ring-[#0F766E] mb-4 resize-none"
                 />
 
                 {error && (
-                  <p className="text-sm text-[#E8613C] mb-3">{error}</p>
+                  <p className="text-sm text-[#0F766E] mb-3">{error}</p>
                 )}
 
                 <button
