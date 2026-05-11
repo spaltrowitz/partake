@@ -66,6 +66,9 @@ export function FeedbackWidget() {
       {open && (
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="feedback-title"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setOpen(false);
@@ -75,7 +78,7 @@ export function FeedbackWidget() {
         >
           <div className="bg-[#FBF8F4] w-full sm:max-w-md sm:rounded-xl rounded-t-xl p-5 pb-safe max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-[#2D2319]">Send Feedback</h2>
+              <h2 id="feedback-title" className="text-lg font-bold text-[#2D2319]">Send Feedback</h2>
               <button
                 onClick={() => {
                   setOpen(false);
@@ -97,6 +100,7 @@ export function FeedbackWidget() {
                     <button
                       key={c.key}
                       onClick={() => setCategory(c.key)}
+                      aria-label={`${c.label} feedback`}
                       className={`flex-1 min-h-11 py-2 px-2 rounded-lg text-sm font-medium transition-colors border inline-flex items-center justify-center gap-1
                         ${
                           category === c.key
@@ -115,8 +119,9 @@ export function FeedbackWidget() {
                   onChange={(e) => setDetails(e.target.value)}
                   placeholder={selectedCategory?.placeholder ?? "Tell us what happened or what you want to see."}
                   rows={5}
+                  aria-label="Feedback details"
                   className="w-full min-h-32 px-4 py-3 rounded-lg border border-[#F5EDE3] bg-white
-                    text-[#2D2319] placeholder:text-[#9C8E80] focus:outline-none focus:border-[#E8613C] mb-4 resize-none"
+                    text-[#2D2319] placeholder:text-[#9C8E80] focus:outline-none focus:border-[#E8613C] focus:ring-2 focus:ring-[#E8613C] mb-4 resize-none"
                 />
 
                 {error && (

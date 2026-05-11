@@ -23,7 +23,8 @@ export function TipSelector({
           <button
             key={pct}
             onClick={() => onSelectTip(pct)}
-            className={`flex-1 py-3 rounded-full text-sm font-medium transition-colors ${
+            aria-label={`Set tip to ${pct}%`}
+            className={`flex-1 py-3 rounded-full text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[#E8613C] ${
               tipPercent === pct && !customTipMode
                 ? "gradient-bg text-white"
                 : "bg-[#F5EDE3] text-[#6B5D4F]"
@@ -34,7 +35,8 @@ export function TipSelector({
         ))}
         <button
           onClick={onEnableCustom}
-          className={`flex-1 py-3 rounded-full text-sm font-medium transition-colors ${
+          aria-label="Enter a custom tip percentage"
+          className={`flex-1 py-3 rounded-full text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[#E8613C] ${
             customTipMode
               ? "gradient-bg text-white"
               : "bg-[#F5EDE3] text-[#6B5D4F]"
@@ -56,7 +58,8 @@ export function TipSelector({
               const val = parseFloat(e.target.value);
               if (!isNaN(val) && val >= 0) onSelectTip(val);
             }}
-             className="min-h-10 w-24 rounded-lg bg-white px-2 py-1 text-right text-sm font-bold outline-none"
+            aria-label="Custom tip percentage"
+            className="min-h-11 w-24 rounded-lg bg-white px-2 py-1 text-right text-sm font-bold outline-none focus:ring-2 focus:ring-[#E8613C]"
             autoFocus
           />
           <span className="text-sm text-[#9C8E80]">%</span>

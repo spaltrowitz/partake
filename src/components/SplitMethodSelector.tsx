@@ -23,7 +23,9 @@ export function SplitMethodSelector({
         <button
           key={method.id}
           onClick={() => onSelect(method.id)}
-          className={`min-h-11 min-w-fit snap-start px-4 py-2.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
+          aria-label={`${method.label}: ${method.description}`}
+          aria-pressed={splitMethod === method.id}
+          className={`min-h-11 min-w-fit snap-start px-4 py-2.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors focus:outline-none focus:ring-2 focus:ring-[#E8613C] ${
             splitMethod === method.id
               ? "gradient-bg text-white"
               : "bg-[#F5EDE3] text-[#9C8E80]"

@@ -356,7 +356,7 @@ export default function Home() {
         <div className="pointer-events-none absolute -right-24 top-32 h-64 w-64 rounded-full bg-[#E8613C]/15 blur-3xl" />
         <div className="pointer-events-none absolute bottom-0 left-1/2 h-56 w-56 -translate-x-1/2 rounded-full bg-white/70 blur-3xl" />
 
-        <section className="relative mx-auto flex w-full max-w-md flex-col items-center gap-6">
+        <section className="relative mx-auto flex w-full max-w-md flex-col items-center gap-6 md:max-w-2xl md:gap-8">
           <div className="flex flex-col items-center gap-4 text-center">
             <div className="relative h-28 w-28" aria-hidden="true">
               <div className="absolute inset-0 rounded-[2rem] bg-white shadow-2xl shadow-[#2D2319]/10" />
@@ -544,7 +544,7 @@ export default function Home() {
                 }).catch(() => {});
               }
             }}
-            className="rounded-full border border-[#FFD6A5] bg-white/70 px-4 py-2 text-sm font-semibold text-[#E8613C] shadow-sm transition-colors hover:bg-[#FFF7EF]"
+            className="min-h-11 rounded-full border border-[#FFD6A5] bg-white/70 px-4 py-2 text-sm font-semibold text-[#E8613C] shadow-sm transition-colors hover:bg-[#FFF7EF]"
           >
             📤 Share Partake with a friend
           </button>
@@ -558,7 +558,7 @@ export default function Home() {
             </button>
           )}
 
-          <footer className="w-full border-t border-[#E8DFD4] pt-4 text-center">
+          <footer className="w-full border-t border-[#E8DFD4] pt-4 pb-safe text-center">
             <div className="flex items-center justify-center gap-4 text-xs text-[#C4B5A6]">
               <FeedbackWidget />
               <span>·</span>
@@ -576,7 +576,7 @@ export default function Home() {
   if (step === "participants") {
     if (!effectiveProfile) {
       return (
-        <main className="p-6 max-w-md mx-auto">
+        <main className="p-6 max-w-md md:max-w-2xl mx-auto">
           <h1 className="text-2xl font-bold mb-2 text-center">First, who are you?</h1>
           <p className="text-sm text-[#9C8E80] text-center mb-6">We&apos;ll remember you for next time</p>
           <div className="flex flex-col gap-3 mb-6">
@@ -585,7 +585,7 @@ export default function Home() {
               placeholder="Your name"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              className="px-4 py-3 rounded-xl border border-[#F5EDE3] bg-transparent text-center"
+               className="px-4 py-3 rounded-xl border border-[#F5EDE3] bg-transparent text-center focus:outline-none focus:ring-2 focus:ring-[#E8613C]"
               autoFocus
             />
             <input
@@ -593,7 +593,7 @@ export default function Home() {
               placeholder="Venmo or $CashApp (optional)"
               value={newVenmo}
               onChange={(e) => setNewVenmo(e.target.value)}
-              className="px-4 py-3 rounded-xl border border-[#F5EDE3] bg-transparent text-sm text-center"
+               className="px-4 py-3 rounded-xl border border-[#F5EDE3] bg-transparent text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#E8613C]"
             />
             <PrimaryButton
               onClick={() => {
@@ -626,7 +626,7 @@ export default function Home() {
     );
 
     return (
-      <main className="p-6 max-w-md mx-auto">
+      <main className="p-6 max-w-md md:max-w-2xl mx-auto">
         <TopBarButton
           onClick={() => setStep("edit")}
           className="mb-4"
@@ -661,7 +661,7 @@ export default function Home() {
                   )}
                   <button
                     onClick={() => removeParticipant(p.id)}
-                    className="text-[#9C8E80] hover:text-[#E8613C] ml-1 p-2 -mr-2"
+                    className="-mr-2 ml-1 inline-flex min-h-11 min-w-11 items-center justify-center rounded-full text-[#9C8E80] hover:bg-white/60 hover:text-[#E8613C]"
                   >
                     ✕
                   </button>
@@ -709,7 +709,7 @@ export default function Home() {
               placeholder="Their name"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              className="px-4 py-3 rounded-xl border border-[#E8DDD0] bg-white text-center"
+              className="px-4 py-3 rounded-xl border border-[#E8DDD0] bg-white text-center focus:outline-none focus:ring-2 focus:ring-[#E8613C]"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === "Enter" && newName.trim()) {
@@ -731,7 +731,7 @@ export default function Home() {
                   }
                   setNewVenmo(val);
                 }}
-                className="px-4 py-3 rounded-xl border border-[#E8DDD0] bg-white text-sm text-center w-full"
+                className="px-4 py-3 rounded-xl border border-[#E8DDD0] bg-white text-sm text-center w-full focus:outline-none focus:ring-2 focus:ring-[#E8613C]"
                 onKeyDown={(e) => e.key === "Enter" && addParticipant()}
               />
               {newVenmo && (
@@ -748,7 +748,7 @@ export default function Home() {
             </PrimaryButton>
             <button
               onClick={() => { setShowAddForm(false); setNewName(""); setNewVenmo(""); }}
-              className="text-sm text-[#9C8E80] text-center"
+              className="min-h-11 rounded-full text-center text-sm text-[#9C8E80] hover:bg-white/60"
             >
               Cancel
             </button>
@@ -756,7 +756,7 @@ export default function Home() {
         ) : (
           <button
             onClick={() => setShowAddForm(true)}
-            className="w-full py-3 rounded-xl border-2 border-dashed border-[#E8DDD0] text-[#E8613C] font-semibold text-center mb-6 hover:bg-[#F5EDE3] transition-colors"
+            className="mb-6 min-h-12 w-full rounded-xl border-2 border-dashed border-[#E8DDD0] py-3 text-center font-semibold text-[#E8613C] transition-colors hover:bg-[#F5EDE3]"
           >
             + Add another person
           </button>
@@ -823,7 +823,7 @@ export default function Home() {
   // Scan
   if (step === "scan") {
     return (
-      <main className="min-h-dvh p-6 max-w-md mx-auto">
+      <main className="min-h-dvh p-6 max-w-md md:max-w-2xl mx-auto">
         <TopBarButton
           onClick={() => setStep("landing")}
           className="mb-4"
@@ -844,7 +844,7 @@ export default function Home() {
 
   if (step === "edit" && receipt) {
     return (
-      <main className="min-h-dvh p-6 max-w-md mx-auto">
+      <main className="min-h-dvh p-6 max-w-md md:max-w-2xl mx-auto">
         <TopBarButton
           onClick={() => {
             if (receipt.items.length > 0) {
@@ -924,7 +924,7 @@ export default function Home() {
   // Split
   if (step === "split" && bill) {
     return (
-      <main className="min-h-dvh max-w-md mx-auto">
+      <main className="min-h-dvh max-w-md md:max-w-3xl lg:max-w-4xl mx-auto">
         <ErrorBoundary>
           <BillSplitter bill={bill} onBack={goToParticipants} onEditReceipt={() => {
             setReceipt(reconstructReceiptFromBill(bill));

@@ -33,7 +33,8 @@ export function ExactSplitView({
             min="0"
             value={exactAmounts[p.id] ?? 0}
             onChange={(e) => onChangeAmount(p.id, Math.max(0, parseFloat(e.target.value) || 0))}
-            className="min-h-11 min-w-24 text-right px-2 py-2 rounded border border-[#E8DDD0] bg-white text-sm font-bold"
+            aria-label={`${p.name}'s exact amount`}
+            className="min-h-11 min-w-24 text-right px-2 py-2 rounded border border-[#E8DDD0] bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#E8613C]"
           />
         </div>
       ))}

@@ -143,7 +143,8 @@ export function ReceiptEditor({
                 type="text"
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
-                className="px-3 py-2 rounded-lg bg-white text-sm font-medium outline-none"
+                aria-label="Item name"
+                className="px-3 py-2 rounded-lg bg-white text-sm font-medium outline-none focus:ring-2 focus:ring-[#E8613C]"
                 autoFocus
               />
               <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-2">
@@ -155,7 +156,8 @@ export function ReceiptEditor({
                     min="1"
                     value={editQty}
                     onChange={(e) => setEditQty(e.target.value)}
-                    className="min-h-11 min-w-12 rounded-lg bg-white px-3 py-2 text-center text-sm outline-none"
+                    aria-label="Item quantity"
+                    className="min-h-11 min-w-12 rounded-lg bg-white px-3 py-2 text-center text-sm outline-none focus:ring-2 focus:ring-[#E8613C]"
                   />
                 </label>
                 <label className="flex flex-col gap-1">
@@ -165,7 +167,8 @@ export function ReceiptEditor({
                     inputMode="decimal"
                     value={editPrice}
                     onChange={(e) => setEditPrice(e.target.value.replace(/[^0-9.]/g, ""))}
-                    className="min-h-11 min-w-20 rounded-lg bg-white px-3 py-2 text-right text-sm font-bold outline-none"
+                    aria-label="Item total price"
+                    className="min-h-11 min-w-24 rounded-lg bg-white px-3 py-2 text-right text-sm font-bold outline-none focus:ring-2 focus:ring-[#E8613C]"
                   />
                 </label>
               </div>
@@ -223,7 +226,8 @@ export function ReceiptEditor({
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             maxLength={80}
-            className="flex-1 bg-transparent text-sm outline-none placeholder:text-[#C4B5A6]"
+            aria-label="New item name"
+            className="min-h-11 flex-1 bg-transparent text-sm outline-none placeholder:text-[#C4B5A6] focus:ring-2 focus:ring-[#E8613C]"
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 if (newName && newPrice) {
@@ -242,13 +246,14 @@ export function ReceiptEditor({
             placeholder="0.00"
             value={newPrice}
             onChange={(e) => setNewPrice(e.target.value.replace(/[^0-9.]/g, ""))}
-             className="min-h-11 w-20 bg-transparent text-right text-sm font-bold outline-none placeholder:text-[#C4B5A6] placeholder:font-normal"
+            aria-label="New item price"
+            className="min-h-11 min-w-24 bg-transparent text-right text-sm font-bold outline-none placeholder:text-[#C4B5A6] placeholder:font-normal focus:ring-2 focus:ring-[#E8613C]"
             onKeyDown={(e) => e.key === "Enter" && addItem()}
           />
           <button
             onClick={addItem}
             disabled={!newName.trim() || !newPrice}
-             className="min-h-11 rounded-full px-3 text-sm font-bold text-[#E8613C] transition-opacity disabled:opacity-20"
+            className="min-h-11 rounded-full px-3 text-sm font-bold text-[#E8613C] transition-opacity disabled:opacity-20"
           >
             Add
           </button>
@@ -280,7 +285,8 @@ export function ReceiptEditor({
                 value={receipt.tax != null ? receipt.tax.toFixed(2) : ""}
                 onChange={(e) => updateTax(e.target.value)}
                 placeholder="0.00"
-                className="w-16 text-right bg-transparent font-bold text-sm outline-none placeholder:text-[#C4B5A6] placeholder:font-normal"
+                aria-label="Tax amount"
+                className="min-h-11 min-w-24 rounded-lg bg-white px-2 text-right text-sm font-bold outline-none placeholder:text-[#C4B5A6] placeholder:font-normal focus:ring-2 focus:ring-[#E8613C]"
               />
             </div>
           </div>
@@ -292,7 +298,7 @@ export function ReceiptEditor({
                 const taxAmount = Math.round(subtotal * suggestedRate.rate) / 100;
                 onChange({ ...receipt, tax: Math.round(taxAmount * 100) / 100 });
               }}
-              className="flex items-center justify-between p-2 rounded-lg text-xs text-[#9C8E80] hover:bg-[#F5EDE3] transition-colors"
+              className="flex min-h-11 items-center justify-between rounded-lg p-2 text-xs text-[#9C8E80] transition-colors hover:bg-[#F5EDE3]"
             >
               <span>💡 Use {suggestedRate.rate}% ({suggestedRate.jurisdiction})?</span>
               <span className="text-[#E8613C] font-semibold ml-2">
@@ -317,7 +323,8 @@ export function ReceiptEditor({
                 value={receipt.tip != null ? receipt.tip.toFixed(2) : ""}
                 onChange={(e) => updateTip(e.target.value)}
                 placeholder="0.00"
-                className="w-16 text-right bg-transparent font-bold text-sm outline-none placeholder:text-[#C4B5A6] placeholder:font-normal"
+                aria-label="Tip amount"
+                className="min-h-11 min-w-24 rounded-lg bg-white px-2 text-right text-sm font-bold outline-none placeholder:text-[#C4B5A6] placeholder:font-normal focus:ring-2 focus:ring-[#E8613C]"
               />
             </div>
           </div>
@@ -341,7 +348,8 @@ export function ReceiptEditor({
                   onChange({ ...receipt, discount: isNaN(val) || val <= 0 ? undefined : val });
                 }}
                 placeholder="0.00"
-                className="w-16 text-right bg-transparent font-bold text-sm outline-none placeholder:text-[#C4B5A6] placeholder:font-normal"
+                aria-label="Discount amount"
+                className="min-h-11 min-w-24 rounded-lg bg-white px-2 text-right text-sm font-bold outline-none placeholder:text-[#C4B5A6] placeholder:font-normal focus:ring-2 focus:ring-[#E8613C]"
               />
             </div>
           </div>

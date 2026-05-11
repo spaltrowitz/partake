@@ -19,7 +19,9 @@ export function ItemizedParticipantBar({
         <button
           key={p.id}
           onClick={() => onSelectParticipant(p.id)}
-          className="flex min-h-[90px] min-w-[80px] snap-start flex-col items-center justify-center gap-2 rounded-xl p-2 transition-colors hover:bg-[#F5EDE3]"
+          aria-label={`Assign items to ${p.name}`}
+          aria-pressed={selectedParticipant === p.id}
+          className="flex min-h-[90px] min-w-[80px] snap-start flex-col items-center justify-center gap-2 rounded-xl p-2 transition-colors hover:bg-[#F5EDE3] focus:outline-none focus:ring-2 focus:ring-[#E8613C]"
         >
           <div
              className={`rounded-full transition-all ${
@@ -153,7 +155,15 @@ export function ItemizedView({
                       onClick={() => setSplitCount(Math.max(2, splitCount - 1))}
                       className="w-11 h-11 rounded-full bg-white border border-[#E8DDD0] text-sm font-bold"
                     >−</button>
-                    <span className="text-lg font-bold w-8 text-center">{splitCount}</span>
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      min={2}
+                      value={splitCount}
+                      onChange={(e) => setSplitCount(Math.max(2, parseInt(e.target.value, 10) || 2))}
+                      aria-label="Number of portions"
+                      className="min-h-11 w-16 rounded-lg border border-[#E8DDD0] bg-white px-2 text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-[#E8613C]"
+                    />
                     <button
                       onClick={() => setSplitCount(splitCount + 1)}
                       className="w-11 h-11 rounded-full bg-white border border-[#E8DDD0] text-sm font-bold"

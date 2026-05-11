@@ -66,7 +66,8 @@ export function PartnerGroupSelector({
           <select
             value={newPayerId}
             onChange={(e) => { setNewPayerId(e.target.value); setNewMemberIds([]); }}
-            className="min-h-11 text-sm bg-white rounded-lg py-2 px-3 outline-none border border-[#E8DDD0]"
+            aria-label="Select who is paying for the group"
+            className="min-h-11 text-sm bg-white rounded-lg py-2 px-3 outline-none border border-[#E8DDD0] focus:ring-2 focus:ring-[#E8613C]"
           >
             <option value="">Select person</option>
             {availablePeople.map(p => (
@@ -83,6 +84,8 @@ export function PartnerGroupSelector({
                   return (
                     <button
                       key={p.id}
+                      aria-pressed={selected}
+                      aria-label={`${selected ? "Remove" : "Add"} ${p.name} from covered group`}
                       onClick={() => setNewMemberIds(prev =>
                         selected ? prev.filter(id => id !== p.id) : [...prev, p.id]
                       )}
