@@ -559,8 +559,10 @@ export default function Home() {
           )}
 
           <footer className="w-full border-t border-[#E8DFD4] pt-4 pb-safe text-center">
-            <div className="flex items-center justify-center gap-4 text-xs text-[#C4B5A6]">
+            <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-[#C4B5A6]">
               <FeedbackWidget />
+              <span>·</span>
+              <a href="/about" className="transition-colors hover:text-[#9C8E80]">About</a>
               <span>·</span>
               <a href="/privacy" className="transition-colors hover:text-[#9C8E80]">Privacy</a>
               <span>·</span>
