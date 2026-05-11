@@ -533,7 +533,7 @@ export default function Home() {
             <div className="w-full rounded-2xl border border-[#F5EDE3] bg-white/70 px-4 py-3 text-left shadow-sm shadow-[#2D2319]/5">
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#A87957]">Sync on</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#A87957]">Synced</p>
                   <p className="mt-1 truncate text-sm font-semibold text-[#6F5F51]">
                     {user.email ?? user.displayName ?? "Connected with Google"}
                   </p>

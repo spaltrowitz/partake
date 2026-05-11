@@ -44,18 +44,16 @@ export default function AboutPage() {
                 Partake is a free side project. If it made splitting dinner easier, a tip helps me keep building, fixing, and polishing it.
               </p>
             </div>
-            <div className="flex flex-col gap-2 sm:items-end">
+            <div className="sm:min-w-48">
               <a
                 href={VENMO_TIP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-full bg-[#E8613C] px-5 py-3 text-sm font-black text-white shadow-lg shadow-[#E8613C]/20 transition-transform hover:-translate-y-0.5"
+                className="inline-flex min-h-14 w-full shrink-0 flex-col items-center justify-center rounded-2xl bg-[#E8613C] px-5 py-3 text-center text-white shadow-lg shadow-[#E8613C]/20 transition-transform hover:-translate-y-0.5"
               >
-                🍕 Cover my share
+                <span className="text-sm font-black">🍕 Cover my share</span>
+                <span className="mt-0.5 text-xs font-semibold text-white/80">$5 prefilled in Venmo</span>
               </a>
-              <p className="text-center text-xs font-medium text-[#A87957] sm:text-right">
-                Opens Venmo with $5 prefilled.
-              </p>
             </div>
           </div>
         </div>

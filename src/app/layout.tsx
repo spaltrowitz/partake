@@ -17,6 +17,11 @@ export const metadata: Metadata = {
   title: "Partake — Split the bill in seconds",
   description: "Scan your receipt, claim what you ordered, and send payment requests.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
   openGraph: {
     title: "Partake",
     description: "Split the bill in seconds. Scan • Claim • Pay.",
