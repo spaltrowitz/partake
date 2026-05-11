@@ -363,19 +363,20 @@ export default function Home() {
               <svg viewBox="0 0 192 192" className="h-full w-full" role="img">
                 <defs>
                   <linearGradient id="hero-logo-bg" x1="24" y1="24" x2="168" y2="168" gradientUnits="userSpaceOnUse">
-                    <stop offset="0" stopColor="#0b1020" />
-                    <stop offset="1" stopColor="#0f766e" />
+                    <stop offset="0" stopColor="#fde68a" />
+                    <stop offset="0.55" stopColor="#facc15" />
+                    <stop offset="1" stopColor="#f59e0b" />
                   </linearGradient>
                   <linearGradient id="hero-logo-receipt" x1="54" y1="42" x2="138" y2="150" gradientUnits="userSpaceOnUse">
-                    <stop offset="0" stopColor="#ccfbf1" />
-                    <stop offset="1" stopColor="#5eead4" />
+                    <stop offset="0" stopColor="#ffffff" />
+                    <stop offset="1" stopColor="#f0fdfa" />
                   </linearGradient>
                 </defs>
                 <rect width="192" height="192" rx="42" fill="#f0fdfa" />
                 <rect x="18" y="18" width="156" height="156" rx="36" fill="url(#hero-logo-bg)" />
                 <path d="M58 42h76a8 8 0 0 1 8 8v96l-15-9-15 9-16-9-16 9-15-9-15 9V50a8 8 0 0 1 8-8Z" fill="url(#hero-logo-receipt)" />
                 <path d="M74 72h44M74 95h44M74 118h24" fill="none" stroke="#0f766e" strokeWidth="8" strokeLinecap="round" />
-                <circle cx="122" cy="119" r="24" fill="#14b8a6" />
+                <circle cx="122" cy="119" r="24" fill="#0f766e" />
                 <path d="m110 119 9 9 17-21" fill="none" stroke="#ffffff" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
@@ -456,8 +457,8 @@ export default function Home() {
               </div>
               <div>
                 <p className="text-sm font-black text-[#0F172A]">Built for group dinners</p>
-                <p className="mt-1 text-sm leading-5 text-[#334155]">
-                  Add everyone at the table, claim items together, and send requests without awkward math.
+                <p className="mt-1 whitespace-nowrap text-xs leading-5 text-[#334155] sm:text-sm">
+                  Add everyone, claim items, and send requests.
                 </p>
               </div>
             </div>
