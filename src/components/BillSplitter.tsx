@@ -309,7 +309,7 @@ export function BillSplitter({
   return (
     <div className="flex flex-col h-full">
       {onBack && (
-        <div className="p-3 bg-[#FFFFFF] flex items-center justify-between gap-3 border-b border-[#F5EDE3]">
+        <div className="p-3 bg-[#FFFFFF] flex flex-col items-stretch gap-3 border-b border-[#F5EDE3] sm:flex-row sm:items-center sm:justify-between">
           {claimsLocked ? (
             <span className="inline-flex min-h-11 items-center rounded-full border border-[#E8DDD0] bg-[#F5EDE3] px-4 py-2 text-sm font-semibold text-[#6F5F51]">
               Locked
@@ -319,7 +319,7 @@ export function BillSplitter({
               ← Back to people
             </TopBarButton>
           )}
-          <div className="flex flex-wrap justify-end gap-2">
+          <div className="flex flex-wrap gap-2 sm:justify-end">
             <FeedbackWidget />
             {onEditReceipt && !claimsLocked && (
               <TopBarButton onClick={onEditReceipt} variant="accent">

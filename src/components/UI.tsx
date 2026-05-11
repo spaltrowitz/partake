@@ -96,11 +96,11 @@ export function SuggestionCard({
       <p className="text-sm flex-1">{message}</p>
       <button
         onClick={onAccept}
-        className="px-3 py-1 text-xs font-semibold text-white gradient-bg rounded-full"
+        className="min-h-10 px-4 py-2 text-xs font-semibold text-white gradient-bg rounded-full"
       >
         Sure
       </button>
-      <button onClick={onDismiss} className="text-[#9C8E80] hover:text-[#2D2319]">
+      <button onClick={onDismiss} className="min-h-10 min-w-10 rounded-full text-[#9C8E80] hover:bg-white/60 hover:text-[#2D2319]">
         ✕
       </button>
     </div>

@@ -53,7 +53,7 @@ export function PartnerGroupSelector({
             <span className="text-sm">
               👫 <strong>{payer?.name}</strong> covers {members.join(" & ")}
             </span>
-            <button onClick={() => removeGroup(i)} className="text-xs text-[#E8613C] font-medium py-1 px-2">
+            <button onClick={() => removeGroup(i)} className="min-h-11 rounded-full px-3 py-2 text-xs text-[#E8613C] font-semibold">
               Remove
             </button>
           </div>
@@ -66,7 +66,7 @@ export function PartnerGroupSelector({
           <select
             value={newPayerId}
             onChange={(e) => { setNewPayerId(e.target.value); setNewMemberIds([]); }}
-            className="text-sm bg-white rounded-lg py-2 px-3 outline-none border border-[#E8DDD0]"
+            className="min-h-11 text-sm bg-white rounded-lg py-2 px-3 outline-none border border-[#E8DDD0]"
           >
             <option value="">Select person</option>
             {availablePeople.map(p => (
@@ -86,7 +86,7 @@ export function PartnerGroupSelector({
                       onClick={() => setNewMemberIds(prev =>
                         selected ? prev.filter(id => id !== p.id) : [...prev, p.id]
                       )}
-                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                      className={`min-h-11 px-3 py-2 rounded-full text-sm font-medium transition-colors ${
                         selected ? "gradient-bg text-white" : "bg-white border border-[#E8DDD0] text-[#9C8E80]"
                       }`}
                     >
@@ -102,13 +102,13 @@ export function PartnerGroupSelector({
             <button
               onClick={addGroup}
               disabled={!newPayerId || newMemberIds.length === 0}
-              className="flex-1 py-2 rounded-full text-white text-sm font-semibold gradient-bg disabled:opacity-30"
+              className="flex-1 min-h-11 py-2 rounded-full text-white text-sm font-semibold gradient-bg disabled:opacity-30"
             >
               Combine
             </button>
             <button
               onClick={() => { setIsAdding(false); setNewPayerId(""); setNewMemberIds([]); }}
-              className="px-4 py-2 text-sm text-[#9C8E80]"
+              className="min-h-11 px-4 py-2 text-sm text-[#9C8E80]"
             >
               Cancel
             </button>
@@ -118,7 +118,7 @@ export function PartnerGroupSelector({
         availablePeople.length >= 2 && (
           <button
             onClick={() => setIsAdding(true)}
-            className="w-full py-2.5 px-4 rounded-xl border border-dashed border-[#E8DDD0] text-sm text-[#9C8E80] hover:bg-[#F5EDE3] transition-colors"
+            className="w-full min-h-11 py-2.5 px-4 rounded-xl border border-dashed border-[#E8DDD0] text-sm text-[#9C8E80] hover:bg-[#F5EDE3] transition-colors"
           >
             {payingGroups.length > 0 ? "+ Add another group" : "👫 Paying together? Combine tabs"}
           </button>

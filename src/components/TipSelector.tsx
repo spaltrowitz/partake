@@ -56,7 +56,7 @@ export function TipSelector({
               const val = parseFloat(e.target.value);
               if (!isNaN(val) && val >= 0) onSelectTip(val);
             }}
-            className="w-20 bg-transparent text-sm text-right outline-none font-bold"
+             className="min-h-10 w-24 rounded-lg bg-white px-2 py-1 text-right text-sm font-bold outline-none"
             autoFocus
           />
           <span className="text-sm text-[#9C8E80]">%</span>

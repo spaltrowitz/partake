@@ -14,15 +14,15 @@ export function ItemizedParticipantBar({
   onSelectParticipant: (id: string) => void;
 }) {
   return (
-    <div className="flex gap-2 overflow-x-auto p-4 bg-[#FFFFFF]">
+    <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scroll-px-4 p-4 bg-[#FFFFFF]">
       {participants.map((p, i) => (
         <button
           key={p.id}
           onClick={() => onSelectParticipant(p.id)}
-          className="flex flex-col items-center gap-1 min-w-[64px]"
+          className="flex min-h-[90px] min-w-[80px] snap-start flex-col items-center justify-center gap-2 rounded-xl p-2 transition-colors hover:bg-[#F5EDE3]"
         >
           <div
-            className={`rounded-full transition-all ${
+             className={`rounded-full transition-all ${
               selectedParticipant === p.id
                 ? `ring-2 ring-offset-2`
                 : ""
@@ -36,7 +36,7 @@ export function ItemizedParticipantBar({
             <Avatar name={p.name} index={i} size={48} allNames={participants.map(pp => pp.name)} />
           </div>
           <span
-            className={`text-xs truncate max-w-[64px] ${
+             className={`max-w-[72px] truncate text-xs ${
               selectedParticipant === p.id
                 ? "font-semibold"
                 : "text-[#9C8E80]"
@@ -140,7 +140,7 @@ export function ItemizedView({
                 <button
                   disabled={claimsLocked}
                   onClick={(e) => { e.stopPropagation(); setExpandedItem(isExpanded ? null : item.id); setSplitCount(item.quantity); }}
-                  className="w-full text-xs text-[#9C8E80] py-1 hover:text-[#E8613C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full min-h-11 text-xs font-medium text-[#9C8E80] py-2 hover:text-[#E8613C] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isExpanded ? "Cancel" : `Need to split these individually?`}
                 </button>
@@ -151,12 +151,12 @@ export function ItemizedView({
                   <div className="flex items-center justify-center gap-3">
                     <button
                       onClick={() => setSplitCount(Math.max(2, splitCount - 1))}
-                      className="w-9 h-9 rounded-full bg-white border border-[#E8DDD0] text-sm font-bold"
+                      className="w-11 h-11 rounded-full bg-white border border-[#E8DDD0] text-sm font-bold"
                     >−</button>
                     <span className="text-lg font-bold w-8 text-center">{splitCount}</span>
                     <button
                       onClick={() => setSplitCount(splitCount + 1)}
-                      className="w-9 h-9 rounded-full bg-white border border-[#E8DDD0] text-sm font-bold"
+                      className="w-11 h-11 rounded-full bg-white border border-[#E8DDD0] text-sm font-bold"
                     >+</button>
                   </div>
                   <p className="text-xs text-[#9C8E80] text-center">
@@ -164,7 +164,7 @@ export function ItemizedView({
                   </p>
                   <button
                     onClick={() => { onSplitItem(item.id, splitCount); setExpandedItem(null); }}
-                    className="w-full py-2 rounded-lg text-white text-sm font-semibold gradient-bg"
+                    className="w-full min-h-11 py-2 rounded-lg text-white text-sm font-semibold gradient-bg"
                   >
                     Split into {splitCount} × ${((item.price * item.quantity) / splitCount).toFixed(2)}
                   </button>

@@ -690,10 +690,10 @@ export default function Home() {
                       },
                     ]);
                   }}
-                  className="flex flex-col items-center gap-1 min-w-[64px]"
+                  className="flex min-h-[90px] min-w-[80px] flex-col items-center justify-center gap-2 rounded-xl p-2 transition-colors hover:bg-[#F5EDE3]"
                 >
                   <Avatar name={contact.name} index={i} size={48} />
-                  <span className="text-xs truncate max-w-[64px]">{contact.name}</span>
+                  <span className="max-w-[72px] truncate text-xs">{contact.name}</span>
                 </button>
               ))}
             </div>

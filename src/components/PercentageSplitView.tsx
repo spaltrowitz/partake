@@ -30,7 +30,7 @@ export function PercentageSplitView({
             inputMode="decimal"
             value={percentages[p.id] ?? 0}
             onChange={(e) => onChangePercentage(p.id, parseFloat(e.target.value) || 0)}
-            className="w-20 text-right px-2 py-1 rounded border border-[#F5EDE3] bg-transparent text-sm font-bold"
+            className="min-h-11 min-w-20 text-right px-2 py-2 rounded border border-[#E8DDD0] bg-white text-sm font-bold"
           />
           <span className="text-sm text-[#9C8E80]">%</span>
           <span className="text-sm font-semibold w-20 text-right">

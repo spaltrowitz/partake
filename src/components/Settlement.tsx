@@ -171,7 +171,7 @@ export function Settlement({
                     <button
                       onClick={() => onPayment(split)}
                       disabled={settledIds.has(split.participantId)}
-                      className={`w-full py-2 rounded-lg text-white text-sm font-medium transition-colors ${
+                      className={`w-full min-h-11 py-2 rounded-lg text-white text-sm font-medium transition-colors ${
                         settledIds.has(split.participantId)
                           ? "bg-[#2E7D32]"
                           : "bg-[#1976D2] hover:bg-[#1565C0]"
@@ -184,7 +184,7 @@ export function Settlement({
                   ) : (
                     <button
                       onClick={() => onCopy(split)}
-                      className="w-full py-2 text-sm font-medium text-[#E8613C] hover:bg-[#F5EDE3] rounded-lg transition-colors"
+                      className="w-full min-h-11 py-2 text-sm font-medium text-[#E8613C] hover:bg-[#F5EDE3] rounded-lg transition-colors"
                     >
                       {settledIds.has(split.participantId)
                         ? "✓ Copied"
@@ -242,7 +242,7 @@ export function Settlement({
               copyToClipboard(text);
             }
           }}
-          className="w-full py-2 text-sm font-medium text-[#E8613C] hover:bg-[#F5EDE3] rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full min-h-11 py-2 text-sm font-medium text-[#E8613C] hover:bg-[#F5EDE3] rounded-lg transition-colors flex items-center justify-center gap-2"
         >
           📤 Share the breakdown
         </button>

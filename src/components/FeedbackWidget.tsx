@@ -73,7 +73,7 @@ export function FeedbackWidget() {
             }
           }}
         >
-          <div className="bg-[#FBF8F4] w-full sm:max-w-md sm:rounded-xl rounded-t-xl p-6 max-h-[90vh] overflow-y-auto">
+          <div className="bg-[#FBF8F4] w-full sm:max-w-md sm:rounded-xl rounded-t-xl p-5 pb-safe max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-[#2D2319]">Send Feedback</h2>
               <button
@@ -81,7 +81,7 @@ export function FeedbackWidget() {
                   setOpen(false);
                   reset();
                 }}
-                className="text-[#9C8E80] hover:text-[#2D2319] text-xl p-1"
+                className="flex min-h-11 min-w-11 items-center justify-center rounded-full text-[#9C8E80] hover:bg-[#F5EDE3] hover:text-[#2D2319] text-xl"
                 aria-label="Close"
               >
                 ✕
@@ -97,14 +97,15 @@ export function FeedbackWidget() {
                     <button
                       key={c.key}
                       onClick={() => setCategory(c.key)}
-                      className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors border
+                      className={`flex-1 min-h-11 py-2 px-2 rounded-lg text-sm font-medium transition-colors border inline-flex items-center justify-center gap-1
                         ${
                           category === c.key
                             ? "gradient-bg text-white border-transparent"
                             : "bg-white border-[#F5EDE3] text-[#2D2319] hover:border-[#E8613C]"
                         }`}
                     >
-                      {c.emoji} {c.label}
+                      <span>{c.emoji}</span>
+                      <span className="truncate">{c.label}</span>
                     </button>
                   ))}
                 </div>
@@ -113,8 +114,8 @@ export function FeedbackWidget() {
                   value={details}
                   onChange={(e) => setDetails(e.target.value)}
                   placeholder={selectedCategory?.placeholder ?? "Tell us what happened or what you want to see."}
-                  rows={4}
-                  className="w-full px-4 py-3 rounded-lg border border-[#F5EDE3] bg-white
+                  rows={5}
+                  className="w-full min-h-32 px-4 py-3 rounded-lg border border-[#F5EDE3] bg-white
                     text-[#2D2319] placeholder:text-[#9C8E80] focus:outline-none focus:border-[#E8613C] mb-4 resize-none"
                 />
 
@@ -125,7 +126,7 @@ export function FeedbackWidget() {
                 <button
                   onClick={handleSubmit}
                   disabled={!category || !details.trim() || submitting}
-                  className="w-full py-3 px-6 rounded-full text-white font-semibold gradient-bg
+                  className="w-full min-h-12 py-3 px-6 rounded-full text-white font-semibold gradient-bg
                     hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {submitting ? "Submitting..." : "Submit Feedback"}

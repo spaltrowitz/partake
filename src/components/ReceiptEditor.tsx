@@ -146,42 +146,42 @@ export function ReceiptEditor({
                 className="px-3 py-2 rounded-lg bg-white text-sm font-medium outline-none"
                 autoFocus
               />
-              <div className="flex gap-2">
-                <div className="flex items-center gap-1 flex-1">
-                  <span className="text-xs text-[#9C8E80]">Qty</span>
+              <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] gap-2">
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-medium text-[#9C8E80]">Qty</span>
                   <input
                     type="number"
                     inputMode="numeric"
                     min="1"
                     value={editQty}
                     onChange={(e) => setEditQty(e.target.value)}
-                    className="w-12 px-2 py-1 rounded-lg bg-white text-sm text-center outline-none"
+                    className="min-h-11 min-w-12 rounded-lg bg-white px-3 py-2 text-center text-sm outline-none"
                   />
-                </div>
-                <div className="flex items-center gap-1 flex-1">
-                  <span className="text-xs text-[#9C8E80]">Total $</span>
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-medium text-[#9C8E80]">Total $</span>
                   <input
                     type="text"
                     inputMode="decimal"
                     value={editPrice}
                     onChange={(e) => setEditPrice(e.target.value.replace(/[^0-9.]/g, ""))}
-                    className="w-20 px-2 py-1 rounded-lg bg-white text-sm text-right font-bold outline-none"
+                    className="min-h-11 min-w-20 rounded-lg bg-white px-3 py-2 text-right text-sm font-bold outline-none"
                   />
-                </div>
+                </label>
               </div>
-              <div className="flex gap-2">
-                <button onClick={saveEdit} className="flex-1 py-2 rounded-lg text-white text-sm font-medium gradient-bg">
+              <div className="flex flex-wrap gap-2">
+                <button onClick={saveEdit} className="min-h-11 flex-1 rounded-lg text-white text-sm font-medium gradient-bg">
                   Save
                 </button>
                 {item.quantity > 1 && (
                   <button
                     onClick={() => splitIntoIndividual(item)}
-                    className="flex-1 py-2 rounded-lg text-sm font-medium border border-[#E8613C] text-[#E8613C]"
+                    className="min-h-11 flex-1 rounded-lg border border-[#E8613C] px-3 text-sm font-medium text-[#E8613C]"
                   >
                     Split into {item.quantity} items
                   </button>
                 )}
-                <button onClick={() => setEditingId(null)} className="px-3 py-2 text-sm text-[#9C8E80]">
+                <button onClick={() => setEditingId(null)} className="min-h-11 rounded-lg px-3 text-sm text-[#9C8E80]">
                   Cancel
                 </button>
               </div>
@@ -196,7 +196,7 @@ export function ReceiptEditor({
             >
               <div className="flex items-center gap-3 flex-1">
                 <span className="text-xs text-[#9C8E80] w-5">{index + 1}</span>
-                <span className="font-medium">
+                 <span className="font-medium">
                   {item.name}{item.quantity > 1 && <span className="text-[#9C8E80]"> ({item.quantity}×)</span>}
                 </span>
               </div>
@@ -205,7 +205,7 @@ export function ReceiptEditor({
               </span>
               <button
                 onClick={(e) => { e.stopPropagation(); removeItem(item.id); }}
-                className="ml-3 text-[#9C8E80] hover:text-[#E8613C] transition-colors text-sm"
+                 className="ml-3 inline-flex min-h-11 min-w-11 items-center justify-center rounded-full text-sm text-[#9C8E80] transition-colors hover:bg-white/60 hover:text-[#E8613C]"
               >
                 ✕
               </button>
@@ -242,13 +242,13 @@ export function ReceiptEditor({
             placeholder="0.00"
             value={newPrice}
             onChange={(e) => setNewPrice(e.target.value.replace(/[^0-9.]/g, ""))}
-            className="w-16 bg-transparent text-sm text-right outline-none font-bold placeholder:text-[#C4B5A6] placeholder:font-normal"
+             className="min-h-11 w-20 bg-transparent text-right text-sm font-bold outline-none placeholder:text-[#C4B5A6] placeholder:font-normal"
             onKeyDown={(e) => e.key === "Enter" && addItem()}
           />
           <button
             onClick={addItem}
             disabled={!newName.trim() || !newPrice}
-            className="text-[#E8613C] font-bold text-sm disabled:opacity-20 transition-opacity px-2 py-1"
+             className="min-h-11 rounded-full px-3 text-sm font-bold text-[#E8613C] transition-opacity disabled:opacity-20"
           >
             Add
           </button>

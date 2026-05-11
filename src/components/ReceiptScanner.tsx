@@ -145,7 +145,7 @@ export function ReceiptScanner({
 
             <button
               onClick={handleManualEntry}
-              className="text-sm text-[#9C8E80] hover:text-[#9C8E80] transition-colors"
+              className="min-h-11 rounded-full px-4 text-sm font-medium text-[#9C8E80] hover:text-[#E8613C] transition-colors"
             >
               Or just type it in
             </button>

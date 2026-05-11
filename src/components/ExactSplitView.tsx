@@ -33,7 +33,7 @@ export function ExactSplitView({
             min="0"
             value={exactAmounts[p.id] ?? 0}
             onChange={(e) => onChangeAmount(p.id, Math.max(0, parseFloat(e.target.value) || 0))}
-            className="w-24 text-right px-2 py-1 rounded border border-[#F5EDE3] bg-transparent text-sm font-bold"
+            className="min-h-11 min-w-24 text-right px-2 py-2 rounded border border-[#E8DDD0] bg-white text-sm font-bold"
           />
         </div>
       ))}

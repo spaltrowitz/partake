@@ -251,7 +251,7 @@ function SharedBillContent() {
               onChange={(e) => setGuestName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && confirmName()}
               placeholder="Your name"
-              className="flex-1 bg-[#F5EDE3] rounded-lg px-3 py-2 text-[#2D2319] placeholder-[#9C8E80] outline-none focus:ring-2 focus:ring-[#E8613C]"
+              className="min-h-11 flex-1 bg-[#F5EDE3] rounded-lg px-3 py-2 text-[#2D2319] placeholder-[#9C8E80] outline-none focus:ring-2 focus:ring-[#E8613C]"
               autoFocus
             />
             <button
@@ -270,7 +270,7 @@ function SharedBillContent() {
           </p>
           <button
             onClick={() => setNameConfirmed(false)}
-            className="text-xs text-[#E8613C] hover:underline"
+            className="min-h-11 rounded-full px-3 text-xs font-semibold text-[#E8613C] hover:bg-[#F5EDE3]"
           >
             Change
           </button>
