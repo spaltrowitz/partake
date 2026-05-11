@@ -48,6 +48,7 @@ export function Settlement({
   onPayment,
   onCopy,
   onDone,
+  onHome,
 }: {
   bill: Bill;
   splits: BillSplit[];
@@ -57,6 +58,7 @@ export function Settlement({
   onPayment: (split: BillSplit) => void;
   onCopy: (split: BillSplit) => void;
   onDone: () => void;
+  onHome?: () => void;
 }) {
   const allSettled =
     splits.filter((s) => s.total > 0).every((s) => settledIds.has(s.participantId));
@@ -266,6 +268,14 @@ export function Settlement({
       >
         ← Back to bill
       </TopBarButton>
+      {onHome && (
+        <TopBarButton
+          onClick={onHome}
+          className="mt-3 w-full"
+        >
+          Done — back home
+        </TopBarButton>
+      )}
     </div>
   );
 }

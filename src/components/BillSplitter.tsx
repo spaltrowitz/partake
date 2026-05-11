@@ -307,6 +307,7 @@ export function BillSplitter({
           setSettledIds((prev) => new Set([...prev, split.participantId]));
         }}
         onDone={() => setShowSettlement(false)}
+        onHome={onHome ? goHome : undefined}
       />
     );
   }

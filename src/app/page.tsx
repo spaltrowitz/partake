@@ -247,6 +247,25 @@ export default function Home() {
     }
   }
 
+  function goHome() {
+    try { localStorage.removeItem("partake_active_session"); } catch {}
+    setBill(null);
+    setReceipt(null);
+    setParticipants([]);
+    setShowRescanConfirm(false);
+    setRescanReasons([]);
+    setBillHistory(getBillHistory());
+    setStep("landing");
+  }
+
+  function goBackFromPeople() {
+    if (bill) {
+      setStep("split");
+      return;
+    }
+    goBackToReceipt();
+  }
+
   function addParticipant() {
     if (!newName.trim()) return;
     if (participants.some((p) => p.name.toLowerCase() === newName.trim().toLowerCase())) return;
@@ -675,7 +694,9 @@ export default function Home() {
               That&apos;s me
             </PrimaryButton>
           </div>
-          <TopBarButton onClick={goBackToReceipt}>← Back to receipt</TopBarButton>
+          <TopBarButton onClick={goBackFromPeople}>
+            {bill ? "← Back to bill" : "← Back to receipt"}
+          </TopBarButton>
         </main>
       );
     }
@@ -687,10 +708,10 @@ export default function Home() {
     return (
       <main className="p-6 max-w-md md:max-w-2xl mx-auto">
         <TopBarButton
-          onClick={goBackToReceipt}
+          onClick={goBackFromPeople}
           className="mb-4"
         >
-          ← Back to receipt
+          {bill ? "← Back to bill" : "← Back to receipt"}
         </TopBarButton>
         <h1 className="text-2xl font-bold mb-6 text-center">Who&apos;s in?</h1>
 
@@ -911,8 +932,8 @@ export default function Home() {
     return (
       <main className="min-h-dvh p-6 max-w-md md:max-w-2xl mx-auto">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <TopBarButton onClick={goToParticipants}>
-            ← Back to people
+          <TopBarButton onClick={bill ? () => setStep("split") : goHome}>
+            {bill ? "← Back to bill" : "← Home"}
           </TopBarButton>
           <TopBarButton onClick={requestRescan} variant="accent">
             Re-scan receipt
@@ -990,14 +1011,7 @@ export default function Home() {
           <BillSplitter bill={bill} onBack={goToParticipants} onEditReceipt={() => {
             setReceipt(reconstructReceiptFromBill(bill));
             setStep("edit");
-          }} onBillChange={setBill} onHome={() => {
-            try { localStorage.removeItem("partake_active_session"); } catch {}
-            setBill(null);
-            setReceipt(null);
-            setParticipants([]);
-            setBillHistory(getBillHistory());
-            setStep("landing");
-          }} />
+          }} onBillChange={setBill} onHome={goHome} />
         </ErrorBoundary>
       </main>
     );
