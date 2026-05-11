@@ -266,6 +266,16 @@ export default function Home() {
     goBackToReceipt();
   }
 
+  function startNewBill() {
+    try { localStorage.removeItem("partake_active_session"); } catch {}
+    setBill(null);
+    setReceipt(null);
+    setParticipants([]);
+    setShowRescanConfirm(false);
+    setRescanReasons([]);
+    setStep("scan");
+  }
+
   function addParticipant() {
     if (!newName.trim()) return;
     if (participants.some((p) => p.name.toLowerCase() === newName.trim().toLowerCase())) return;
@@ -431,7 +441,7 @@ export default function Home() {
                 Split dinner without the group-chat math.
               </h2>
               <p className="mt-3 text-base leading-6 text-[#6B4F2A]">
-                Snap a receipt, tap who ordered what, and send clean payment requests in seconds.
+                Snap a receipt, tap who ordered what, and send Venmo-ready payment requests in seconds.
               </p>
             </div>
           </div>
@@ -440,7 +450,7 @@ export default function Home() {
             <div className="rounded-[1.5rem] border border-[#FDE68A] bg-[#FFFBEB] p-4 text-[#2D2416] shadow-inner shadow-white/60">
               <div className="mb-5 flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#D97706]">Tonight&apos;s receipt</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#D97706]">Example split</p>
                   <p className="mt-1 text-base font-black tracking-[-0.02em]">Luca&apos;s Trattoria</p>
                 </div>
                 <div className="rounded-full border border-[#FBBF24] bg-white px-3 py-1 text-xs font-bold text-[#6B4F2A]">3 people</div>
@@ -462,22 +472,10 @@ export default function Home() {
                 ))}
               </div>
               <div className="mt-5 flex items-center justify-between border-t border-[#FBBF24] pt-4">
-                <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#D97706]">Ready to request</span>
+                <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#D97706]">Venmo requests ready</span>
                 <span className="text-xl font-black tracking-[-0.03em]">$86.42</span>
               </div>
             </div>
-          </div>
-
-          <div className="w-full">
-            <PrimaryButton onClick={() => {
-              try { localStorage.removeItem("partake_active_session"); } catch {}
-              setBill(null);
-              setReceipt(null);
-              setParticipants([]);
-              setStep("scan");
-            }} className="min-h-14 text-base shadow-xl shadow-[#D97706]/20">
-              Scan the receipt
-            </PrimaryButton>
           </div>
 
           <div className="w-full rounded-[1.75rem] border border-[#FDE68A] bg-white/80 p-4 text-left shadow-lg shadow-[#2D2416]/5">
@@ -498,7 +496,7 @@ export default function Home() {
               <div>
                 <p className="text-sm font-black text-[#2D2416]">Built for group dinners</p>
                 <p className="mt-1 whitespace-nowrap text-xs leading-5 text-[#6B4F2A] sm:text-sm">
-                  Add everyone, claim items, and send requests.
+                  Add everyone, claim items, and send Venmo requests.
                 </p>
               </div>
             </div>
@@ -538,6 +536,21 @@ export default function Home() {
               )}
             </div>
           )}
+
+          <div className="w-full rounded-[1.75rem] border border-[#FDE68A] bg-white/85 p-4 shadow-lg shadow-[#2D2416]/5">
+            <div className="mb-3 flex items-end justify-between gap-3 px-1">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#D97706]">Use Partake</p>
+                <h2 className="mt-1 text-lg font-black tracking-[-0.03em] text-[#2D2416]">Start a real bill</h2>
+              </div>
+              {billHistory.length > 0 && (
+                <span className="text-xs font-medium text-[#8A7353]">or reopen one below</span>
+              )}
+            </div>
+            <PrimaryButton onClick={startNewBill} className="min-h-14 text-base shadow-xl shadow-[#D97706]/20">
+              Scan a receipt
+            </PrimaryButton>
+          </div>
 
           {billHistory.length > 0 && (
             <div className="w-full">
