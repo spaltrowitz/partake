@@ -6,14 +6,14 @@ export function ReceiptSkeleton() {
       
       {/* Items */}
       {[...Array(5)].map((_, i) => (
-        <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-[#CCFBF1]">
+        <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-[#FDE68A]">
           <div className="skeleton h-4 w-32" />
           <div className="skeleton h-4 w-16" />
         </div>
       ))}
       
       {/* Totals */}
-      <div className="border-t border-[#CCFBF1] pt-3 flex flex-col gap-2">
+      <div className="border-t border-[#FDE68A] pt-3 flex flex-col gap-2">
         <div className="flex justify-between">
           <div className="skeleton h-4 w-20" />
           <div className="skeleton h-4 w-16" />

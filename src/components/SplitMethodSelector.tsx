@@ -18,17 +18,17 @@ export function SplitMethodSelector({
   onSelect: (method: SplitMethod) => void;
 }) {
   return (
-    <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scroll-px-3 p-3 bg-[#FFFFFF] border-b border-[#CCFBF1]">
+    <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scroll-px-3 p-3 bg-[#FFFFFF] border-b border-[#FDE68A]">
       {SPLIT_METHODS.map((method) => (
         <button
           key={method.id}
           onClick={() => onSelect(method.id)}
           aria-label={`${method.label}: ${method.description}`}
           aria-pressed={splitMethod === method.id}
-          className={`min-h-11 min-w-fit snap-start px-4 py-2.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors focus:outline-none focus:ring-2 focus:ring-[#0F766E] ${
+          className={`min-h-11 min-w-fit snap-start px-4 py-2.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors focus:outline-none focus:ring-2 focus:ring-[#D97706] ${
             splitMethod === method.id
               ? "gradient-bg text-white"
-              : "bg-[#CCFBF1] text-[#64748B]"
+              : "bg-[#FDE68A] text-[#8A7353]"
           }`}
         >
           {method.label}

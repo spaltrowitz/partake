@@ -18,11 +18,11 @@ export function PercentageSplitView({
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-xs text-[#64748B] mb-1">
+      <p className="text-xs text-[#8A7353] mb-1">
         Set each person&apos;s percentage (should add up to 100%)
       </p>
       {participants.map((p, i) => (
-        <div key={p.id} className="flex items-center gap-3 p-3 bg-[#CCFBF1] rounded-lg">
+        <div key={p.id} className="flex items-center gap-3 p-3 bg-[#FDE68A] rounded-lg">
           <Avatar name={p.name} index={i} size={32} allNames={participants.map(pp => pp.name)} />
           <span className="flex-1 font-medium text-sm">{p.name}</span>
           <input
@@ -31,9 +31,9 @@ export function PercentageSplitView({
             value={percentages[p.id] ?? 0}
             onChange={(e) => onChangePercentage(p.id, parseFloat(e.target.value) || 0)}
             aria-label={`${p.name}'s percentage`}
-            className="min-h-11 min-w-24 text-right px-2 py-2 rounded border border-[#99F6E4] bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#0F766E]"
+            className="min-h-11 min-w-24 text-right px-2 py-2 rounded border border-[#FBBF24] bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#D97706]"
           />
-          <span className="text-sm text-[#64748B]">%</span>
+          <span className="text-sm text-[#8A7353]">%</span>
           <span className="text-sm font-semibold w-20 text-right">
             ${(total * (percentages[p.id] ?? 0) / 100).toFixed(2)}
           </span>

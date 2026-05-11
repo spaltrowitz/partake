@@ -4,7 +4,7 @@ export default function PrivacyPage() {
   return (
     <main className="min-h-dvh flex flex-col items-center p-6 pt-16 max-w-2xl mx-auto">
       <h1 className="text-3xl font-bold gradient-text tracking-tight mb-2">Privacy Policy</h1>
-      <p className="text-xs text-[#94A3B8] mb-8">Last Updated: May 7, 2026</p>
+      <p className="text-xs text-[#B8A078] mb-8">Last Updated: May 7, 2026</p>
 
       <div className="space-y-6 text-sm text-[#6B5E50] leading-relaxed w-full">
         <section>
@@ -75,13 +75,13 @@ export default function PrivacyPage() {
 
         <section>
           <h2 className="text-base font-semibold text-[#3D3428] mb-2">7. Contact</h2>
-          <p>Email: <a href="mailto:sharipaltrowitz@gmail.com" className="text-[#0F766E] hover:text-[#C4502F]">sharipaltrowitz@gmail.com</a></p>
+          <p>Email: <a href="mailto:sharipaltrowitz@gmail.com" className="text-[#D97706] hover:text-[#C4502F]">sharipaltrowitz@gmail.com</a></p>
         </section>
       </div>
 
-      <div className="mt-10 pt-4 border-t border-[#BAE6FD] w-full flex justify-between">
-        <Link href="/" className="text-sm text-[#0F766E] hover:text-[#C4502F] font-semibold">← Home</Link>
-        <Link href="/terms" className="text-sm text-[#0F766E] hover:text-[#C4502F] font-semibold">Terms →</Link>
+      <div className="mt-10 pt-4 border-t border-[#FDE68A] w-full flex justify-between">
+        <Link href="/" className="text-sm text-[#D97706] hover:text-[#C4502F] font-semibold">← Home</Link>
+        <Link href="/terms" className="text-sm text-[#D97706] hover:text-[#C4502F] font-semibold">Terms →</Link>
       </div>
     </main>
   );

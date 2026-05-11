@@ -143,7 +143,7 @@ function SharedBillContent() {
       <div className="min-h-dvh flex items-center justify-center p-4">
         <Card className="max-w-sm text-center">
           <p className="text-2xl mb-2">😕</p>
-          <p className="text-[#64748B]">No bill code provided.</p>
+          <p className="text-[#8A7353]">No bill code provided.</p>
         </Card>
       </div>
     );
@@ -154,7 +154,7 @@ function SharedBillContent() {
       <div className="min-h-dvh flex items-center justify-center p-4">
         <Card className="max-w-sm text-center">
           <p className="text-2xl mb-2">😕</p>
-          <p className="text-[#64748B]">Firebase is not configured. The bill owner needs to set up Firebase.</p>
+          <p className="text-[#8A7353]">Firebase is not configured. The bill owner needs to set up Firebase.</p>
         </Card>
       </div>
     );
@@ -216,7 +216,7 @@ function SharedBillContent() {
       <div className="min-h-dvh flex items-center justify-center p-4">
         <Card className="max-w-sm text-center">
           <p className="text-2xl mb-2">😕</p>
-          <p className="text-[#64748B]">{error}</p>
+          <p className="text-[#8A7353]">{error}</p>
         </Card>
       </div>
     );
@@ -232,16 +232,16 @@ function SharedBillContent() {
       {/* Header */}
       <div className="text-center mb-6 mt-4">
         {bill.restaurantName && (
-          <p className="text-[#64748B] text-sm mb-1">{bill.restaurantName}</p>
+          <p className="text-[#8A7353] text-sm mb-1">{bill.restaurantName}</p>
         )}
         <h1 className="text-2xl font-bold">{bill.name || "Shared Bill"}</h1>
-        <p className="text-[#64748B]">${bill.total.toFixed(2)} total</p>
+        <p className="text-[#8A7353]">${bill.total.toFixed(2)} total</p>
       </div>
 
       {/* Name input */}
       {!nameConfirmed ? (
         <Card className="mb-6">
-          <p className="text-sm text-[#64748B] mb-3">
+          <p className="text-sm text-[#8A7353] mb-3">
             Enter your name to claim items
           </p>
           <div className="flex gap-2">
@@ -251,7 +251,7 @@ function SharedBillContent() {
               onChange={(e) => setGuestName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && confirmName()}
               placeholder="Your name"
-              className="min-h-11 flex-1 bg-[#CCFBF1] rounded-lg px-3 py-2 text-[#0F172A] placeholder-[#64748B] outline-none focus:ring-2 focus:ring-[#0F766E]"
+              className="min-h-11 flex-1 bg-[#FDE68A] rounded-lg px-3 py-2 text-[#2D2416] placeholder-[#8A7353] outline-none focus:ring-2 focus:ring-[#D97706]"
               autoFocus
             />
             <button
@@ -265,12 +265,12 @@ function SharedBillContent() {
         </Card>
       ) : (
         <div className="flex items-center justify-between mb-4 px-1">
-          <p className="text-sm text-[#64748B]">
-            Claiming as <span className="text-[#0F172A] font-medium">{guestName}</span>
+          <p className="text-sm text-[#8A7353]">
+            Claiming as <span className="text-[#2D2416] font-medium">{guestName}</span>
           </p>
           <button
             onClick={() => setNameConfirmed(false)}
-            className="min-h-11 rounded-full px-3 text-xs font-semibold text-[#0F766E] hover:bg-[#CCFBF1]"
+            className="min-h-11 rounded-full px-3 text-xs font-semibold text-[#D97706] hover:bg-[#FDE68A]"
           >
             Change
           </button>
@@ -280,7 +280,7 @@ function SharedBillContent() {
       {/* Items */}
       {claimsLocked && (
         <Card className="mb-3">
-          <p className="text-sm text-[#64748B]">Claims are locked because payment requests were already sent.</p>
+          <p className="text-sm text-[#8A7353]">Claims are locked because payment requests were already sent.</p>
         </Card>
       )}
       <div className="flex flex-col gap-2 mb-6">
@@ -298,8 +298,8 @@ function SharedBillContent() {
               disabled={!nameConfirmed || claimsLocked}
               className={`w-full text-left p-3 rounded-xl border transition-colors touch-target ${
                 isMine
-                  ? "bg-[#CCFBF1] border-[#0F766E]"
-                  : "bg-[#FFFFFF] border-[#CCFBF1] hover:border-[#64748B]"
+                  ? "bg-[#FDE68A] border-[#D97706]"
+                  : "bg-[#FFFFFF] border-[#FDE68A] hover:border-[#8A7353]"
               } disabled:opacity-60 disabled:cursor-not-allowed`}
             >
               <div className="flex justify-between items-start">
@@ -309,7 +309,7 @@ function SharedBillContent() {
                     {item.name}
                   </p>
                   {item.claimedBy.length > 0 && (
-                    <p className="text-xs text-[#64748B] mt-1">
+                    <p className="text-xs text-[#8A7353] mt-1">
                       {item.claimedBy.map((claim) => resolveClaimName(bill, claim)).join(", ")}
                       {item.claimedBy.length > 1 &&
                         ` · $${(lineTotal / item.claimedBy.length).toFixed(2)} each`}
@@ -318,7 +318,7 @@ function SharedBillContent() {
                 </div>
                 <div className="flex items-center gap-2 ml-2">
                   <span className="font-semibold">${lineTotal.toFixed(2)}</span>
-                  {isMine && <span className="text-[#0F766E] text-lg">✓</span>}
+                  {isMine && <span className="text-[#D97706] text-lg">✓</span>}
                 </div>
               </div>
             </button>
@@ -328,7 +328,7 @@ function SharedBillContent() {
 
       {/* Tax + Tip info */}
       <Card className="mb-6">
-        <div className="text-sm text-[#64748B] space-y-1">
+        <div className="text-sm text-[#8A7353] space-y-1">
           <div className="flex justify-between">
             <span>Tax</span>
             <span>${bill.tax.toFixed(2)}</span>
@@ -337,8 +337,8 @@ function SharedBillContent() {
             <span>Tip</span>
             <span>${bill.tipAmount.toFixed(2)}</span>
           </div>
-          <hr className="border-[#CCFBF1]" />
-          <div className="flex justify-between font-semibold text-[#0F172A]">
+          <hr className="border-[#FDE68A]" />
+          <div className="flex justify-between font-semibold text-[#2D2416]">
             <span>Total</span>
             <span>${bill.total.toFixed(2)}</span>
           </div>
@@ -364,7 +364,7 @@ function SharedBillContent() {
       )}
 
       {/* Footer */}
-      <p className="text-center text-xs text-[#64748B] pb-6">
+      <p className="text-center text-xs text-[#8A7353] pb-6">
         Split with <span className="gradient-text font-semibold">Partake</span>
       </p>
     </div>

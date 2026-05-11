@@ -49,11 +49,11 @@ export function PartnerGroupSelector({
         const payer = participants.find(p => p.id === group.payerId);
         const members = group.memberIds.map(id => participants.find(p => p.id === id)?.name).filter(Boolean);
         return (
-          <div key={i} className="p-3 bg-[#CCFBF1] rounded-xl mb-2 flex items-center justify-between">
+          <div key={i} className="p-3 bg-[#FDE68A] rounded-xl mb-2 flex items-center justify-between">
             <span className="text-sm">
               👫 <strong>{payer?.name}</strong> covers {members.join(" & ")}
             </span>
-            <button onClick={() => removeGroup(i)} className="min-h-11 rounded-full px-3 py-2 text-xs text-[#0F766E] font-semibold">
+            <button onClick={() => removeGroup(i)} className="min-h-11 rounded-full px-3 py-2 text-xs text-[#D97706] font-semibold">
               Remove
             </button>
           </div>
@@ -61,13 +61,13 @@ export function PartnerGroupSelector({
       })}
 
       {isAdding ? (
-        <div className="p-3 bg-[#CCFBF1] rounded-xl mb-2 flex flex-col gap-3">
+        <div className="p-3 bg-[#FDE68A] rounded-xl mb-2 flex flex-col gap-3">
           <p className="text-sm font-medium">Who&apos;s paying?</p>
           <select
             value={newPayerId}
             onChange={(e) => { setNewPayerId(e.target.value); setNewMemberIds([]); }}
             aria-label="Select who is paying for the group"
-            className="min-h-11 text-sm bg-white rounded-lg py-2 px-3 outline-none border border-[#99F6E4] focus:ring-2 focus:ring-[#0F766E]"
+            className="min-h-11 text-sm bg-white rounded-lg py-2 px-3 outline-none border border-[#FBBF24] focus:ring-2 focus:ring-[#D97706]"
           >
             <option value="">Select person</option>
             {availablePeople.map(p => (
@@ -90,7 +90,7 @@ export function PartnerGroupSelector({
                         selected ? prev.filter(id => id !== p.id) : [...prev, p.id]
                       )}
                       className={`min-h-11 px-3 py-2 rounded-full text-sm font-medium transition-colors ${
-                        selected ? "gradient-bg text-white" : "bg-white border border-[#99F6E4] text-[#64748B]"
+                        selected ? "gradient-bg text-white" : "bg-white border border-[#FBBF24] text-[#8A7353]"
                       }`}
                     >
                       {p.name}
@@ -111,7 +111,7 @@ export function PartnerGroupSelector({
             </button>
             <button
               onClick={() => { setIsAdding(false); setNewPayerId(""); setNewMemberIds([]); }}
-              className="min-h-11 px-4 py-2 text-sm text-[#64748B]"
+              className="min-h-11 px-4 py-2 text-sm text-[#8A7353]"
             >
               Cancel
             </button>
@@ -121,7 +121,7 @@ export function PartnerGroupSelector({
         availablePeople.length >= 2 && (
           <button
             onClick={() => setIsAdding(true)}
-            className="w-full min-h-11 py-2.5 px-4 rounded-xl border border-dashed border-[#99F6E4] text-sm text-[#64748B] hover:bg-[#CCFBF1] transition-colors"
+            className="w-full min-h-11 py-2.5 px-4 rounded-xl border border-dashed border-[#FBBF24] text-sm text-[#8A7353] hover:bg-[#FDE68A] transition-colors"
           >
             {payingGroups.length > 0 ? "+ Add another group" : "👫 Paying together? Combine tabs"}
           </button>

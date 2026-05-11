@@ -9,38 +9,38 @@ export default function AboutPage() {
       <section className="mx-auto flex w-full max-w-2xl flex-col gap-6">
         <Link
           href="/"
-          className="inline-flex min-h-11 w-fit items-center rounded-full border border-[#99F6E4] bg-white/90 px-4 py-2 text-sm font-semibold text-[#334155] shadow-sm shadow-[#0F172A]/5 transition-colors hover:border-[#14B8A6] hover:bg-[#F0FDFA] hover:text-[#0F766E]"
+          className="inline-flex min-h-11 w-fit items-center rounded-full border border-[#FBBF24] bg-white/90 px-4 py-2 text-sm font-semibold text-[#6B4F2A] shadow-sm shadow-[#2D2416]/5 transition-colors hover:border-[#F59E0B] hover:bg-[#FFF8E1] hover:text-[#D97706]"
         >
           ← Back to Partake
         </Link>
 
-        <div className="overflow-hidden rounded-[2rem] border border-[#CCFBF1] bg-white shadow-xl shadow-[#0F172A]/5">
-          <div className="relative bg-gradient-to-br from-white via-[#F0FDFA] to-[#CCFBF1] p-6 sm:p-8">
-            <div className="pointer-events-none absolute -right-10 -top-12 h-32 w-32 rounded-full bg-[#99F6E4]/45" />
-            <div className="pointer-events-none absolute -bottom-12 -left-10 h-28 w-28 rounded-full bg-[#0F766E]/10" />
+        <div className="overflow-hidden rounded-[2rem] border border-[#FDE68A] bg-white shadow-xl shadow-[#2D2416]/5">
+          <div className="relative bg-gradient-to-br from-white via-[#FFF8E1] to-[#FDE68A] p-6 sm:p-8">
+            <div className="pointer-events-none absolute -right-10 -top-12 h-32 w-32 rounded-full bg-[#FBBF24]/45" />
+            <div className="pointer-events-none absolute -bottom-12 -left-10 h-28 w-28 rounded-full bg-[#D97706]/10" />
             <div className="relative">
-              <p className="mb-3 inline-flex rounded-full border border-[#99F6E4] bg-white/80 px-3 py-1 text-xs font-bold text-[#0F766E] shadow-sm">
+              <p className="mb-3 inline-flex rounded-full border border-[#FBBF24] bg-white/80 px-3 py-1 text-xs font-bold text-[#D97706] shadow-sm">
                 About Partake
               </p>
-              <h1 className="text-4xl font-black tracking-[-0.05em] text-[#0F172A] sm:text-5xl">
+              <h1 className="text-4xl font-black tracking-[-0.05em] text-[#2D2416] sm:text-5xl">
                 Built for the part of dinner nobody wants to do.
               </h1>
-              <p className="mt-4 text-base leading-7 text-[#334155]">
+              <p className="mt-4 text-base leading-7 text-[#6B4F2A]">
                 Partake started from a very specific kind of group-chat pain: the meal was great, the bill arrived, and suddenly everyone was doing math, scrolling Venmo, and trying not to make it awkward.
               </p>
-              <p className="mt-3 text-base leading-7 text-[#334155]">
+              <p className="mt-3 text-base leading-7 text-[#6B4F2A]">
                 I built it so splitting a receipt could feel as easy as the dinner itself. Scan the bill, tap who got what, and send clean payment requests without turning the end of the night into spreadsheet time.
               </p>
             </div>
           </div>
         </div>
 
-        <div className="rounded-[1.75rem] border border-[#99F6E4] bg-[#F0FDFA] p-5 shadow-lg shadow-[#0F172A]/5 sm:p-6">
+        <div className="rounded-[1.75rem] border border-[#FBBF24] bg-[#FFF8E1] p-5 shadow-lg shadow-[#2D2416]/5 sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#0F766E]">Support the developer</p>
-              <h2 className="mt-1 text-2xl font-black tracking-[-0.04em] text-[#0F172A]">Tip me if Partake saved your table math.</h2>
-              <p className="mt-2 text-sm leading-6 text-[#334155]">
+              <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#D97706]">Support the developer</p>
+              <h2 className="mt-1 text-2xl font-black tracking-[-0.04em] text-[#2D2416]">Tip me if Partake saved your table math.</h2>
+              <p className="mt-2 text-sm leading-6 text-[#6B4F2A]">
                 Partake is a free side project. If it made splitting dinner easier, a tip helps me keep building, fixing, and polishing it.
               </p>
             </div>
@@ -49,7 +49,7 @@ export default function AboutPage() {
                 href={VENMO_TIP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-14 w-full shrink-0 flex-col items-center justify-center rounded-2xl bg-[#0F766E] px-5 py-3 text-center text-white shadow-lg shadow-[#0F766E]/20 transition-transform hover:-translate-y-0.5"
+                className="inline-flex min-h-14 w-full shrink-0 flex-col items-center justify-center rounded-2xl bg-[#D97706] px-5 py-3 text-center text-white shadow-lg shadow-[#D97706]/20 transition-transform hover:-translate-y-0.5"
               >
                 <span className="text-sm font-black">🍕 Cover my share</span>
                 <span className="mt-0.5 text-xs font-semibold text-white/80">$5 prefilled in Venmo</span>
@@ -64,17 +64,17 @@ export default function AboutPage() {
             ["Made for phones", "The flow is optimized for the real moment: standing outside the restaurant with friends."],
             ["Still improving", "Feedback goes straight into the backlog so I can keep smoothing the rough edges."],
           ].map(([title, description]) => (
-            <div key={title} className="rounded-2xl border border-[#CCFBF1] bg-white p-4 shadow-sm shadow-[#0F172A]/5">
-              <h2 className="text-sm font-bold text-[#0F172A]">{title}</h2>
-              <p className="mt-2 text-sm leading-5 text-[#334155]">{description}</p>
+            <div key={title} className="rounded-2xl border border-[#FDE68A] bg-white p-4 shadow-sm shadow-[#2D2416]/5">
+              <h2 className="text-sm font-bold text-[#2D2416]">{title}</h2>
+              <p className="mt-2 text-sm leading-5 text-[#6B4F2A]">{description}</p>
             </div>
           ))}
         </div>
 
-        <div className="border-t border-[#BAE6FD] pt-4 text-center text-xs text-[#94A3B8]">
-          <Link href="/privacy" className="font-semibold transition-colors hover:text-[#64748B]">Privacy</Link>
+        <div className="border-t border-[#FDE68A] pt-4 text-center text-xs text-[#B8A078]">
+          <Link href="/privacy" className="font-semibold transition-colors hover:text-[#8A7353]">Privacy</Link>
           <span className="mx-3">·</span>
-          <Link href="/terms" className="font-semibold transition-colors hover:text-[#64748B]">Terms</Link>
+          <Link href="/terms" className="font-semibold transition-colors hover:text-[#8A7353]">Terms</Link>
         </div>
       </section>
     </main>
