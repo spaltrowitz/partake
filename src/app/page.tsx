@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ParsedReceipt, Bill, BillItem, Participant, SavedContact, AppUser } from "@/types";
 import { ReceiptScanner } from "@/components/ReceiptScanner";
 import { ReceiptEditor } from "@/components/ReceiptEditor";
@@ -138,6 +138,7 @@ function getAuthErrorMessage(error: unknown): string {
 }
 
 export default function Home() {
+  const addPersonButtonRef = useRef<HTMLButtonElement>(null);
   const [initialState] = useState(getInitialHomeState);
   const [step, setStep] = useState<Step>(initialState.step);
   const [participants, setParticipants] = useState<Participant[]>(initialState.participants);
@@ -749,7 +750,12 @@ export default function Home() {
               Add {newName.trim() || "friend"}
             </PrimaryButton>
             <button
-              onClick={() => { setShowAddForm(false); setNewName(""); setNewVenmo(""); }}
+              onClick={() => {
+                setShowAddForm(false);
+                setNewName("");
+                setNewVenmo("");
+                setTimeout(() => addPersonButtonRef.current?.focus(), 0);
+              }}
               className="min-h-11 rounded-full text-center text-sm text-[#9C8E80] hover:bg-white/60"
             >
               Cancel
@@ -757,6 +763,7 @@ export default function Home() {
           </div>
         ) : (
           <button
+            ref={addPersonButtonRef}
             onClick={() => setShowAddForm(true)}
             className="mb-6 min-h-12 w-full rounded-xl border-2 border-dashed border-[#E8DDD0] py-3 text-center font-semibold text-[#E8613C] transition-colors hover:bg-[#F5EDE3]"
           >

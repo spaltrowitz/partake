@@ -10,8 +10,7 @@ function ShareLinkButton({ shareCode, billName }: { shareCode: string; billName:
   const [copied, setCopied] = useState(false);
 
   const handleShare = () => {
-    const basePath = window.location.pathname.startsWith("/partake") ? "/partake" : "";
-    const url = `${window.location.origin}${basePath}/bill?code=${shareCode}`;
+    const url = `${window.location.origin}/bill?code=${shareCode}`;
     const text = `Claim your items on "${billName || "our bill"}"`;
 
     if (navigator.share) {
@@ -92,13 +91,15 @@ export function Settlement({
 
       {payableSplits.length > 1 && (
         <div className="mb-4">
+          <p className="mb-2 text-center text-xs text-[#9C8E80]">
+            💡 Best on desktop — on mobile, tap individual requests if only the first app link opens.
+          </p>
           <button
             onClick={handleRequestAll}
             className="w-full py-3 rounded-xl text-white font-semibold gradient-bg hover:opacity-90 transition-opacity"
           >
             Request all {payableSplits.length} via Venmo
           </button>
-          <p className="text-xs text-[#9C8E80] text-center mt-1">Best on desktop — mobile may only open the first</p>
         </div>
       )}
 
