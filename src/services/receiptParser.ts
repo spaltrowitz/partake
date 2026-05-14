@@ -312,6 +312,18 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
     }
   }
 
+  const itemSumBeforeColumnRecovery = Math.round(items.reduce((sum, item) => sum + item.price * item.quantity, 0) * 100) / 100;
+  if (subtotal !== undefined && Math.abs(itemSumBeforeColumnRecovery - subtotal) > 2) {
+    const recoveredItems = recoverOrderedColumnItems(lines, subtotal);
+    if (recoveredItems.length > items.length) {
+      const recoveredSum = Math.round(recoveredItems.reduce((sum, item) => sum + item.price * item.quantity, 0) * 100) / 100;
+      if (Math.abs(recoveredSum - subtotal) < Math.abs(itemSumBeforeColumnRecovery - subtotal)) {
+        items.length = 0;
+        items.push(...recoveredItems);
+      }
+    }
+  }
+
   // Fix restaurant name if it's clearly not a restaurant (e.g., Pokémon card text)
   if (restaurantName && items.length > 0) {
     // Check if any item name looks more like a restaurant name
@@ -352,6 +364,94 @@ function extractPrice(text: string): number | undefined {
   if (matches.length === 0) return undefined;
   const match = matches[matches.length - 1];
   return parseFloat(match[1].replace(/,/g, ""));
+}
+
+function recoverOrderedColumnItems(lines: string[], subtotal: number): ParsedItem[] {
+  const recovered: ParsedItem[] = [];
+  let pendingNames: { name: string; qty: number }[] = [];
+  let inOrderedSection = false;
+  let stalePendingNames = false;
+
+  function addRecovered(name: string, qty: number, linePrice: number) {
+    const unitPrice = qty > 1 ? Math.round((linePrice / qty) * 100) / 100 : linePrice;
+    recovered.push({
+      id: crypto.randomUUID(),
+      name,
+      price: unitPrice,
+      confidence: 0.7,
+      quantity: qty,
+    });
+  }
+
+  function getItemName(line: string): { name: string; qty: number } | null {
+    const lower = line.toLowerCase();
+    if (shouldSkip(lower) || isMetadataLine(lower) || /^\+?\d+%/.test(line)) return null;
+    const name = cleanItemName(line);
+    if (!name || !/[a-z]/i.test(name) || isMetadataLine(lower) || shouldSkip(lower)) return null;
+    return { name, qty: extractQuantity(line) };
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
+    if (!trimmed) continue;
+    const lower = trimmed.toLowerCase();
+
+    if (/\bordered\b/i.test(trimmed)) {
+      inOrderedSection = true;
+      continue;
+    }
+
+    if (!inOrderedSection) continue;
+
+    if (matchesAny(lower, [...SUBTOTAL_KEYWORDS, ...TAX_KEYWORDS, ...TIP_KEYWORDS, ...TOTAL_KEYWORDS])) {
+      break;
+    }
+
+    if (shouldSkip(lower) || isMetadataLine(lower) || /^\+?\d+%/.test(trimmed)) continue;
+
+    const price = extractPrice(trimmed);
+    const isStandalonePrice = price !== undefined && /^\$?\s*[\d,]+\.\d{2}\s*$/.test(trimmed);
+
+    if (isStandalonePrice) {
+      const priceRun: number[] = [];
+      let lookAhead = i;
+      while (lookAhead < lines.length) {
+        const candidate = lines[lookAhead].trim();
+        const candidatePrice = extractPrice(candidate);
+        if (candidatePrice === undefined || !/^\$?\s*[\d,]+\.\d{2}\s*$/.test(candidate)) break;
+        if (candidatePrice !== subtotal) priceRun.push(candidatePrice);
+        lookAhead++;
+      }
+
+      if (pendingNames.length > 0 && priceRun.length > 0) {
+        let orderedNames = pendingNames;
+        if (stalePendingNames && priceRun.length >= pendingNames.length && pendingNames.length > 1) {
+          orderedNames = [pendingNames[pendingNames.length - 1], ...pendingNames.slice(0, -1)];
+        }
+        const pairCount = Math.min(orderedNames.length, priceRun.length);
+        for (let j = 0; j < pairCount; j++) {
+          addRecovered(orderedNames[j].name, orderedNames[j].qty, priceRun[j]);
+        }
+        pendingNames = orderedNames.slice(pairCount);
+        stalePendingNames = pendingNames.length > 0;
+      }
+
+      i = lookAhead - 1;
+      continue;
+    }
+
+    const itemName = getItemName(trimmed);
+    if (!itemName) continue;
+
+    if (price !== undefined && price !== subtotal) {
+      addRecovered(itemName.name, itemName.qty, price);
+      stalePendingNames = pendingNames.length > 0;
+    } else {
+      pendingNames.push(itemName);
+    }
+  }
+
+  return recovered.length >= 2 ? recovered : [];
 }
 
 function cleanItemName(text: string): string {

@@ -190,4 +190,124 @@ describe("receiptParser - real-world receipt formats", () => {
     const barolo = r.items.find(i => i.name.includes("Barolo"));
     expect(barolo?.quantity).toBe(3);
   });
+
+  it("recovers Golden Hof receipt when Vision reads item names and prices in separate columns", () => {
+    const lines = [
+      "GOLDEN HOF",
+      "KOREAN BAR & GRILL",
+      "Golden HOF - Korean Bar & Grill",
+      "Check #112",
+      "Guest Count: 5",
+      "16 West 48th Street",
+      "New York, NY 10036",
+      "Ordered:",
+      "1 HH Ruby Spritz",
+      "5/13/26 5:29 PM",
+      "$14.00",
+      "2 HH Ssuk Negroni",
+      "$28.00",
+      "1 HH Coco Daiquiri",
+      "$14.00",
+      "2 Pint HH Other Half Session IPA",
+      "$12.00",
+      "3 HH Caesar Salad",
+      "$48.00",
+      "2 HH Brussels",
+      "2 HH Golden Cheeseburger",
+      "1 HH Rigatoni",
+      "1 Doenjang Jjigae",
+      "$32.00",
+      "1 Persimmon Old Fashioned",
+      "$20.00",
+      "$40.00",
+      "$16.00",
+      "$24.00",
+      "1 HOF Bibimbap",
+      "$22.00",
+      "Tofu",
+      "$3.00",
+      "1 Japchae",
+      "$22.00",
+      "Beef",
+      "$5.00",
+      "2 Mini Honey Butter Pancakes",
+      "$32.00",
+      "Subtotal",
+      "$332.00",
+      "Tax",
+      "$29.45",
+      "Tip",
+      "$66.40",
+      "Total",
+      "$427.85",
+    ];
+
+    const r = parseReceiptText(lines);
+    expect(r.items).toHaveLength(15);
+    expect(r.items.reduce((sum, item) => sum + item.price * item.quantity, 0)).toBeCloseTo(332, 2);
+    expect(r.items[0]).toMatchObject({ name: "HH Ruby Spritz", quantity: 1, price: 14 });
+    expect(r.items[5]).toMatchObject({ name: "HH Brussels", quantity: 2, price: 16 });
+    expect(r.items[7]).toMatchObject({ name: "HH Golden Cheeseburger", quantity: 2, price: 20 });
+    expect(r.items[9]).toMatchObject({ name: "Doenjang Jjigae", quantity: 1, price: 24 });
+    expect(r.tax).toBeCloseTo(29.45, 2);
+    expect(r.tip).toBeCloseTo(66.4, 2);
+    expect(r.total).toBeCloseTo(427.85, 2);
+  });
+
+  it("parses Golden Hof converted HEIC OCR consistently with pre-tip total", () => {
+    const lines = [
+      "GOLDEN HOF",
+      "KOREAN BAR & GRILL,",
+      "Golden HOF - Korean Bar & Grill",
+      "16 West 48th Street",
+      "New York, NY 10036",
+      "Server: Tina H",
+      "Check #112",
+      "Table 7C",
+      "Guest Count: 5",
+      "Ordered:",
+      "5/13/26 5:29 PM",
+      "1 Japchae",
+      "$22.00",
+      "Beef",
+      "$5.00",
+      "1 Doenjang Jjigae",
+      "$24.00",
+      "1 HH Ruby Spritz",
+      "2 HH Ssuk Negroni",
+      "1 HH Coco Daiquiri",
+      "$14.00",
+      "$28.00",
+      "$14.00",
+      "2 Pint HH Other Half Session IPA $12.00",
+      "3 HH Caesar Salad",
+      "$48.00",
+      "2 HH Brussels",
+      "$32.00",
+      "1 Persimmon Old Fashioned",
+      "$20.00",
+      "2 HH Golden Cheeseburger",
+      "$40.00",
+      "1 HH Rigatoni",
+      "$16.00",
+      "1 HOF Bibimbap",
+      "$22.00",
+      "Tofu",
+      "$3.00",
+      "2 Mini Honey Butter Pancakes",
+      "$32.00",
+      "Subtotal",
+      "$332.00",
+      "Tax",
+      "$29.45",
+      "Total",
+      "$361.45",
+    ];
+
+    const r = parseReceiptText(lines);
+    expect(r.items).toHaveLength(15);
+    expect(r.items.reduce((sum, item) => sum + item.price * item.quantity, 0)).toBeCloseTo(332, 2);
+    expect(r.tip).toBeUndefined();
+    expect(r.total).toBeCloseTo(361.45, 2);
+  });
 });

@@ -69,14 +69,22 @@ export async function recognizeText(imageFile: File): Promise<OcrResult> {
     throw new Error("Please upload a JPG, PNG, WebP, or HEIC image.");
   }
 
-  const visionResult = await recognizeWithVision(imageFile);
+  let cloudOcrFile = imageFile;
+  if (heic) {
+    try {
+      cloudOcrFile = await convertToJpeg(imageFile);
+    } catch {
+      // Fall through to the explicit HEIC fallback error below if OCR cannot proceed.
+    }
+  }
+
+  const visionResult = await recognizeWithVision(cloudOcrFile);
   if (visionResult.lines.length > 0) return visionResult;
 
   // Tesseract fallback — needs JPEG/PNG, so convert HEIC first
   if (heic) {
     try {
-      const converted = await convertToJpeg(imageFile);
-      const prepared = await prepareForTesseract(converted);
+      const prepared = await prepareForTesseract(cloudOcrFile);
       const lines = await recognizeWithTesseract(prepared);
       return {
         lines,
