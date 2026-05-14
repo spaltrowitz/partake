@@ -84,6 +84,8 @@ export interface ParsedReceipt {
   subtotal?: number;
   total?: number;
   restaurantName?: string;
+  ocrEngine?: "vision" | "tesseract" | "manual" | "restored";
+  warnings?: string[];
 }
 
 export interface ParsedItem {

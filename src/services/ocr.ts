@@ -2,6 +2,13 @@ import Tesseract from "tesseract.js";
 
 const OCR_TIMEOUT_MS = 30000;
 const VALID_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const TESSERACT_MAX_DIMENSION = 2200;
+
+export interface OcrResult {
+  lines: string[];
+  engine: "vision" | "tesseract";
+  warning?: string;
+}
 
 function isHEIC(file: File): boolean {
   return file.type === "image/heic" || file.type === "image/heif" || 
@@ -23,35 +30,74 @@ async function convertToJpeg(file: File): Promise<File> {
   return new File([blob], file.name.replace(/\.\w+$/, ".jpg"), { type: "image/jpeg" });
 }
 
-export async function recognizeText(imageFile: File): Promise<string[]> {
+async function prepareForTesseract(file: File): Promise<File> {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, TESSERACT_MAX_DIMENSION / Math.max(bitmap.width, bitmap.height));
+  const width = Math.max(1, Math.round(bitmap.width * scale));
+  const height = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close();
+
+  const image = ctx.getImageData(0, 0, width, height);
+  const data = image.data;
+
+  for (let i = 0; i < data.length; i += 4) {
+    const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+    const contrasted = Math.max(0, Math.min(255, (gray - 128) * 1.35 + 128));
+    data[i] = contrasted;
+    data[i + 1] = contrasted;
+    data[i + 2] = contrasted;
+  }
+
+  ctx.putImageData(image, 0, 0);
+
+  const blob = await new Promise<Blob>((resolve) =>
+    canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.92)
+  );
+
+  return new File([blob], file.name.replace(/\.\w+$/, ".jpg"), { type: "image/jpeg" });
+}
+
+export async function recognizeText(imageFile: File): Promise<OcrResult> {
   const heic = isHEIC(imageFile);
 
   if (!heic && !VALID_IMAGE_TYPES.includes(imageFile.type) && imageFile.type !== "") {
     throw new Error("Please upload a JPG, PNG, WebP, or HEIC image.");
   }
 
-  // Try server-side Google Cloud Vision first (supports all formats including HEIC)
-  try {
-    const lines = await recognizeWithVision(imageFile);
-    if (lines.length > 0) return lines;
-  } catch {
-    // Fall through to Tesseract
-  }
+  const visionResult = await recognizeWithVision(imageFile);
+  if (visionResult.lines.length > 0) return visionResult;
 
   // Tesseract fallback — needs JPEG/PNG, so convert HEIC first
   if (heic) {
     try {
       const converted = await convertToJpeg(imageFile);
-      return recognizeWithTesseract(converted);
+      const prepared = await prepareForTesseract(converted);
+      const lines = await recognizeWithTesseract(prepared);
+      return {
+        lines,
+        engine: "tesseract",
+        warning: visionResult.warning ?? "Cloud receipt scanning was unavailable, so backup OCR was used. Please review the items and prices carefully.",
+      };
     } catch {
       throw new Error("Couldn't process this HEIC image. Try taking a screenshot of the receipt instead.");
     }
   }
 
-  return recognizeWithTesseract(imageFile);
+  const prepared = await prepareForTesseract(imageFile);
+  const lines = await recognizeWithTesseract(prepared);
+  return {
+    lines,
+    engine: "tesseract",
+    warning: visionResult.warning ?? "Cloud receipt scanning was unavailable, so backup OCR was used. Please review the items and prices carefully.",
+  };
 }
 
-async function recognizeWithVision(imageFile: File): Promise<string[]> {
+async function recognizeWithVision(imageFile: File): Promise<OcrResult> {
   const formData = new FormData();
   formData.append("image", imageFile);
 
@@ -66,13 +112,26 @@ async function recognizeWithVision(imageFile: File): Promise<string[]> {
     });
     clearTimeout(timeout);
 
-    if (!res.ok) return [];
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      const message = typeof data.error === "string" ? data.error : "Cloud receipt scanning was unavailable.";
+      return { lines: [], engine: "vision", warning: message };
+    }
 
     const data = await res.json();
-    return data.lines || [];
+    const lines = data.lines || [];
+    return {
+      lines,
+      engine: "vision",
+      warning: lines.length === 0 ? "Cloud receipt scanning found no text, so backup OCR was used. Please review the items and prices carefully." : undefined,
+    };
   } catch {
     clearTimeout(timeout);
-    return [];
+    return {
+      lines: [],
+      engine: "vision",
+      warning: "Cloud receipt scanning timed out, so backup OCR was used. Please review the items and prices carefully.",
+    };
   }
 }
 

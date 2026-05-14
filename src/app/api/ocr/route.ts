@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({
           requests: [{
             image: { content: base64 },
-            features: [{ type: "TEXT_DETECTION" }],
+            features: [{ type: "DOCUMENT_TEXT_DETECTION" }],
           }],
         }),
       }

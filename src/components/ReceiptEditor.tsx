@@ -21,6 +21,7 @@ export function ReceiptEditor({
   const [editPrice, setEditPrice] = useState("");
   const [editQty, setEditQty] = useState("");
   const isManualEntry = receipt.items.length === 0 && !receipt.restaurantName;
+  const warnings = receipt.warnings ?? [];
 
   // Auto-focus the first input on manual entry
   useEffect(() => {
@@ -132,6 +133,17 @@ export function ReceiptEditor({
             <p className="text-lg font-semibold">{receipt.restaurantName}</p>
           </div>
         )
+      )}
+
+      {warnings.length > 0 && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800">
+          <p className="font-semibold">Review this scan before splitting</p>
+          <ul className="mt-2 list-disc space-y-1 pl-4">
+            {warnings.map((warning) => (
+              <li key={warning}>{warning}</li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {/* Item list */}

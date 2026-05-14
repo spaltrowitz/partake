@@ -24,7 +24,8 @@ export function ReceiptScanner({
     setProgress("Reading your receipt...");
 
     try {
-      const lines = await recognizeText(file);
+      const ocr = await recognizeText(file);
+      const { lines } = ocr;
 
       if (lines.length === 0) {
         setError("Couldn't detect any text. Make sure the receipt is in focus and well-lit.");
@@ -32,6 +33,8 @@ export function ReceiptScanner({
       }
 
       const receipt = parseReceiptText(lines);
+      const warnings = [...(receipt.warnings ?? [])];
+      if (ocr.warning) warnings.unshift(ocr.warning);
 
       // Quality checks — give specific feedback instead of bad results
       const issues: string[] = [];
@@ -54,14 +57,22 @@ export function ReceiptScanner({
         issues.push("Item prices don't add up to the subtotal — some may be missing or misread");
       }
 
+      warnings.push(...issues);
+
+      const scannedReceipt = {
+        ...receipt,
+        ocrEngine: ocr.engine,
+        warnings: warnings.length > 0 ? [...new Set(warnings)] : undefined,
+      } satisfies ParsedReceipt;
+
       if (issues.length > 0) {
         setProgress("");
         // Still show the results but with a warning
-        onReceipt(receipt);
+        onReceipt(scannedReceipt);
         return;
       }
 
-      onReceipt(receipt);
+      onReceipt(scannedReceipt);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Try again or type it in manually.");
     } finally {
@@ -76,6 +87,7 @@ export function ReceiptScanner({
       tax: undefined,
       subtotal: undefined,
       total: undefined,
+      ocrEngine: "manual",
     });
   }
 
@@ -95,6 +107,15 @@ export function ReceiptScanner({
           <p className="text-[#8A7353] text-center">
             We&apos;ll read the items and prices for you
           </p>
+
+          <div className="w-full max-w-xs rounded-2xl border border-[#FDE68A] bg-white/80 p-4 text-left text-sm text-[#8A7353]">
+            <p className="mb-2 font-semibold text-[#5F4B32]">For the best scan:</p>
+            <ul className="list-disc space-y-1 pl-5">
+              <li>Flatten the receipt and include all four corners</li>
+              <li>Avoid shadows, glare, and folded totals</li>
+              <li>Retake if the item prices look blurry</li>
+            </ul>
+          </div>
 
           {error && (
             <div className="flex flex-col items-center gap-3 w-full max-w-xs">

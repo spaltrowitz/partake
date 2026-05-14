@@ -45,6 +45,17 @@ See `.env.example` for required configuration:
 - Firebase project credentials
 - Google Cloud Vision API key
 
+For production deploys, set both:
+
+```bash
+GOOGLE_CLOUD_VISION_API_KEY=...
+REQUIRE_GOOGLE_CLOUD_VISION=1
+```
+
+`REQUIRE_GOOGLE_CLOUD_VISION=1` makes the build fail if Vision OCR is not configured. Leave it unset or `0` for local development and non-production previews.
+
+Runtime OCR health is available at `/api/health/ocr`; it returns `503` when the Vision key is missing.
+
 ## Status
 
 🚧 In development
@@ -52,4 +63,3 @@ See `.env.example` for required configuration:
 ---
 
 🍕 [Cover my share](https://spaltrowitz.github.io/#support)
-

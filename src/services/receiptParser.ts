@@ -1,7 +1,8 @@
 import type { ParsedReceipt, ParsedItem } from "@/types";
 
 // Matches prices like $12.99, 12.99, $1,234.56 — requires 2 decimal places
-const PRICE_PATTERN = /\$?\s*(\d{1,3}(?:,\d{3})*\.\d{2})/;
+const PRICE_PATTERN = /\$?\s*(\d{1,3}(?:,\d{3})*\.\d{2})(?!\s*%)/;
+const PRICE_PATTERN_GLOBAL = /\$?\s*(\d{1,3}(?:,\d{3})*\.\d{2})(?!\s*%)/g;
 
 // Negative prices for discounts: -$5.00, ($5.00)
 const NEGATIVE_PRICE_PATTERN = /[-\(]\s*\$?\s*(\d{1,3}(?:,\d{3})*\.\d{2})\)?/;
@@ -9,7 +10,7 @@ const NEGATIVE_PRICE_PATTERN = /[-\(]\s*\$?\s*(\d{1,3}(?:,\d{3})*\.\d{2})\)?/;
 const SUBTOTAL_KEYWORDS = ["subtotal", "sub total", "sub-total"];
 const TAX_KEYWORDS = ["tax", "sales tax", "hst", "gst", "service tax"];
 const TOTAL_KEYWORDS = ["total", "amount due", "balance due", "total due", "grand total"];
-const TIP_KEYWORDS = ["tip", "gratuity", "suggested tip"];
+const TIP_KEYWORDS = ["tip", "gratuity"];
 const SKIP_KEYWORDS = [
   "visa", "mastercard", "amex", "discover", "change due",
   "credit card", "debit card", "card ending", "auth code",
@@ -21,9 +22,21 @@ const SKIP_KEYWORDS = [
   "card reader", "emv chip", "suggested additional tip",
   "tip percentages", "dine in", "ordered:", "join us",
   "happy hour", "lunch", "bbpos", "approved",
+  "suggested tip", "suggested additional tip", "total savings",
+  "savings with prime", "savings with prine", "net sales",
+  "reg", "regular price",
 ];
 const SERVICE_CHARGE_KEYWORDS = ["service charge", "auto gratuity", "auto-gratuity", "autograt"];
 const DISCOUNT_KEYWORDS = ["discount", "coupon", "promo", "% off", "comp"];
+const PAYMENT_TOTAL_KEYWORDS = ["balance due", "amount paid", "change due"];
+const KEYWORD_FUZZY_MATCHES: Record<string, string[]> = {
+  subtotal: ["subtotal"],
+  total: ["total", "tatal", "otald"],
+  tax: ["tax"],
+  tip: ["tip"],
+  gratuity: ["gratuity"],
+};
+const NON_TOTAL_SUMMARY_PATTERN = /\b(total\s+savings|savings|saved|net\s+sales|reg(?:ular)?\s+price)\b/i;
 
 // Quantity patterns: "2x ", "2 x ", "qty 2", "2) ", or bare "2 " at start followed by a word
 const QUANTITY_PATTERNS = [
@@ -44,6 +57,26 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
   let tip: number | undefined;
   let restaurantName: string | undefined;
   let discount: number | undefined;
+  const warnings: string[] = [];
+  const seenTaxValues: number[] = [];
+
+  function addWarning(message: string) {
+    if (!warnings.includes(message)) warnings.push(message);
+  }
+
+  function setAmount(label: "subtotal" | "tip" | "total", current: number | undefined, value: number): number {
+    if (current !== undefined && Math.abs(current - value) > 0.01) {
+      addWarning(`Found conflicting ${label} values. Please verify the receipt totals.`);
+      return current;
+    }
+    return value;
+  }
+
+  function addTax(value: number) {
+    if (seenTaxValues.some((existing) => Math.abs(existing - value) <= 0.01)) return;
+    seenTaxValues.push(value);
+    tax = Math.round(seenTaxValues.reduce((sum, amount) => sum + amount, 0) * 100) / 100;
+  }
 
   // First non-empty line without a price is often the restaurant name
   for (const line of lines) {
@@ -97,9 +130,9 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
       // Check if this is a keyword label (subtotal, tax, tip, total)
       if (matchesAny(lower, SUBTOTAL_KEYWORDS)) { pendingKeywords.push("subtotal"); continue; }
       if (matchesAny(lower, TAX_KEYWORDS)) { pendingKeywords.push("tax"); continue; }
+      if (matchesAny(lower, SERVICE_CHARGE_KEYWORDS)) { pendingKeywords.push("service"); continue; }
       if (matchesAny(lower, TIP_KEYWORDS)) { pendingKeywords.push("tip"); continue; }
       if (matchesAny(lower, TOTAL_KEYWORDS)) { pendingKeywords.push("total"); continue; }
-      if (matchesAny(lower, SERVICE_CHARGE_KEYWORDS)) { pendingKeywords.push("service"); continue; }
       if (matchesAny(lower, DISCOUNT_KEYWORDS)) { pendingKeywords.push("discount"); continue; }
 
       // Not a keyword — but if we have pending keywords, skip non-keyword lines
@@ -158,11 +191,11 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
             const kw = pendingKeywords[k];
             const kPrice = kwPrices[k];
             switch (kw) {
-              case "subtotal": subtotal = kPrice; break;
-              case "tax": tax = (tax ?? 0) + kPrice; break;
-              case "tip": tip = kPrice; break;
-              case "total": total = kPrice; break;
-              case "service": tax = (tax ?? 0) + kPrice; break;
+              case "subtotal": subtotal = setAmount("subtotal", subtotal, kPrice); break;
+              case "tax": addTax(kPrice); break;
+              case "tip": tip = setAmount("tip", tip, kPrice); break;
+              case "total": total = setAmount("total", total, kPrice); break;
+              case "service": addTax(kPrice); break;
               case "discount": discount = (discount ?? 0) + kPrice; break;
             }
           }
@@ -185,20 +218,22 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
 
     // Skip payment/metadata lines
     if (shouldSkip(lower)) continue;
+    if (NON_TOTAL_SUMMARY_PATTERN.test(lower)) continue;
 
     // Categorize by keywords
     if (matchesAny(lower, SUBTOTAL_KEYWORDS)) {
-      subtotal = price;
+      subtotal = setAmount("subtotal", subtotal, price);
     } else if (matchesAny(lower, SERVICE_CHARGE_KEYWORDS)) {
-      tax = (tax ?? 0) + price;
+      addTax(price);
     } else if (matchesAny(lower, TAX_KEYWORDS)) {
-      tax = (tax ?? 0) + price;
+      addTax(price);
     } else if (matchesAny(lower, TIP_KEYWORDS)) {
-      tip = price;
+      tip = setAmount("tip", tip, price);
     } else if (matchesAny(lower, TOTAL_KEYWORDS)) {
-      total = price;
-    } else if (matchesAny(lower, SERVICE_CHARGE_KEYWORDS)) {
-      tax = (tax ?? 0) + price;
+      if (matchesAny(lower, PAYMENT_TOTAL_KEYWORDS) && total !== undefined) {
+        continue;
+      }
+      total = setAmount("total", total, price);
     } else if (matchesAny(lower, DISCOUNT_KEYWORDS)) {
       discount = (discount ?? 0) + price;
     } else {
@@ -300,12 +335,22 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
     }
   }
 
-  return { items, tax, tip, subtotal, total, restaurantName };
+  const itemSum = Math.round(items.reduce((sum, item) => sum + item.price * item.quantity, 0) * 100) / 100;
+  if (subtotal !== undefined && items.length > 0 && Math.abs(itemSum - subtotal) > 2) {
+    addWarning("Item prices do not add up to the subtotal. Please review for missing or misread items.");
+  }
+
+  if (items.length === 0 && (subtotal !== undefined || total !== undefined)) {
+    addWarning("Found receipt totals but no line items. Please add items manually.");
+  }
+
+  return { items, tax, tip, subtotal, total, restaurantName, warnings: warnings.length > 0 ? warnings : undefined };
 }
 
 function extractPrice(text: string): number | undefined {
-  const match = text.match(PRICE_PATTERN);
-  if (!match) return undefined;
+  const matches = [...text.matchAll(PRICE_PATTERN_GLOBAL)];
+  if (matches.length === 0) return undefined;
+  const match = matches[matches.length - 1];
   return parseFloat(match[1].replace(/,/g, ""));
 }
 
@@ -349,7 +394,51 @@ function extractQuantity(text: string): number {
 }
 
 function matchesAny(text: string, keywords: string[]): boolean {
-  return keywords.some((k) => text.includes(k));
+  return keywords.some((keyword) => matchesKeyword(text, keyword));
+}
+
+function matchesKeyword(text: string, keyword: string): boolean {
+  if (keyword === "% off") return /%\s*off\b/i.test(text);
+
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+");
+  if (new RegExp(`\\b${escaped}\\b`, "i").test(text)) return true;
+
+  const canonical = KEYWORD_FUZZY_MATCHES[keyword];
+  if (!canonical) return false;
+
+  const tokens = text
+    .toLowerCase()
+    .split(/[^a-z]+/)
+    .filter(Boolean);
+
+  return canonical.some((target) =>
+    tokens.some((token) => {
+      if (target.length < 5) return false;
+      const maxDistance = target.length >= 6 ? 2 : 1;
+      return Math.abs(token.length - target.length) <= maxDistance &&
+        editDistance(token, target) <= maxDistance;
+    })
+  );
+}
+
+function editDistance(a: string, b: string): number {
+  const dp = Array.from({ length: a.length + 1 }, () => Array<number>(b.length + 1).fill(0));
+
+  for (let i = 0; i <= a.length; i++) dp[i][0] = i;
+  for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,
+        dp[i][j - 1] + 1,
+        dp[i - 1][j - 1] + cost
+      );
+    }
+  }
+
+  return dp[a.length][b.length];
 }
 
 function shouldSkip(text: string): boolean {

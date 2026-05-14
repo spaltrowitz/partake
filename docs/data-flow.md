@@ -10,7 +10,7 @@
 | **Database** | Firebase Firestore (bills, users, contacts, partnerGroups) |
 | **Auth** | Firebase Authentication (Google Sign-In + anonymous fallback, popup → redirect on iOS Safari) |
 | **Storage** | Firebase Cloud Storage (receipt images) |
-| **OCR** | Google Cloud Vision API (primary) + Tesseract.js (client fallback) |
+| **OCR** | Google Cloud Vision API (primary, production-required) + Tesseract.js (visible client fallback) |
 | **Geolocation** | Browser Geolocation API + OpenStreetMap Nominatim (reverse geocoding) |
 | **Tax Rates** | Hardcoded state table (Tax Foundation 2025) |
 | **Payments** | Venmo, Cash App (deep links), Zelle (manual copy) |
@@ -86,5 +86,6 @@ flowchart TB
 2. **Tax Lookup**: Browser geolocation → Nominatim reverse geocode → state → hardcoded tax rate applied
 3. **Sign-In**: User taps Google Sign-In → `signInWithPopup` → falls back to `signInWithRedirect` on iOS Safari / blocked popups → anonymous guests can upgrade via `linkWithPopup` to preserve bill history
 4. **Bill Sharing**: Bill saved to Firestore with shareCode → share link (with OG image) → guest opens → anonymous or Google auth
-5. **Settlement**: Calculated split → deep link to Venmo/Cash App → payment outside app → items locked after payment request sent
-6. **Offline**: Bills cached in localStorage (max 50) → contacts persisted locally
+5. **OCR Health**: `/api/health/ocr` reports whether the server has Google Cloud Vision configured; production builds should set `REQUIRE_GOOGLE_CLOUD_VISION=1`.
+6. **Settlement**: Calculated split → deep link to Venmo/Cash App → payment outside app → items locked after payment request sent
+7. **Offline**: Bills cached in localStorage (max 50) → contacts persisted locally

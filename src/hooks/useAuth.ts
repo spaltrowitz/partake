@@ -15,11 +15,8 @@ import {
 import { auth } from "@/lib/firebase";
 import { firebaseConfigured } from "@/lib/firebase";
 
-function isMobileOrStandalone(): boolean {
+function isMobileBrowser(): boolean {
   if (typeof window === "undefined") return false;
-  const standalone = ("standalone" in navigator && (navigator as Record<string, unknown>).standalone) ||
-    window.matchMedia("(display-mode: standalone)").matches;
-  if (standalone) return true;
   return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 }
 
@@ -70,8 +67,8 @@ export function useAuth() {
 
     const provider = createGoogleProvider();
 
-    // Mobile browsers and PWAs block popups — use redirect directly
-    if (isMobileOrStandalone()) {
+    // Mobile browsers block popups — use redirect directly
+    if (isMobileBrowser()) {
       await signInWithRedirect(auth, provider);
       throw Object.assign(new Error("Redirecting…"), { code: "auth/redirect-in-progress" });
     }
