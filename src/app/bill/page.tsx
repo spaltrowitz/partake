@@ -375,6 +375,35 @@ function SharedBillContent() {
       });
   }, [bill?.id, guestName, nameConfirmed]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Background: associate bill with authenticated user (so it appears in their history)
+  useEffect(() => {
+    if (!bill) return;
+    let cancelled = false;
+    let unsubAuth: (() => void) | null = null;
+    (async () => {
+      try {
+        const [{ auth }, { onAuthStateChanged }] = await Promise.all([
+          import("@/lib/firebase"),
+          import("firebase/auth"),
+        ]);
+        unsubAuth = onAuthStateChanged(auth, async (user) => {
+          if (cancelled || !user || user.isAnonymous) return;
+          unsubAuth?.();
+          if (bill.sharedWithUserIds?.includes(user.uid)) return;
+          try {
+            const { associateBillWithUser } = await import("@/services/firestore");
+            await associateBillWithUser(bill.id, user.uid);
+          } catch {
+            // Non-critical — bill still displays fine
+          }
+        });
+      } catch {
+        // Firebase unavailable — skip association
+      }
+    })();
+    return () => { cancelled = true; unsubAuth?.(); };
+  }, [bill?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!code) {
     return (
       <div className="min-h-dvh flex items-center justify-center p-4">

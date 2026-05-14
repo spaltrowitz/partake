@@ -13,7 +13,7 @@ import { getBillHistory, saveBillToHistory, deleteBillFromHistory } from "@/serv
 import { getUserProfile, saveUserProfile } from "@/services/userProfile";
 import type { UserProfile } from "@/services/userProfile";
 import { useAuthContext } from "@/components/AuthProvider";
-import { getBillByShareCode, getContacts, listenToUserBills, saveBill, saveContact, saveUser } from "@/services/firestore";
+import { associateBillWithUser, getBillByShareCode, getContacts, listenToUserBills, saveBill, saveContact, saveUser } from "@/services/firestore";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 
 type Step = "landing" | "participants" | "scan" | "edit" | "split";
@@ -218,8 +218,13 @@ export default function Home() {
       // Resync all local bills to Firestore, claiming them for the signed-in user
       const localBills = getBillHistory();
       for (const localBill of localBills) {
-        const billToSync = { ...localBill, createdBy: user.uid, sharedWithUserIds: [user.uid, ...(localBill.sharedWithUserIds ?? []).filter((id: string) => id !== user.uid)] };
-        syncBillToCloud(billToSync).catch(() => {});
+        if (localBill.createdBy === "local" || localBill.createdBy === user.uid) {
+          const billToSync = { ...localBill, createdBy: user.uid, sharedWithUserIds: [user.uid, ...(localBill.sharedWithUserIds ?? []).filter((id: string) => id !== user.uid)] };
+          syncBillToCloud(billToSync).catch(() => {});
+        } else {
+          // Bill created by someone else — just associate without overwriting
+          associateBillWithUser(localBill.id, user.uid).catch(() => {});
+        }
       }
     }
     getContacts(user.uid)

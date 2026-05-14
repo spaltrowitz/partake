@@ -3,6 +3,7 @@ import {
   setDoc,
   getDoc,
   getDocs,
+  updateDoc,
   collection,
   query,
   where,
@@ -10,6 +11,7 @@ import {
   onSnapshot,
   deleteDoc,
   runTransaction,
+  arrayUnion,
   type Unsubscribe,
 } from "firebase/firestore";
 import { db, firebaseConfigured } from "@/lib/firebase";
@@ -47,6 +49,13 @@ export async function getBillByShareCode(code: string): Promise<Bill | null> {
   );
   const snap = await getDocs(q);
   return snap.empty ? null : (snap.docs[0].data() as Bill);
+}
+
+export async function associateBillWithUser(billId: string, userId: string): Promise<void> {
+  ensureDb();
+  await updateDoc(doc(db, "bills", billId), {
+    sharedWithUserIds: arrayUnion(userId),
+  });
 }
 
 export async function getUserBills(userId: string): Promise<Bill[]> {
