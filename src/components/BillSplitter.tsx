@@ -275,6 +275,7 @@ export function BillSplitter({
         memberId: member.id,
         memberName: member.name,
         amount: memberSplit.total,
+        split: memberSplit,
       }];
     });
   });

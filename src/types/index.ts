@@ -88,6 +88,7 @@ export interface CoveredReimbursement {
   memberId: string;
   memberName: string;
   amount: number;
+  split: BillSplit;
 }
 
 export interface ParsedReceipt {

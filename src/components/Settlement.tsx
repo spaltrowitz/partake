@@ -47,6 +47,40 @@ function ShareLinkButton({ shareCode, billName, cloudSynced }: { shareCode: stri
   );
 }
 
+function SplitBreakdown({ bill, split }: { bill: Bill; split: BillSplit }) {
+  return (
+    <div className="text-xs text-[#8A7353] space-y-1 mb-3">
+      {split.items.map((item) => {
+        const lineTotal = item.price * item.quantity;
+        const yourShare = item.claimedBy.length > 1
+          ? lineTotal / item.claimedBy.length
+          : lineTotal;
+        return (
+          <div key={item.id} className="flex justify-between">
+            <span>{item.name}</span>
+            <span>
+              {item.claimedBy.length > 1
+                ? `$${yourShare.toFixed(2)} / $${lineTotal.toFixed(2)}`
+                : `$${lineTotal.toFixed(2)}`}
+            </span>
+          </div>
+        );
+      })}
+      <hr className="border-[#FDE68A]" />
+      <div className="flex justify-between">
+        <span>Tax</span>
+        <span>${split.taxShare.toFixed(2)}</span>
+      </div>
+      <div className="flex justify-between">
+        <span>Tip{split.itemsSubtotal > 0 && bill.tipAmount > 0
+          ? ` (${Math.round((split.tipShare / split.itemsSubtotal) * 100)}%)`
+          : ""}</span>
+        <span>${split.tipShare.toFixed(2)}</span>
+      </div>
+    </div>
+  );
+}
+
 export function Settlement({
   bill,
   splits,
@@ -130,36 +164,7 @@ export function Settlement({
               </div>
             )}
 
-            {/* Item breakdown */}
-            <div className="text-xs text-[#8A7353] space-y-1 mb-3">
-              {split.items.map((item) => {
-                const lineTotal = item.price * item.quantity;
-                const yourShare = item.claimedBy.length > 1
-                  ? lineTotal / item.claimedBy.length
-                  : lineTotal;
-                return (
-                <div key={item.id} className="flex justify-between">
-                  <span>{item.name}</span>
-                  <span>
-                    {item.claimedBy.length > 1
-                      ? `$${yourShare.toFixed(2)} / $${lineTotal.toFixed(2)}`
-                      : `$${lineTotal.toFixed(2)}`}
-                  </span>
-                </div>
-                );
-              })}
-              <hr className="border-[#FDE68A]" />
-              <div className="flex justify-between">
-                <span>Tax</span>
-                <span>${split.taxShare.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Tip{split.itemsSubtotal > 0 && bill.tipAmount > 0
-                  ? ` (${Math.round((split.tipShare / split.itemsSubtotal) * 100)}%)`
-                  : ""}</span>
-                <span>${split.tipShare.toFixed(2)}</span>
-              </div>
-            </div>
+            <SplitBreakdown bill={bill} split={split} />
 
             {/* Payment action — skip for yourself */}
             {split.total > 0 && !(myName && split.participantName.toLowerCase() === myName.toLowerCase()) && (
@@ -227,6 +232,14 @@ export function Settlement({
                      {reimbursement ? `$${reimbursement.amount.toFixed(2)}` : "$0.00"}
                    </span>
                  </div>
+                 {reimbursement && (
+                   <div className="mt-3">
+                     <p className="mb-2 text-xs font-semibold text-[#6B4F2A]">
+                       What {member.name} owes {payer.name}
+                     </p>
+                     <SplitBreakdown bill={bill} split={reimbursement.split} />
+                   </div>
+                 )}
                </Card>
             );
           })

@@ -118,26 +118,66 @@ function findRecoverableBill(code: string): Bill | null {
   );
 }
 
-function calculateOwes(bill: Bill): { name: string; amount: number }[] {
-  const participantTotals = new Map<string, number>();
+type PublicOwesBreakdown = {
+  participantId: string;
+  name: string;
+  amount: number;
+  itemsSubtotal: number;
+  taxShare: number;
+  tipShare: number;
+  items: BillItem[];
+  coveredBy?: string;
+  covers: string[];
+};
+
+function calculateOwes(bill: Bill): PublicOwesBreakdown[] {
+  const participantTotals = new Map<string, { subtotal: number; items: BillItem[] }>();
+  for (const participant of bill.participants) {
+    participantTotals.set(participant.id, { subtotal: 0, items: [] });
+  }
 
   for (const item of bill.items) {
     if (item.claimedBy.length === 0) continue;
     const lineTotal = item.price * item.quantity;
     const perPerson = lineTotal / item.claimedBy.length;
     for (const claim of item.claimedBy) {
-      participantTotals.set(claim, (participantTotals.get(claim) || 0) + perPerson);
+      const current = participantTotals.get(claim) ?? { subtotal: 0, items: [] };
+      participantTotals.set(claim, {
+        subtotal: current.subtotal + perPerson,
+        items: [...current.items, item],
+      });
     }
   }
 
-  const claimedSubtotal = Array.from(participantTotals.values()).reduce((a, b) => a + b, 0);
+  const claimedSubtotal = Array.from(participantTotals.values()).reduce((sum, entry) => sum + entry.subtotal, 0);
   if (claimedSubtotal === 0) return [];
 
-  return Array.from(participantTotals.entries()).map(([claim, itemTotal]) => {
-    const share = itemTotal / claimedSubtotal;
+  const coveredBy = new Map<string, string>();
+  const covers = new Map<string, string[]>();
+  for (const group of bill.payingGroups ?? []) {
+    const payerName = resolveClaimName(bill, group.payerId);
+    const memberNames = group.memberIds.map((id) => resolveClaimName(bill, id));
+    covers.set(group.payerId, memberNames);
+    for (const memberId of group.memberIds) {
+      coveredBy.set(memberId, payerName);
+    }
+  }
+
+  return Array.from(participantTotals.entries()).map(([claim, entry]) => {
+    const share = entry.subtotal / claimedSubtotal;
     const taxShare = bill.tax * share;
     const tipShare = bill.tipAmount * share;
-    return { name: resolveClaimName(bill, claim), amount: itemTotal + taxShare + tipShare };
+    return {
+      participantId: claim,
+      name: resolveClaimName(bill, claim),
+      amount: entry.subtotal + taxShare + tipShare,
+      itemsSubtotal: entry.subtotal,
+      taxShare,
+      tipShare,
+      items: entry.items,
+      coveredBy: coveredBy.get(claim),
+      covers: covers.get(claim) ?? [],
+    };
   }).sort((a, b) => b.amount - a.amount);
 }
 
@@ -453,10 +493,52 @@ function SharedBillContent() {
           <div className="flex flex-col gap-2">
             {owes.map((entry, i) => (
               <Card key={entry.name}>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 mb-3">
                   <Avatar name={entry.name} index={i} size={36} />
-                  <span className="flex-1 font-medium">{entry.name}</span>
+                  <div className="flex-1">
+                    <p className="font-medium">
+                      {entry.name}
+                      {entry.covers.length > 0 && <span className="text-xs text-[#8A7353] ml-1">+ {entry.covers.join(" & ")}</span>}
+                    </p>
+                    <p className="text-xs text-[#8A7353]">
+                      {entry.items.length} item{entry.items.length !== 1 && "s"}
+                      {entry.coveredBy && ` · covered by ${entry.coveredBy}`}
+                      {entry.covers.length > 0 && ` · covering ${entry.covers.join(" & ")}`}
+                    </p>
+                  </div>
                   <span className="font-bold">${entry.amount.toFixed(2)}</span>
+                </div>
+                <div className="text-xs text-[#8A7353] space-y-1">
+                  {entry.items.map((item) => {
+                    const lineTotal = item.price * item.quantity;
+                    const itemShare = item.claimedBy.length > 1 ? lineTotal / item.claimedBy.length : lineTotal;
+                    return (
+                      <div key={item.id} className="flex justify-between gap-3">
+                        <span>{item.name}</span>
+                        <span>
+                          {item.claimedBy.length > 1
+                            ? `$${itemShare.toFixed(2)} / $${lineTotal.toFixed(2)}`
+                            : `$${lineTotal.toFixed(2)}`}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  <hr className="border-[#FDE68A]" />
+                  <div className="flex justify-between">
+                    <span>Tax</span>
+                    <span>${entry.taxShare.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Tip{entry.itemsSubtotal > 0 && bill.tipAmount > 0
+                      ? ` (${Math.round((entry.tipShare / entry.itemsSubtotal) * 100)}%)`
+                      : ""}</span>
+                    <span>${entry.tipShare.toFixed(2)}</span>
+                  </div>
+                  {entry.coveredBy && (
+                    <p className="pt-2 font-semibold text-[#6B4F2A]">
+                      {entry.name} owes {entry.coveredBy}: ${entry.amount.toFixed(2)}
+                    </p>
+                  )}
                 </div>
               </Card>
             ))}
