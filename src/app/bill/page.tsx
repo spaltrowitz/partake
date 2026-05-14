@@ -30,6 +30,7 @@ type FirestoreRunQueryRow = {
 };
 
 function decodeFirestoreValue(value: FirestoreValue): unknown {
+  if ("nullValue" in value) return null;
   if ("stringValue" in value) return value.stringValue ?? "";
   if ("integerValue" in value) return Number(value.integerValue ?? 0);
   if ("doubleValue" in value) return value.doubleValue ?? 0;
@@ -55,11 +56,15 @@ async function getPublicBillByShareCode(code: string): Promise<Bill | null> {
     throw new Error("Firebase is not configured");
   }
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
+
   const response = await fetch(
     `https://firestore.googleapis.com/v1/projects/${FIRESTORE_PROJECT_ID}/databases/(default)/documents:runQuery`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
       body: JSON.stringify({
         structuredQuery: {
           from: [{ collectionId: "bills" }],
@@ -75,6 +80,8 @@ async function getPublicBillByShareCode(code: string): Promise<Bill | null> {
       }),
     }
   );
+
+  clearTimeout(timeout);
 
   if (!response.ok) {
     throw new Error("Failed to load bill");
@@ -97,11 +104,19 @@ async function ensureAnonymousUser(): Promise<User> {
 
 function getStoredName(): string {
   if (typeof window === "undefined") return "";
-  return localStorage.getItem(GUEST_NAME_KEY) || "";
+  try {
+    return localStorage.getItem(GUEST_NAME_KEY) || "";
+  } catch {
+    return "";
+  }
 }
 
 function storeName(name: string) {
-  localStorage.setItem(GUEST_NAME_KEY, name);
+  try {
+    localStorage.setItem(GUEST_NAME_KEY, name);
+  } catch {
+    // localStorage unavailable (in-app browser, private mode)
+  }
 }
 
 function getInitialGuest() {
@@ -328,8 +343,12 @@ function SharedBillContent() {
         saveBillToHistory(found);
         setLoading(false);
       })
-      .catch(() => {
-        setError("Failed to load bill. Please try again.");
+      .catch((err) => {
+        if (err?.name === "AbortError") {
+          setError("Loading timed out. Please check your connection and try again.");
+        } else {
+          setError("Failed to load bill. Please try again.");
+        }
         setLoading(false);
       });
   }, [code]);
@@ -438,7 +457,13 @@ function SharedBillContent() {
       <div className="min-h-dvh flex items-center justify-center p-4">
         <Card className="max-w-sm text-center">
           <p className="text-2xl mb-2">😕</p>
-          <p className="text-[#8A7353]">{error}</p>
+          <p className="text-[#8A7353] mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 rounded-lg font-semibold gradient-bg text-white touch-target"
+          >
+            Try again
+          </button>
         </Card>
       </div>
     );
@@ -447,6 +472,7 @@ function SharedBillContent() {
   if (!bill) return null;
 
   const owes = calculateOwes(bill);
+  const claimedSubtotal = owes.reduce((sum, e) => sum + e.itemsSubtotal, 0);
   const allItemsClaimed = bill.items.length > 0 && bill.items.every((item) => item.claimedBy.length > 0);
   const claimsLocked = bill.status === "settled";
   const reviewOnly = claimsLocked || allItemsClaimed;
@@ -459,7 +485,7 @@ function SharedBillContent() {
           <p className="text-[#8A7353] text-sm mb-1">{bill.restaurantName}</p>
         )}
         <h1 className="text-2xl font-bold">{bill.name || "Shared Bill"}</h1>
-        <p className="text-[#8A7353]">${bill.total.toFixed(2)} total</p>
+        <p className="text-[#8A7353]">${(Number(bill.total) || 0).toFixed(2)} total</p>
       </div>
 
       {/* Name input */}
@@ -512,6 +538,41 @@ function SharedBillContent() {
           <p className="text-sm text-[#8A7353]">Claims are locked because payment requests were already sent.</p>
         </Card>
       )}
+      {reviewOnly ? (
+        <details className="mb-6">
+          <summary className="text-sm text-[#8A7353] cursor-pointer py-2 touch-target flex items-center">
+            View all {bill.items.length} items
+          </summary>
+          <div className="flex flex-col gap-2 mt-2">
+            {bill.items.map((item) => {
+              const lineTotal = (Number(item.price) || 0) * (Number(item.quantity) || 1);
+              return (
+                <div
+                  key={item.id}
+                  className="w-full text-left p-3 rounded-xl border bg-[#FFFFFF] border-[#FDE68A]"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <p className="font-medium">
+                        {item.quantity > 1 ? `${item.quantity}× ` : ""}
+                        {item.name}
+                      </p>
+                      {item.claimedBy.length > 0 && (
+                        <p className="text-xs text-[#8A7353] mt-1">
+                          {item.claimedBy.map((claim) => resolveClaimName(bill, claim)).join(", ")}
+                          {item.claimedBy.length > 1 &&
+                            ` · $${(lineTotal / item.claimedBy.length).toFixed(2)} each`}
+                        </p>
+                      )}
+                    </div>
+                    <span className="font-semibold ml-2">${lineTotal.toFixed(2)}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </details>
+      ) : (
       <div className="flex flex-col gap-2 mb-6">
         {bill.items.map((item) => {
           const participant = nameConfirmed && guestName.trim()
@@ -554,22 +615,23 @@ function SharedBillContent() {
           );
         })}
       </div>
+      )}
 
       {/* Tax + Tip info */}
       <Card className="mb-6">
-        <div className="text-sm text-[#8A7353] space-y-1">
+          <div className="text-sm text-[#8A7353] space-y-1">
           <div className="flex justify-between">
             <span>Tax</span>
-            <span>${bill.tax.toFixed(2)}</span>
+            <span>${(Number(bill.tax) || 0).toFixed(2)}</span>
           </div>
           <div className="flex justify-between">
             <span>Tip</span>
-            <span>${bill.tipAmount.toFixed(2)}</span>
+            <span>${(Number(bill.tipAmount) || 0).toFixed(2)}</span>
           </div>
           <hr className="border-[#FDE68A]" />
           <div className="flex justify-between font-semibold text-[#2D2416]">
             <span>Total</span>
-            <span>${bill.total.toFixed(2)}</span>
+            <span>${(Number(bill.total) || 0).toFixed(2)}</span>
           </div>
         </div>
       </Card>
@@ -617,8 +679,8 @@ function SharedBillContent() {
                     <span>${entry.taxShare.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Tip{entry.itemsSubtotal > 0 && bill.tipAmount > 0
-                      ? ` (${Math.round((entry.tipShare / entry.itemsSubtotal) * 100)}%)`
+                    <span>Tip{entry.itemsSubtotal > 0 && bill.tipAmount > 0 && claimedSubtotal > 0
+                      ? ` (${Math.round((bill.tipAmount / claimedSubtotal) * 100)}%)`
                       : ""}</span>
                     <span>${entry.tipShare.toFixed(2)}</span>
                   </div>
