@@ -193,13 +193,11 @@ export default function Home() {
       if (!myProfile && user.displayName) {
         saveUserProfile({ name: user.displayName });
       }
-      // Resync any local-only bills to Firestore (covers bills created before cloud sync fix)
+      // Resync all local bills to Firestore, claiming them for the signed-in user
       const localBills = getBillHistory();
       for (const localBill of localBills) {
-        if (localBill.createdBy === user.uid || localBill.createdBy === "local") {
-          const billToSync = { ...localBill, createdBy: user.uid, sharedWithUserIds: [user.uid, ...(localBill.sharedWithUserIds ?? []).filter((id: string) => id !== user.uid)] };
-          saveBill(billToSync).catch(() => {});
-        }
+        const billToSync = { ...localBill, createdBy: user.uid, sharedWithUserIds: [user.uid, ...(localBill.sharedWithUserIds ?? []).filter((id: string) => id !== user.uid)] };
+        saveBill(billToSync).catch(() => {});
       }
     }
     getContacts(user.uid)

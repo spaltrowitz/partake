@@ -4,8 +4,6 @@ import { useState, useEffect } from "react";
 import {
   GoogleAuthProvider,
   getRedirectResult,
-  linkWithPopup,
-  linkWithRedirect,
   onAuthStateChanged,
   signInAnonymously,
   signInWithCredential,
@@ -17,6 +15,14 @@ import {
 import { auth } from "@/lib/firebase";
 import { firebaseConfigured } from "@/lib/firebase";
 
+function isMobileOrStandalone(): boolean {
+  if (typeof window === "undefined") return false;
+  const standalone = ("standalone" in navigator && (navigator as Record<string, unknown>).standalone) ||
+    window.matchMedia("(display-mode: standalone)").matches;
+  if (standalone) return true;
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+}
+
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(firebaseConfigured);
@@ -27,19 +33,12 @@ export function useAuth() {
     return provider;
   }
 
-  function shouldFallbackToRedirect(error: unknown): boolean {
-    const code = (error as { code?: string }).code;
-    return code === "auth/popup-blocked" || code === "auth/operation-not-supported-in-this-environment";
-  }
-
   useEffect(() => {
     if (!firebaseConfigured) {
       return;
     }
 
     getRedirectResult(auth).catch((error) => {
-      // If a linkWithRedirect failed because the Google account is already
-      // linked to another user, sign in directly with that credential.
       const code = (error as { code?: string }).code;
       if (
         code === "auth/credential-already-in-use" ||
@@ -70,40 +69,19 @@ export function useAuth() {
     }
 
     const provider = createGoogleProvider();
-    const currentUser = auth.currentUser;
 
-    if (currentUser?.isAnonymous) {
-      try {
-        const result = await linkWithPopup(currentUser, provider);
-        return result.user;
-      } catch (error) {
-        if (shouldFallbackToRedirect(error)) {
-          await linkWithRedirect(currentUser, provider);
-          throw Object.assign(new Error("Redirecting…"), { code: "auth/redirect-in-progress" });
-        }
-        const code = (error as { code?: string }).code;
-        if (
-          code === "auth/credential-already-in-use" ||
-          code === "auth/email-already-in-use"
-        ) {
-          // Google account already linked to another user — sign in directly
-          const credential = GoogleAuthProvider.credentialFromError(error as Parameters<typeof GoogleAuthProvider.credentialFromError>[0]);
-          if (credential) {
-            const result = await signInWithCredential(auth, credential);
-            return result.user;
-          }
-        }
-        if (code !== "auth/provider-already-linked") {
-          throw error;
-        }
-      }
+    // Mobile browsers and PWAs block popups — use redirect directly
+    if (isMobileOrStandalone()) {
+      await signInWithRedirect(auth, provider);
+      throw Object.assign(new Error("Redirecting…"), { code: "auth/redirect-in-progress" });
     }
 
     try {
       const result = await signInWithPopup(auth, provider);
       return result.user;
     } catch (error) {
-      if (shouldFallbackToRedirect(error)) {
+      const code = (error as { code?: string }).code;
+      if (code === "auth/popup-blocked" || code === "auth/operation-not-supported-in-this-environment") {
         await signInWithRedirect(auth, provider);
         throw Object.assign(new Error("Redirecting…"), { code: "auth/redirect-in-progress" });
       }
