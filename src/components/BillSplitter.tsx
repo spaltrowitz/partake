@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import type { Bill, BillSplit, SplitMethod } from "@/types";
+import type { Bill, BillSplit, PayingGroup, SplitMethod } from "@/types";
 import { calculateSplits, calculateEvenSplit, calculatePercentageSplit, calculateSharesSplit, calculateExactSplit } from "@/services/splitCalculator";
 import { requestPayment, getPaymentLink, copyToClipboard } from "@/services/venmo";
 import { getUserProfile } from "@/services/userProfile";
@@ -52,7 +52,7 @@ export function BillSplitter({
   const [exactAmounts, setExactAmounts] = useState<Record<string, number>>(() =>
     Object.fromEntries(bill.participants.map((p) => [p.id, 0]))
   );
-  const [payingGroups, setPayingGroups] = useState<{ payerId: string; memberIds: string[] }[]>([]);
+  const [payingGroups, setPayingGroups] = useState<PayingGroup[]>(initialBill.payingGroups ?? []);
   const skippedInitialCloudSave = useRef(false);
   const applyingRemoteUpdate = useRef(false);
   const claimsLocked = bill.status === "settled";
@@ -95,7 +95,17 @@ export function BillSplitter({
       }
       return updated;
     });
+    setPayingGroups(initialBill.payingGroups ?? []);
   }, [initialBill]);
+
+  useEffect(() => {
+    setBill((prev) => {
+      const current = JSON.stringify(prev.payingGroups ?? []);
+      const next = JSON.stringify(payingGroups);
+      if (current === next) return prev;
+      return { ...prev, payingGroups };
+    });
+  }, [payingGroups]);
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
@@ -111,6 +121,7 @@ export function BillSplitter({
             const local = JSON.stringify(prev);
             if (remote === local) return prev;
             applyingRemoteUpdate.current = true;
+            setPayingGroups(updated.payingGroups ?? []);
             return updated;
           });
         });
@@ -177,7 +188,7 @@ export function BillSplitter({
     const updatedParticipants = bill.participants.filter(
       (p) => !excludedIds.has(p.id)
     );
-    return { ...bill, items: updatedItems, participants: updatedParticipants };
+    return { ...bill, items: updatedItems, participants: updatedParticipants, payingGroups };
   })();
 
   const activePercentages = Object.fromEntries(

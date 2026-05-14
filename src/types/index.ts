@@ -45,6 +45,12 @@ export interface Bill {
   shareCode?: string;
   sharedWithUserIds?: string[];
   birthdayPersonId?: string;
+  payingGroups?: PayingGroup[];
+}
+
+export interface PayingGroup {
+  payerId: string;
+  memberIds: string[];
 }
 
 export interface BillItem {
