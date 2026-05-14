@@ -116,4 +116,20 @@ describe("parseReceiptText", () => {
     const ids = result.items.map((i) => i.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
+
+  it("removes OCR divider artifacts from item names", () => {
+    const lines = [
+      "Golden Hof",
+      "\\ HH Ruby Spritz | $14.00",
+      "2 | HH Ssuk Negroni \\ $28.00",
+      "Subtotal $42.00",
+      "Total $42.00",
+    ];
+
+    const result = parseReceiptText(lines);
+
+    expect(result.items).toHaveLength(2);
+    expect(result.items[0].name).toBe("HH Ruby Spritz");
+    expect(result.items[1].name).toBe("HH Ssuk Negroni");
+  });
 });

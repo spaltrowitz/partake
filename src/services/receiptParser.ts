@@ -43,6 +43,7 @@ const QUANTITY_PATTERNS = [
   /^(\d+)\s*[xX×]\s+/,       // 2x Burger, 2 X burger, 2× burger
   /^qty\s*:?\s*(\d+)\s+/i,   // qty: 2 Burger, Qty 2 Burger
   /^(\d+)\)\s+/,              // 2) Burger
+  /^(\d+)\s*[|\\]\s*/,        // 2 | Burger, 2 \ Burger
   /^(\d+)\s+(?=[A-Z])/,      // 2 Burger (digit + space + capital letter)
 ];
 
@@ -470,12 +471,13 @@ function cleanItemName(text: string): string {
 
   // Remove dollar signs, leading/trailing decorations
   name = name.replace(/\$/g, "");
+  name = name.replace(/[\\|]+/g, " ");
   name = name.replace(/^[\-*•·\s]+|[\-*•·\s]+$/g, "");
 
   // Remove parenthesized percentages like "(50% off)"
   name = name.replace(/\(\d+%\s*off\)/i, "");
 
-  name = name.trim();
+  name = name.replace(/\s{2,}/g, " ").trim();
 
   // Title-case if all caps
   if (/^[A-Z\s\-'&]+$/.test(name) && name.length > 2) {
