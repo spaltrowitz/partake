@@ -156,6 +156,7 @@ export default function Home() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [signingIn, setSigningIn] = useState(false);
   const [cloudSynced, setCloudSynced] = useState(false);
+  const activeBillSyncKey = useRef<string | null>(null);
 
   async function syncBillToCloud(billToSync: Bill) {
     setCloudSynced(false);
@@ -215,6 +216,26 @@ export default function Home() {
     }
     return () => unsubBills?.();
   }, [user, myProfile]);
+
+  useEffect(() => {
+    if (!user || !bill) return;
+    const syncKey = `${bill.id}:${user.uid}`;
+    if (activeBillSyncKey.current === syncKey) return;
+    activeBillSyncKey.current = syncKey;
+
+    const sharedWithUserIds = Array.from(new Set([...(bill.sharedWithUserIds ?? []), user.uid]));
+    const billToSync: Bill = {
+      ...bill,
+      createdBy: bill.createdBy === "local" ? user.uid : bill.createdBy,
+      createdAt: bill.createdAt instanceof Date ? bill.createdAt : new Date(bill.createdAt),
+      sharedWithUserIds,
+    };
+    if (billToSync.createdBy !== bill.createdBy || sharedWithUserIds.length !== (bill.sharedWithUserIds ?? []).length) {
+      setBill(billToSync);
+      saveBillToHistory(billToSync);
+    }
+    syncBillToCloud(billToSync);
+  }, [user, bill]);
 
   async function handleGoogleSignIn() {
     setSigningIn(true);
