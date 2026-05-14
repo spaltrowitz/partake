@@ -78,6 +78,47 @@ export async function getUserBills(userId: string): Promise<Bill[]> {
   );
 }
 
+export function listenToUserBills(
+  userId: string,
+  callback: (bills: Bill[]) => void
+): Unsubscribe {
+  ensureDb();
+  const createdByQ = query(
+    collection(db, "bills"),
+    where("createdBy", "==", userId)
+  );
+  const sharedWithQ = query(
+    collection(db, "bills"),
+    where("sharedWithUserIds", "array-contains", userId)
+  );
+
+  let createdByBills: Bill[] = [];
+  let sharedWithBills: Bill[] = [];
+
+  function merge() {
+    const billsById = new Map<string, Bill>();
+    for (const bill of [...createdByBills, ...sharedWithBills]) {
+      billsById.set(bill.id, { ...bill, createdAt: new Date(bill.createdAt) });
+    }
+    callback(
+      Array.from(billsById.values()).sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+    );
+  }
+
+  const unsub1 = onSnapshot(createdByQ, (snap) => {
+    createdByBills = snap.docs.map((d) => d.data() as Bill);
+    merge();
+  });
+  const unsub2 = onSnapshot(sharedWithQ, (snap) => {
+    sharedWithBills = snap.docs.map((d) => d.data() as Bill);
+    merge();
+  });
+
+  return () => { unsub1(); unsub2(); };
+}
+
 export function listenToBill(
   id: string,
   callback: (bill: Bill | null) => void

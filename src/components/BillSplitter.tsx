@@ -139,9 +139,16 @@ export function BillSplitter({
     if (isInitialSave) {
       return;
     }
-    // Sync claims to Firestore for shared links
-    import("@/services/firestore").then(({ saveBill }) => {
-      saveBill(bill).catch(() => {});
+    // Sync claims to Firestore for shared links (retry up to 3x)
+    import("@/services/firestore").then(async ({ saveBill }) => {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          await saveBill(bill);
+          return;
+        } catch {
+          if (attempt < 2) await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
+        }
+      }
     }).catch(() => {});
   }, [bill, onBillChange]);
 

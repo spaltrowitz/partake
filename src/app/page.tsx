@@ -13,7 +13,7 @@ import { getBillHistory, saveBillToHistory, deleteBillFromHistory } from "@/serv
 import { getUserProfile, saveUserProfile } from "@/services/userProfile";
 import type { UserProfile } from "@/services/userProfile";
 import { useAuthContext } from "@/components/AuthProvider";
-import { getContacts, getUserBills, saveBill, saveContact, saveUser } from "@/services/firestore";
+import { getContacts, listenToUserBills, saveBill, saveContact, saveUser } from "@/services/firestore";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 
 type Step = "landing" | "participants" | "scan" | "edit" | "split";
@@ -199,11 +199,10 @@ export default function Home() {
         setSavedContacts((prev) => mergeContacts(prev, cloudContacts));
       })
       .catch(() => {});
-    getUserBills(user.uid)
-      .then((cloudBills) => {
-        setBillHistory((prev) => mergeBills(prev, cloudBills));
-      })
-      .catch(() => {});
+    const unsubBills = listenToUserBills(user.uid, (cloudBills) => {
+      setBillHistory((prev) => mergeBills(prev, cloudBills));
+    });
+    return () => unsubBills();
   }, [user, myProfile]);
 
   async function handleGoogleSignIn() {
