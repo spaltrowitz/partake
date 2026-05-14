@@ -8,6 +8,7 @@ import {
   linkWithRedirect,
   onAuthStateChanged,
   signInAnonymously,
+  signInWithCredential,
   signInWithPopup,
   signInWithRedirect,
   signOut as firebaseSignOut,
@@ -36,7 +37,20 @@ export function useAuth() {
       return;
     }
 
-    getRedirectResult(auth).catch(() => {});
+    getRedirectResult(auth).catch((error) => {
+      // If a linkWithRedirect failed because the Google account is already
+      // linked to another user, sign in directly with that credential.
+      const code = (error as { code?: string }).code;
+      if (
+        code === "auth/credential-already-in-use" ||
+        code === "auth/email-already-in-use"
+      ) {
+        const credential = GoogleAuthProvider.credentialFromError(error);
+        if (credential) {
+          signInWithCredential(auth, credential).catch(() => {});
+        }
+      }
+    });
 
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
@@ -65,15 +79,21 @@ export function useAuth() {
       } catch (error) {
         if (shouldFallbackToRedirect(error)) {
           await linkWithRedirect(currentUser, provider);
-          // Page will redirect — throw so caller's finally block runs
           throw Object.assign(new Error("Redirecting…"), { code: "auth/redirect-in-progress" });
         }
         const code = (error as { code?: string }).code;
         if (
-          code !== "auth/credential-already-in-use" &&
-          code !== "auth/email-already-in-use" &&
-          code !== "auth/provider-already-linked"
+          code === "auth/credential-already-in-use" ||
+          code === "auth/email-already-in-use"
         ) {
+          // Google account already linked to another user — sign in directly
+          const credential = GoogleAuthProvider.credentialFromError(error as Parameters<typeof GoogleAuthProvider.credentialFromError>[0]);
+          if (credential) {
+            const result = await signInWithCredential(auth, credential);
+            return result.user;
+          }
+        }
+        if (code !== "auth/provider-already-linked") {
           throw error;
         }
       }

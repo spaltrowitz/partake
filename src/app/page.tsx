@@ -221,6 +221,8 @@ export default function Home() {
   async function handleGoogleSignIn() {
     setSigningIn(true);
     setAuthError(null);
+    // Safety timeout — reset UI if sign-in hangs (e.g., redirect didn't navigate)
+    const timeout = setTimeout(() => setSigningIn(false), 15000);
     try {
       const signedInUser = await signInWithGoogle();
       if (signedInUser.displayName && !effectiveProfile) {
@@ -234,6 +236,7 @@ export default function Home() {
         setAuthError(getAuthErrorMessage(error));
       }
     } finally {
+      clearTimeout(timeout);
       setSigningIn(false);
     }
   }
