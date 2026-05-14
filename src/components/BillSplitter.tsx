@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import type { Bill, BillSplit, SplitMethod } from "@/types";
 import { calculateSplits, calculateEvenSplit, calculatePercentageSplit, calculateSharesSplit, calculateExactSplit } from "@/services/splitCalculator";
-import { requestPayment, copyToClipboard } from "@/services/venmo";
+import { requestPayment, getPaymentLink, copyToClipboard } from "@/services/venmo";
 import { getUserProfile } from "@/services/userProfile";
 import { saveBillToHistory } from "@/services/billHistory";
 import { PrimaryButton, TopBarButton } from "./UI";
@@ -24,12 +24,14 @@ export function BillSplitter({
   onEditReceipt,
   onHome,
   onBillChange,
+  cloudSynced,
 }: {
   bill: Bill;
   onBack?: () => void;
   onEditReceipt?: () => void;
   onHome?: () => void;
   onBillChange?: (bill: Bill) => void;
+  cloudSynced?: boolean;
 }) {
   const [bill, setBill] = useState(initialBill);
   const [splitMethod, setSplitMethod] = useState<SplitMethod>("itemized");
@@ -266,23 +268,36 @@ export function BillSplitter({
   }
 
   async function handlePayment(split: BillSplit) {
+    // Pre-open window synchronously to avoid Safari popup blocking
+    const paymentWindow = window.open("about:blank", "_blank");
+
     const lockedBill = await lockClaims();
     if (!lockedBill) {
+      paymentWindow?.close();
       setClaimLockError("Couldn't lock claims. Check your connection and try again.");
       return;
     }
     setClaimLockError(null);
     const note = `🧾 ${lockedBill.name || "Bill split"} via Partake`;
     try { localStorage.setItem("partake_active_session", JSON.stringify({ bill: lockedBill })); } catch {}
+
+    let url: string | null = null;
     if (split.venmoUsername) {
-      requestPayment("venmo", split.venmoUsername, split.total, note);
+      url = getPaymentLink("venmo", split.venmoUsername, split.total, note);
     } else {
       const participant = lockedBill.participants.find((p) => p.id === split.participantId);
       if (participant?.cashAppUsername) {
-        requestPayment("cashapp", participant.cashAppUsername, split.total, note);
-      } else {
-        return;
+        url = getPaymentLink("cashapp", participant.cashAppUsername, split.total, note);
       }
+    }
+
+    if (url && paymentWindow) {
+      paymentWindow.location.href = url;
+    } else if (url) {
+      window.location.href = url;
+    } else {
+      paymentWindow?.close();
+      return;
     }
     setSettledIds((prev) => new Set([...prev, split.participantId]));
   }
@@ -308,6 +323,7 @@ export function BillSplitter({
         }}
         onDone={() => setShowSettlement(false)}
         onHome={onHome ? goHome : undefined}
+        cloudSynced={cloudSynced}
       />
     );
   }

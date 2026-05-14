@@ -6,10 +6,11 @@ import { copyToClipboard } from "@/services/venmo";
 import { Avatar } from "./Avatar";
 import { Card, TopBarButton } from "./UI";
 
-function ShareLinkButton({ shareCode, billName }: { shareCode: string; billName: string }) {
+function ShareLinkButton({ shareCode, billName, cloudSynced }: { shareCode: string; billName: string; cloudSynced?: boolean }) {
   const [copied, setCopied] = useState(false);
 
   const handleShare = () => {
+    if (cloudSynced === false) return;
     const url = `${window.location.origin}/bill?code=${shareCode}`;
     const text = `Claim your items on "${billName || "our bill"}"`;
 
@@ -27,13 +28,20 @@ function ShareLinkButton({ shareCode, billName }: { shareCode: string; billName:
     }
   };
 
+  const syncing = cloudSynced === false;
+
   return (
     <Card className="mt-2">
       <button
         onClick={handleShare}
-        className="w-full py-2 text-sm font-medium text-[#2E7D32] hover:bg-[#FDE68A] rounded-lg transition-colors flex items-center justify-center gap-2"
+        disabled={syncing}
+        className={`w-full py-2 text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2 ${
+          syncing
+            ? "text-[#8A7353] cursor-wait"
+            : "text-[#2E7D32] hover:bg-[#FDE68A]"
+        }`}
       >
-        {copied ? "✓ Link copied!" : "🔗 Share bill link"}
+        {syncing ? "⏳ Syncing bill…" : copied ? "✓ Link copied!" : "🔗 Share bill link"}
       </button>
     </Card>
   );
@@ -49,6 +57,7 @@ export function Settlement({
   onCopy,
   onDone,
   onHome,
+  cloudSynced,
 }: {
   bill: Bill;
   splits: BillSplit[];
@@ -59,6 +68,7 @@ export function Settlement({
   onCopy: (split: BillSplit) => void;
   onDone: () => void;
   onHome?: () => void;
+  cloudSynced?: boolean;
 }) {
   const allSettled =
     splits.filter((s) => s.total > 0).every((s) => settledIds.has(s.participantId));
@@ -253,7 +263,7 @@ export function Settlement({
 
       {/* Share link */}
       {bill.shareCode && (
-        <ShareLinkButton shareCode={bill.shareCode} billName={bill.name} />
+        <ShareLinkButton shareCode={bill.shareCode} billName={bill.name} cloudSynced={cloudSynced} />
       )}
 
       {allSettled && (

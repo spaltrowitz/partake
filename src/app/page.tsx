@@ -155,6 +155,23 @@ export default function Home() {
   const [myProfile, setMyProfile] = useState<UserProfile | null>(initialState.myProfile);
   const [authError, setAuthError] = useState<string | null>(null);
   const [signingIn, setSigningIn] = useState(false);
+  const [cloudSynced, setCloudSynced] = useState(false);
+
+  async function syncBillToCloud(billToSync: Bill) {
+    setCloudSynced(false);
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await saveBill(billToSync);
+        setCloudSynced(true);
+        return;
+      } catch {
+        if (attempt < 2) {
+          await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
+        }
+      }
+    }
+    console.warn("Cloud sync failed after 3 attempts");
+  }
   const { user, loading: authLoading, signInWithGoogle, signOut } = useAuthContext();
   const googleProfileName = user && !user.isAnonymous ? user.displayName : null;
   const effectiveProfile = myProfile ?? (
@@ -343,10 +360,7 @@ export default function Home() {
 
     setBill(newBill);
     saveBillToHistory(newBill);
-    // Save to Firestore — retry once if auth not ready
-    saveBill(newBill).catch(() => {
-      setTimeout(() => saveBill(newBill).catch((err) => console.warn("Cloud sync failed:", err)), 2000);
-    });
+    syncBillToCloud(newBill);
     saveAllParticipantsAsContacts(participants);
     if (user) {
       const contacts = contactsFromParticipants(participants, user.uid);
@@ -888,7 +902,7 @@ export default function Home() {
                 };
                 setBill(updatedBill);
                 saveBillToHistory(updatedBill);
-                saveBill(updatedBill).catch((err) => console.warn("Cloud sync failed:", err));
+                syncBillToCloud(updatedBill);
                 saveAllParticipantsAsContacts(participants);
                 if (user) {
                   const contacts = contactsFromParticipants(participants, user.uid);
@@ -1019,7 +1033,7 @@ export default function Home() {
           <BillSplitter bill={bill} onBack={goToParticipants} onEditReceipt={() => {
             setReceipt(reconstructReceiptFromBill(bill));
             setStep("edit");
-          }} onBillChange={setBill} onHome={goHome} />
+          }} onBillChange={setBill} onHome={goHome} cloudSynced={cloudSynced} />
         </ErrorBoundary>
       </main>
     );
