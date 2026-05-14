@@ -82,6 +82,14 @@ export interface BillSplit {
   venmoUsername?: string;
 }
 
+export interface CoveredReimbursement {
+  payerId: string;
+  payerName: string;
+  memberId: string;
+  memberName: string;
+  amount: number;
+}
+
 export interface ParsedReceipt {
   items: ParsedItem[];
   tax?: number;

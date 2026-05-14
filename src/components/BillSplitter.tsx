@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import type { Bill, BillSplit, PayingGroup, SplitMethod } from "@/types";
+import type { Bill, BillSplit, CoveredReimbursement, PayingGroup, SplitMethod } from "@/types";
 import { calculateSplits, calculateEvenSplit, calculatePercentageSplit, calculateSharesSplit, calculateExactSplit } from "@/services/splitCalculator";
 import { requestPayment, getPaymentLink, copyToClipboard } from "@/services/venmo";
 import { getUserProfile } from "@/services/userProfile";
@@ -17,6 +17,18 @@ import { TipSelector } from "./TipSelector";
 import { Settlement } from "./Settlement";
 import { PartnerGroupSelector } from "./PartnerPairSelector";
 import { FeedbackWidget } from "./FeedbackWidget";
+
+function countPayerGroupMembers(bill: Bill): number {
+  return (bill.payingGroups ?? []).reduce((sum, group) => sum + group.memberIds.length, 0);
+}
+
+function billWithBestPayerGroups(candidate: Bill, cloudBill: Bill | null, preferCandidate = false): Bill {
+  if (!cloudBill) return candidate;
+  if (preferCandidate) return candidate;
+  return countPayerGroupMembers(cloudBill) >= countPayerGroupMembers(candidate)
+    ? { ...candidate, payingGroups: cloudBill.payingGroups }
+    : candidate;
+}
 
 export function BillSplitter({
   bill: initialBill,
@@ -55,6 +67,7 @@ export function BillSplitter({
   const [payingGroups, setPayingGroups] = useState<PayingGroup[]>(initialBill.payingGroups ?? []);
   const skippedInitialCloudSave = useRef(false);
   const applyingRemoteUpdate = useRef(false);
+  const payerGroupsEdited = useRef(false);
   const claimsLocked = bill.status === "settled";
   const goHome = () => {
     if (onHome) {
@@ -151,10 +164,14 @@ export function BillSplitter({
       return;
     }
     // Sync claims to Firestore for shared links (retry up to 3x)
-    import("@/services/firestore").then(async ({ saveBill }) => {
+    import("@/services/firestore").then(async ({ getBillByShareCode, saveBill }) => {
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
-          await saveBill(bill);
+          const cloudBill = bill.shareCode
+            ? await getBillByShareCode(bill.shareCode).catch(() => null)
+            : null;
+          await saveBill(billWithBestPayerGroups(bill, cloudBill, payerGroupsEdited.current));
+          payerGroupsEdited.current = false;
           return;
         } catch {
           if (attempt < 2) await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
@@ -219,22 +236,48 @@ export function BillSplitter({
     })
   );
 
-  const splits = (() => {
-    // Always use effectiveBill — it has partner removed when paired
-    const b = effectiveBill;
+  function calculateBillSplits(targetBill: Bill, useActiveGroupAmounts = false): BillSplit[] {
+    const percentageValues = useActiveGroupAmounts ? activePercentages : percentages;
+    const shareValues = useActiveGroupAmounts ? activeShares : shares;
+    const exactValues = useActiveGroupAmounts ? activeExactAmounts : exactAmounts;
     switch (splitMethod) {
       case "even":
-        return calculateEvenSplit(b);
+        return calculateEvenSplit(targetBill);
       case "percentage":
-        return calculatePercentageSplit(b, activePercentages);
+        return calculatePercentageSplit(targetBill, percentageValues);
       case "shares":
-        return calculateSharesSplit(b, activeShares);
+        return calculateSharesSplit(targetBill, shareValues);
       case "exact":
-        return calculateExactSplit(b, activeExactAmounts);
+        return calculateExactSplit(targetBill, exactValues);
       default:
-        return calculateSplits(b);
+        return calculateSplits(targetBill);
     }
+  }
+
+  const originalSplits = calculateBillSplits(bill);
+
+  const splits = (() => {
+    // Always use effectiveBill — it has covered members removed when grouped
+    return calculateBillSplits(effectiveBill, true);
   })();
+
+  const coveredReimbursements: CoveredReimbursement[] = payingGroups.flatMap((group) => {
+    const payer = bill.participants.find((p) => p.id === group.payerId);
+    if (!payer) return [];
+
+    return group.memberIds.flatMap((memberId) => {
+      const member = bill.participants.find((p) => p.id === memberId);
+      const memberSplit = originalSplits.find((s) => s.participantId === memberId);
+      if (!member || !memberSplit || memberSplit.total <= 0) return [];
+      return [{
+        payerId: payer.id,
+        payerName: payer.name,
+        memberId: member.id,
+        memberName: member.name,
+        amount: memberSplit.total,
+      }];
+    });
+  });
 
   const toggleClaim = useCallback(
     (itemId: string) => {
@@ -327,6 +370,7 @@ export function BillSplitter({
         splits={splits}
         settledIds={settledIds}
         payingGroups={payingGroups}
+        coveredReimbursements={coveredReimbursements}
         myName={getUserProfile()?.name}
         onPayment={handlePayment}
         onCopy={async (split) => {
@@ -391,11 +435,15 @@ export function BillSplitter({
         />
       )}
 
-      {!claimsLocked && (
+      {(!claimsLocked || payingGroups.length > 0) && (
         <PartnerGroupSelector
           participants={bill.participants}
           payingGroups={payingGroups}
-          onSetPayingGroups={setPayingGroups}
+          onSetPayingGroups={(groups) => {
+            payerGroupsEdited.current = true;
+            setPayingGroups(groups);
+          }}
+          readOnly={claimsLocked}
         />
       )}
 

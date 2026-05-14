@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Bill, BillSplit } from "@/types";
+import type { Bill, BillSplit, CoveredReimbursement } from "@/types";
 import { copyToClipboard } from "@/services/venmo";
 import { Avatar } from "./Avatar";
 import { Card, TopBarButton } from "./UI";
@@ -52,6 +52,7 @@ export function Settlement({
   splits,
   settledIds,
   payingGroups,
+  coveredReimbursements,
   myName,
   onPayment,
   onCopy,
@@ -63,6 +64,7 @@ export function Settlement({
   splits: BillSplit[];
   settledIds: Set<string>;
   payingGroups?: { payerId: string; memberIds: string[] }[];
+  coveredReimbursements?: CoveredReimbursement[];
   myName?: string;
   onPayment: (split: BillSplit) => void;
   onCopy: (split: BillSplit) => void;
@@ -74,6 +76,7 @@ export function Settlement({
     splits.filter((s) => s.total > 0).every((s) => settledIds.has(s.participantId));
 
   const groups = payingGroups ?? [];
+  const reimbursements = coveredReimbursements ?? [];
 
   return (
     <div className="p-4 pb-safe overflow-y-auto">
@@ -95,6 +98,7 @@ export function Settlement({
           const originalIndex = bill.participants.findIndex((p) => p.id === split.participantId);
           const payerGroup = groups.find(g => g.payerId === split.participantId);
           const coveredNames = payerGroup?.memberIds.map(id => bill.participants.find(p => p.id === id)?.name).filter(Boolean) ?? [];
+          const payerReimbursements = reimbursements.filter((r) => r.payerId === split.participantId);
           return (
           <Card key={split.participantId}>
             <div className="flex items-center gap-3 mb-3">
@@ -113,6 +117,18 @@ export function Settlement({
                 ${split.total.toFixed(2)}
               </span>
             </div>
+
+            {payerReimbursements.length > 0 && (
+              <div className="mb-3 rounded-xl bg-[#FDE68A] p-3 text-xs text-[#6B4F2A] space-y-1">
+                <p className="font-semibold">People paying {split.participantName} back</p>
+                {payerReimbursements.map((reimbursement) => (
+                  <div key={`${reimbursement.payerId}-${reimbursement.memberId}`} className="flex justify-between gap-3">
+                    <span>{reimbursement.memberName} owes {split.participantName}</span>
+                    <span className="font-bold">${reimbursement.amount.toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Item breakdown */}
             <div className="text-xs text-[#8A7353] space-y-1 mb-3">
@@ -194,18 +210,24 @@ export function Settlement({
           group.memberIds.map((memberId) => {
             const member = bill.participants.find(p => p.id === memberId);
             const payer = bill.participants.find(p => p.id === group.payerId);
+            const reimbursement = reimbursements.find((r) => r.payerId === group.payerId && r.memberId === memberId);
             if (!member || !payer) return null;
             return (
               <Card key={memberId}>
                 <div className="flex items-center gap-3">
                   <Avatar name={member.name} index={bill.participants.findIndex(p => p.id === memberId)} size={40} allNames={bill.participants.map(p => p.name)} />
-                  <div className="flex-1">
-                    <p className="font-semibold">{member.name}</p>
-                    <p className="text-xs text-[#8A7353]">Covered by {payer.name} 👫</p>
-                  </div>
-                  <span className="text-lg font-bold text-[#2E7D32]">$0.00</span>
-                </div>
-              </Card>
+                   <div className="flex-1">
+                     <p className="font-semibold">{member.name}</p>
+                     <p className="text-xs text-[#8A7353]">
+                       Covered by {payer.name} 👫
+                       {reimbursement && ` — owes ${payer.name} $${reimbursement.amount.toFixed(2)}`}
+                     </p>
+                   </div>
+                   <span className="text-lg font-bold text-[#2E7D32]">
+                     {reimbursement ? `$${reimbursement.amount.toFixed(2)}` : "$0.00"}
+                   </span>
+                 </div>
+               </Card>
             );
           })
         )}
@@ -219,7 +241,10 @@ export function Settlement({
               .filter((s) => s.total > 0)
               .map((s) => `${s.participantName}: $${s.total.toFixed(2)}`)
               .join("\n");
-            const text = `${bill.name || "Bill split"} — $${bill.total.toFixed(2)} total\n\n${summary}\n\nSplit with Partake`;
+            const reimbursementSummary = reimbursements.length > 0
+              ? `\n\nPay-back notes:\n${reimbursements.map((r) => `${r.memberName} owes ${r.payerName}: $${r.amount.toFixed(2)}`).join("\n")}`
+              : "";
+            const text = `${bill.name || "Bill split"} — $${bill.total.toFixed(2)} total\n\n${summary}${reimbursementSummary}\n\nSplit with Partake`;
 
             if (navigator.share) {
               navigator.share({ text }).catch((err) => {

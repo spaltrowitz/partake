@@ -113,6 +113,17 @@ function countClaims(bill: Bill): number {
   return bill.items.reduce((sum, item) => sum + item.claimedBy.length, 0);
 }
 
+function countPayerGroupMembers(bill: Bill): number {
+  return (bill.payingGroups ?? []).reduce((sum, group) => sum + group.memberIds.length, 0);
+}
+
+function billWithBestPayerGroups(candidate: Bill, cloudBill: Bill | null): Bill {
+  if (!cloudBill) return candidate;
+  return countPayerGroupMembers(cloudBill) >= countPayerGroupMembers(candidate)
+    ? { ...candidate, payingGroups: cloudBill.payingGroups }
+    : candidate;
+}
+
 function contactsFromParticipants(participants: Participant[], createdBy: string): SavedContact[] {
   return participants.map((participant) => ({
     id: `contact-${participant.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || participant.id}`,
@@ -169,7 +180,10 @@ export default function Home() {
     setCloudSynced(false);
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        await saveBill(billToSync);
+        const cloudBill = billToSync.shareCode
+          ? await getBillByShareCode(billToSync.shareCode).catch(() => null)
+          : null;
+        await saveBill(billWithBestPayerGroups(billToSync, cloudBill));
         setCloudSynced(true);
         return;
       } catch {
@@ -205,7 +219,7 @@ export default function Home() {
       const localBills = getBillHistory();
       for (const localBill of localBills) {
         const billToSync = { ...localBill, createdBy: user.uid, sharedWithUserIds: [user.uid, ...(localBill.sharedWithUserIds ?? []).filter((id: string) => id !== user.uid)] };
-        saveBill(billToSync).catch(() => {});
+        syncBillToCloud(billToSync).catch(() => {});
       }
     }
     getContacts(user.uid)
@@ -253,7 +267,9 @@ export default function Home() {
         if (cancelled || !cloudBill) return;
         const cloudClaims = countClaims(cloudBill);
         const localClaims = countClaims(bill);
-        if (cloudClaims <= localClaims) return;
+        const cloudPayerMembers = countPayerGroupMembers(cloudBill);
+        const localPayerMembers = countPayerGroupMembers(bill);
+        if (cloudClaims <= localClaims && cloudPayerMembers <= localPayerMembers) return;
 
         const restoredBill = {
           ...cloudBill,

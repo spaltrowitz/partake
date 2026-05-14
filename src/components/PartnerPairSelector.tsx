@@ -1,21 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import type { Participant } from "@/types";
-
-interface PayingGroup {
-  payerId: string;
-  memberIds: string[];
-}
+import type { Participant, PayingGroup } from "@/types";
 
 export function PartnerGroupSelector({
   participants,
   payingGroups,
   onSetPayingGroups,
+  readOnly = false,
 }: {
   participants: Participant[];
   payingGroups: PayingGroup[];
   onSetPayingGroups: (groups: PayingGroup[]) => void;
+  readOnly?: boolean;
 }) {
   const [isAdding, setIsAdding] = useState(false);
   const [newPayerId, setNewPayerId] = useState("");
@@ -53,14 +50,16 @@ export function PartnerGroupSelector({
             <span className="text-sm">
               👫 <strong>{payer?.name}</strong> covers {members.join(" & ")}
             </span>
-            <button onClick={() => removeGroup(i)} className="min-h-11 rounded-full px-3 py-2 text-xs text-[#D97706] font-semibold">
-              Remove
-            </button>
+            {!readOnly && (
+              <button onClick={() => removeGroup(i)} className="min-h-11 rounded-full px-3 py-2 text-xs text-[#D97706] font-semibold">
+                Remove
+              </button>
+            )}
           </div>
         );
       })}
 
-      {isAdding ? (
+      {readOnly ? null : isAdding ? (
         <div className="p-3 bg-[#FDE68A] rounded-xl mb-2 flex flex-col gap-3">
           <p className="text-sm font-medium">Who&apos;s paying?</p>
           <select
