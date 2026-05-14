@@ -352,7 +352,9 @@ export default function Home() {
     const tipAmount = receipt.tip ?? Math.round(subtotal * tipPercent) / 100;
 
     const chars = "abcdefghjkmnpqrstuvwxyz23456789";
-    const shareCode = Array.from({ length: 6 }, () =>
+    // Allow reusing a share code via ?shareCode= query param
+    const urlShareCode = new URLSearchParams(window.location.search).get("shareCode");
+    const shareCode = urlShareCode || Array.from({ length: 6 }, () =>
       chars[Math.floor(Math.random() * chars.length)]
     ).join("");
 
