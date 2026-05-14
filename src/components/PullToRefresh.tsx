@@ -1,96 +1,107 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const THRESHOLD = 80; // px to pull before triggering refresh
 const MAX_PULL = 120;
 const INDICATOR_SIZE = 36;
 
+function isTouchDevice() {
+  return typeof window !== "undefined" && ("ontouchstart" in window || navigator.maxTouchPoints > 0);
+}
+
+function isStandaloneMode() {
+  if (typeof window === "undefined") return false;
+  return (
+    ("standalone" in navigator && Boolean((navigator as { standalone?: unknown }).standalone)) ||
+    window.matchMedia("(display-mode: standalone)").matches
+  );
+}
+
+function isAtScrollTop() {
+  if (typeof window === "undefined") return false;
+  return window.scrollY <= 0 && document.documentElement.scrollTop <= 0 && document.body.scrollTop <= 0;
+}
+
+function reloadApp() {
+  window.location.reload();
+}
+
 export function PullToRefresh({ children }: { children: React.ReactNode }) {
   const [pulling, setPulling] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [enabled, setEnabled] = useState(false);
   const startY = useRef(0);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const isAtTop = useCallback(() => {
-    return window.scrollY <= 0;
-  }, []);
+  const active = useRef(false);
+  const pullDistanceRef = useRef(0);
 
   useEffect(() => {
-    // Only enable in standalone (PWA) mode
-    const isStandalone =
-      ("standalone" in navigator && (navigator as Record<string, unknown>).standalone) ||
-      window.matchMedia("(display-mode: standalone)").matches;
-    if (!isStandalone) return;
+    setEnabled(isTouchDevice() && isStandaloneMode());
+  }, []);
 
-    let active = false;
+  function resetPull() {
+    active.current = false;
+    pullDistanceRef.current = 0;
+    setPulling(false);
+    setPullDistance(0);
+  }
 
-    function onTouchStart(e: TouchEvent) {
-      if (!isAtTop()) return;
-      startY.current = e.touches[0].clientY;
-      active = true;
+  function handleTouchStart(e: React.TouchEvent<HTMLDivElement>) {
+    if (!enabled || refreshing || !isAtScrollTop()) return;
+    startY.current = e.touches[0].clientY;
+    active.current = true;
+  }
+
+  function handleTouchMove(e: React.TouchEvent<HTMLDivElement>) {
+    if (!enabled || !active.current || refreshing) return;
+    const deltaY = e.touches[0].clientY - startY.current;
+    if (deltaY <= 0) {
+      resetPull();
+      return;
     }
 
-    function onTouchMove(e: TouchEvent) {
-      if (!active || refreshing) return;
-      const deltaY = e.touches[0].clientY - startY.current;
-      if (deltaY <= 0) {
-        setPulling(false);
-        setPullDistance(0);
-        return;
-      }
-      // Dampen the pull with a decay curve
-      const dampened = Math.min(deltaY * 0.5, MAX_PULL);
-      setPulling(true);
-      setPullDistance(dampened);
+    const dampened = Math.min(deltaY * 0.55, MAX_PULL);
+    pullDistanceRef.current = dampened;
+    setPulling(true);
+    setPullDistance(dampened);
+  }
 
-      if (dampened > 10) {
-        e.preventDefault();
-      }
+  function handleTouchEnd() {
+    if (!enabled || !active.current) return;
+    active.current = false;
+    if (pullDistanceRef.current >= THRESHOLD) {
+      setRefreshing(true);
+      setPullDistance(THRESHOLD * 0.55);
+      setTimeout(reloadApp, 250);
+    } else {
+      resetPull();
     }
-
-    function onTouchEnd() {
-      if (!active) return;
-      active = false;
-      if (pullDistance >= THRESHOLD) {
-        setRefreshing(true);
-        setPullDistance(THRESHOLD * 0.5);
-        // Reload page
-        setTimeout(() => {
-          window.location.reload();
-        }, 300);
-      } else {
-        setPulling(false);
-        setPullDistance(0);
-      }
-    }
-
-    document.addEventListener("touchstart", onTouchStart, { passive: true });
-    document.addEventListener("touchmove", onTouchMove, { passive: false });
-    document.addEventListener("touchend", onTouchEnd, { passive: true });
-
-    return () => {
-      document.removeEventListener("touchstart", onTouchStart);
-      document.removeEventListener("touchmove", onTouchMove);
-      document.removeEventListener("touchend", onTouchEnd);
-    };
-  }, [isAtTop, pullDistance, refreshing]);
+  }
 
   const progress = Math.min(pullDistance / THRESHOLD, 1);
   const rotation = progress * 360;
   const opacity = Math.min(progress * 1.5, 1);
-  const showIndicator = pulling || refreshing;
+  const showIndicator = enabled && (pulling || refreshing);
 
   return (
-    <div ref={containerRef} className="relative min-h-full flex flex-col">
+    <div
+      className="relative min-h-full flex flex-col"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={resetPull}
+      style={{
+        transform: showIndicator ? `translateY(${Math.min(pullDistance * 0.35, 32)}px)` : undefined,
+        transition: refreshing || !pulling ? "transform 0.18s ease" : "none",
+      }}
+    >
       {showIndicator && (
         <div
-          className="flex justify-center pointer-events-none"
+          className="fixed left-0 right-0 z-50 flex justify-center pointer-events-none"
           style={{
-            height: pullDistance,
-            transition: refreshing ? "height 0.2s ease" : "none",
-            overflow: "hidden",
+            top: "max(10px, env(safe-area-inset-top))",
+            opacity,
           }}
         >
           <div
@@ -98,8 +109,6 @@ export function PullToRefresh({ children }: { children: React.ReactNode }) {
             style={{
               width: INDICATOR_SIZE,
               height: INDICATOR_SIZE,
-              marginTop: Math.max(0, pullDistance - INDICATOR_SIZE - 8),
-              opacity,
               transform: `rotate(${rotation}deg)`,
               transition: refreshing ? "transform 0.3s linear" : "none",
               animation: refreshing ? "spin 0.8s linear infinite" : "none",
@@ -111,6 +120,17 @@ export function PullToRefresh({ children }: { children: React.ReactNode }) {
             </svg>
           </div>
         </div>
+      )}
+      {enabled && (
+        <button
+          type="button"
+          onClick={reloadApp}
+          aria-label="Refresh Partake"
+          className="fixed right-3 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-[#D97706] shadow-md backdrop-blur"
+          style={{ top: "max(12px, env(safe-area-inset-top))" }}
+        >
+          ↻
+        </button>
       )}
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       {children}
