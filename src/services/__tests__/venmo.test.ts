@@ -5,8 +5,13 @@ describe("getPaymentLink", () => {
   it("generates correct Venmo URL", () => {
     const url = getPaymentLink("venmo", "alice123", 25.5, "Dinner split");
     expect(url).toBe(
-      "https://venmo.com/alice123?txn=charge&amount=25.50&note=Dinner%20split"
+      "https://venmo.com/?txn=charge&recipients=alice123&amount=25.50&note=Dinner%20split&audience=private"
     );
+  });
+
+  it("strips @ prefix from Venmo usernames", () => {
+    const url = getPaymentLink("venmo", "@alice123", 25.5, "Dinner split");
+    expect(url).toContain("recipients=alice123");
   });
 
   it("generates correct CashApp URL without $ prefix", () => {

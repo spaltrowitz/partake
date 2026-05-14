@@ -26,7 +26,7 @@ export function getPaymentLink(
 
   switch (app) {
     case "venmo":
-      return `https://venmo.com/${encodeURIComponent(username)}?txn=charge&amount=${amountStr}&note=${encodedNote}`;
+      return `https://venmo.com/?txn=charge&recipients=${encodeURIComponent(username.replace(/^@/, ""))}&amount=${amountStr}&note=${encodedNote}&audience=private`;
     case "cashapp":
       // Cash App uses $cashtag format
       const cashtag = username.startsWith("$") ? username.slice(1) : username;

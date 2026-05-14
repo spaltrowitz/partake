@@ -54,6 +54,7 @@ export function Settlement({
   payingGroups,
   myName,
   onPayment,
+  onRequestAll,
   onCopy,
   onDone,
   onHome,
@@ -65,6 +66,7 @@ export function Settlement({
   payingGroups?: { payerId: string; memberIds: string[] }[];
   myName?: string;
   onPayment: (split: BillSplit) => void;
+  onRequestAll?: (splits: BillSplit[], paymentWindows: (Window | null)[]) => void;
   onCopy: (split: BillSplit) => void;
   onDone: () => void;
   onHome?: () => void;
@@ -84,12 +86,8 @@ export function Settlement({
   });
 
   function handleRequestAll() {
-    // Open each payment request with a small delay to avoid popup blocking
-    payableSplits.forEach((split, i) => {
-      setTimeout(() => {
-        onPayment(split);
-      }, i * 500);
-    });
+    const paymentWindows = payableSplits.map(() => window.open("about:blank", "_blank"));
+    onRequestAll?.(payableSplits, paymentWindows);
   }
 
   return (

@@ -249,16 +249,14 @@ export function BillSplitter({
     if (bill.status === "settled") return bill;
     const lockedBill = { ...bill, status: "settled" as const };
     setBill(lockedBill);
+    try { localStorage.setItem("partake_active_session", JSON.stringify({ bill: lockedBill })); } catch {}
     try {
       const { saveBill } = await import("@/services/firestore");
       await saveBill(lockedBill);
-      try { localStorage.setItem("partake_active_session", JSON.stringify({ bill: lockedBill })); } catch {}
       return lockedBill;
     } catch (error) {
       console.error("Failed to persist claim lock state", error);
-      setBill(bill);
-      try { localStorage.setItem("partake_active_session", JSON.stringify({ bill })); } catch {}
-      return null;
+      return lockedBill;
     }
   }
 
@@ -274,6 +272,18 @@ export function BillSplitter({
     });
   }
 
+  function getPaymentUrl(split: BillSplit, lockedBill: Bill): string | null {
+    const note = `🧾 ${lockedBill.name || "Bill split"} via Partake`;
+    if (split.venmoUsername) {
+      return getPaymentLink("venmo", split.venmoUsername, split.total, note);
+    }
+    const participant = lockedBill.participants.find((p) => p.id === split.participantId);
+    if (participant?.cashAppUsername) {
+      return getPaymentLink("cashapp", participant.cashAppUsername, split.total, note);
+    }
+    return null;
+  }
+
   async function handlePayment(split: BillSplit) {
     // Pre-open window synchronously to avoid Safari popup blocking
     const paymentWindow = window.open("about:blank", "_blank");
@@ -285,19 +295,9 @@ export function BillSplitter({
       return;
     }
     setClaimLockError(null);
-    const note = `🧾 ${lockedBill.name || "Bill split"} via Partake`;
     try { localStorage.setItem("partake_active_session", JSON.stringify({ bill: lockedBill })); } catch {}
 
-    let url: string | null = null;
-    if (split.venmoUsername) {
-      url = getPaymentLink("venmo", split.venmoUsername, split.total, note);
-    } else {
-      const participant = lockedBill.participants.find((p) => p.id === split.participantId);
-      if (participant?.cashAppUsername) {
-        url = getPaymentLink("cashapp", participant.cashAppUsername, split.total, note);
-      }
-    }
-
+    const url = getPaymentUrl(split, lockedBill);
     if (url && paymentWindow) {
       paymentWindow.location.href = url;
     } else if (url) {
@@ -309,6 +309,30 @@ export function BillSplitter({
     setSettledIds((prev) => new Set([...prev, split.participantId]));
   }
 
+  async function handleRequestAllPayments(requestSplits: BillSplit[], paymentWindows: (Window | null)[]) {
+    const lockedBill = await lockClaims();
+    if (!lockedBill) {
+      paymentWindows.forEach((paymentWindow) => paymentWindow?.close());
+      setClaimLockError("Couldn't prepare payment requests. Check your connection and try again.");
+      return;
+    }
+    setClaimLockError(null);
+    try { localStorage.setItem("partake_active_session", JSON.stringify({ bill: lockedBill })); } catch {}
+
+    requestSplits.forEach((split, index) => {
+      const url = getPaymentUrl(split, lockedBill);
+      const paymentWindow = paymentWindows[index];
+      if (url && paymentWindow) {
+        paymentWindow.location.href = url;
+      } else if (url) {
+        window.open(url, "_blank");
+      } else {
+        paymentWindow?.close();
+      }
+    });
+    setSettledIds((prev) => new Set([...prev, ...requestSplits.map((split) => split.participantId)]));
+  }
+
   if (showSettlement) {
     return (
       <Settlement
@@ -318,6 +342,7 @@ export function BillSplitter({
         payingGroups={payingGroups}
         myName={getUserProfile()?.name}
         onPayment={handlePayment}
+        onRequestAll={handleRequestAllPayments}
         onCopy={async (split) => {
           const lockedBill = await lockClaims();
           if (!lockedBill) {
