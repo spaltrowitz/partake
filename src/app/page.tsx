@@ -128,6 +128,9 @@ function getAuthErrorMessage(error: unknown): string {
       return "Google sign-in is not enabled in Firebase Authentication.";
     case "auth/popup-closed-by-user":
       return "Google sign-in was closed before it finished.";
+    case "auth/popup-blocked":
+    case "auth/operation-not-supported-in-this-environment":
+      return "Google sign-in was blocked in this PWA. Your bills still sync without Google; open Partake in Safari if you need account sign-in.";
     case "auth/cancelled-popup-request":
       return "Google sign-in was cancelled because another sign-in window is already open.";
     case "auth/network-request-failed":

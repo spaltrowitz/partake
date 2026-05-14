@@ -8,17 +8,11 @@ import {
   signInAnonymously,
   signInWithCredential,
   signInWithPopup,
-  signInWithRedirect,
   signOut as firebaseSignOut,
   type User,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { firebaseConfigured } from "@/lib/firebase";
-
-function isMobileBrowser(): boolean {
-  if (typeof window === "undefined") return false;
-  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-}
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -67,20 +61,20 @@ export function useAuth() {
 
     const provider = createGoogleProvider();
 
-    // Mobile browsers block popups — use redirect directly
-    if (isMobileBrowser()) {
-      await signInWithRedirect(auth, provider);
-      throw Object.assign(new Error("Redirecting…"), { code: "auth/redirect-in-progress" });
-    }
-
     try {
       const result = await signInWithPopup(auth, provider);
       return result.user;
     } catch (error) {
       const code = (error as { code?: string }).code;
-      if (code === "auth/popup-blocked" || code === "auth/operation-not-supported-in-this-environment") {
-        await signInWithRedirect(auth, provider);
-        throw Object.assign(new Error("Redirecting…"), { code: "auth/redirect-in-progress" });
+      if (
+        code === "auth/popup-blocked" ||
+        code === "auth/operation-not-supported-in-this-environment" ||
+        code === "auth/cancelled-popup-request"
+      ) {
+        throw Object.assign(
+          new Error("Popup sign-in was blocked. Open Partake in Safari or allow popups, then try again."),
+          { code }
+        );
       }
       throw error;
     }
