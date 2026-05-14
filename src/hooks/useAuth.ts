@@ -65,7 +65,8 @@ export function useAuth() {
       } catch (error) {
         if (shouldFallbackToRedirect(error)) {
           await linkWithRedirect(currentUser, provider);
-          return new Promise<User>(() => {});
+          // Page will redirect — throw so caller's finally block runs
+          throw Object.assign(new Error("Redirecting…"), { code: "auth/redirect-in-progress" });
         }
         const code = (error as { code?: string }).code;
         if (
@@ -84,7 +85,7 @@ export function useAuth() {
     } catch (error) {
       if (shouldFallbackToRedirect(error)) {
         await signInWithRedirect(auth, provider);
-        return new Promise<User>(() => {});
+        throw Object.assign(new Error("Redirecting…"), { code: "auth/redirect-in-progress" });
       }
       throw error;
     }

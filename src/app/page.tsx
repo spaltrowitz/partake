@@ -193,16 +193,29 @@ export default function Home() {
       if (!myProfile && user.displayName) {
         saveUserProfile({ name: user.displayName });
       }
+      // Resync any local-only bills to Firestore (covers bills created before cloud sync fix)
+      const localBills = getBillHistory();
+      for (const localBill of localBills) {
+        if (localBill.createdBy === user.uid || localBill.createdBy === "local") {
+          const billToSync = { ...localBill, createdBy: user.uid, sharedWithUserIds: [user.uid, ...(localBill.sharedWithUserIds ?? []).filter((id: string) => id !== user.uid)] };
+          saveBill(billToSync).catch(() => {});
+        }
+      }
     }
     getContacts(user.uid)
       .then((cloudContacts) => {
         setSavedContacts((prev) => mergeContacts(prev, cloudContacts));
       })
       .catch(() => {});
-    const unsubBills = listenToUserBills(user.uid, (cloudBills) => {
-      setBillHistory((prev) => mergeBills(prev, cloudBills));
-    });
-    return () => unsubBills();
+    let unsubBills: (() => void) | undefined;
+    try {
+      unsubBills = listenToUserBills(user.uid, (cloudBills) => {
+        setBillHistory((prev) => mergeBills(prev, cloudBills));
+      });
+    } catch {
+      // Firestore listener setup failed — fall back silently
+    }
+    return () => unsubBills?.();
   }, [user, myProfile]);
 
   async function handleGoogleSignIn() {
@@ -216,7 +229,10 @@ export default function Home() {
         setMyProfile(profile);
       }
     } catch (error) {
-      setAuthError(getAuthErrorMessage(error));
+      const code = (error as { code?: string }).code;
+      if (code !== "auth/redirect-in-progress") {
+        setAuthError(getAuthErrorMessage(error));
+      }
     } finally {
       setSigningIn(false);
     }
