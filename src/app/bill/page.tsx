@@ -2,9 +2,7 @@
 
 import { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-import { firebaseConfigured } from "@/lib/firebase";
-import { getBillByShareCode, joinSharedBill, listenToBill, saveBill, toggleBillItemClaim } from "@/services/firestore";
-import { useAuthContext } from "@/components/AuthProvider";
+import type { User } from "firebase/auth";
 import { Avatar } from "@/components/Avatar";
 import { Card } from "@/components/UI";
 import { saveBillToHistory } from "@/services/billHistory";
@@ -12,6 +10,90 @@ import type { Bill, BillItem, Participant } from "@/types";
 
 const GUEST_NAME_KEY = "partake-guest-name";
 const RECOVERY_STORAGE_KEYS = ["partake_active_session", "partake_bills"];
+const FIRESTORE_PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+
+type FirestoreValue = {
+  stringValue?: string;
+  integerValue?: string;
+  doubleValue?: number;
+  booleanValue?: boolean;
+  nullValue?: null;
+  timestampValue?: string;
+  arrayValue?: { values?: FirestoreValue[] };
+  mapValue?: { fields?: Record<string, FirestoreValue> };
+};
+
+type FirestoreRunQueryRow = {
+  document?: {
+    fields?: Record<string, FirestoreValue>;
+  };
+};
+
+function decodeFirestoreValue(value: FirestoreValue): unknown {
+  if ("stringValue" in value) return value.stringValue ?? "";
+  if ("integerValue" in value) return Number(value.integerValue ?? 0);
+  if ("doubleValue" in value) return value.doubleValue ?? 0;
+  if ("booleanValue" in value) return value.booleanValue ?? false;
+  if ("timestampValue" in value) return value.timestampValue ?? "";
+  if ("arrayValue" in value) return (value.arrayValue?.values ?? []).map(decodeFirestoreValue);
+  if ("mapValue" in value) {
+    return Object.fromEntries(
+      Object.entries(value.mapValue?.fields ?? {}).map(([key, nestedValue]) => [key, decodeFirestoreValue(nestedValue)])
+    );
+  }
+  return null;
+}
+
+function decodeFirestoreDocument(fields: Record<string, FirestoreValue>): Bill {
+  return Object.fromEntries(
+    Object.entries(fields).map(([key, value]) => [key, decodeFirestoreValue(value)])
+  ) as unknown as Bill;
+}
+
+async function getPublicBillByShareCode(code: string): Promise<Bill | null> {
+  if (!FIRESTORE_PROJECT_ID) {
+    throw new Error("Firebase is not configured");
+  }
+
+  const response = await fetch(
+    `https://firestore.googleapis.com/v1/projects/${FIRESTORE_PROJECT_ID}/databases/(default)/documents:runQuery`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        structuredQuery: {
+          from: [{ collectionId: "bills" }],
+          where: {
+            fieldFilter: {
+              field: { fieldPath: "shareCode" },
+              op: "EQUAL",
+              value: { stringValue: code },
+            },
+          },
+          limit: 1,
+        },
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to load bill");
+  }
+
+  const rows = await response.json() as FirestoreRunQueryRow[];
+  const fields = rows.find((row) => row.document?.fields)?.document?.fields;
+  return fields ? decodeFirestoreDocument(fields) : null;
+}
+
+async function ensureAnonymousUser(): Promise<User> {
+  const [{ auth }, { signInAnonymously }] = await Promise.all([
+    import("@/lib/firebase"),
+    import("firebase/auth"),
+  ]);
+  if (auth.currentUser) return auth.currentUser;
+  const credential = await signInAnonymously(auth);
+  return credential.user;
+}
 
 function getStoredName(): string {
   if (typeof window === "undefined") return "";
@@ -163,6 +245,14 @@ function calculateOwes(bill: Bill): PublicOwesBreakdown[] {
     }
   }
 
+  const groupOrder = new Map<string, { groupIndex: number; memberIndex: number }>();
+  (bill.payingGroups ?? []).forEach((group, groupIndex) => {
+    groupOrder.set(group.payerId, { groupIndex, memberIndex: 0 });
+    group.memberIds.forEach((memberId, memberIndex) => {
+      groupOrder.set(memberId, { groupIndex, memberIndex: memberIndex + 1 });
+    });
+  });
+
   return Array.from(participantTotals.entries()).map(([claim, entry]) => {
     const share = entry.subtotal / claimedSubtotal;
     const taxShare = bill.tax * share;
@@ -178,14 +268,24 @@ function calculateOwes(bill: Bill): PublicOwesBreakdown[] {
       coveredBy: coveredBy.get(claim),
       covers: covers.get(claim) ?? [],
     };
-  }).sort((a, b) => b.amount - a.amount);
+  }).sort((a, b) => {
+    const aGroup = groupOrder.get(a.participantId);
+    const bGroup = groupOrder.get(b.participantId);
+    if (aGroup && bGroup) {
+      if (aGroup.groupIndex !== bGroup.groupIndex) return aGroup.groupIndex - bGroup.groupIndex;
+      return aGroup.memberIndex - bGroup.memberIndex;
+    }
+    if (aGroup) return -1;
+    if (bGroup) return 1;
+    return b.amount - a.amount;
+  });
 }
 
 function SharedBillContent() {
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
   const [initialGuest] = useState(getInitialGuest);
-  const { user } = useAuthContext();
+  const [writeUser, setWriteUser] = useState<User | null>(null);
 
   const [bill, setBill] = useState<Bill | null>(null);
   const [loading, setLoading] = useState(true);
@@ -195,20 +295,15 @@ function SharedBillContent() {
   const joinedBillKey = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!code || !firebaseConfigured) return;
+    if (!code) return;
 
-    let unsubscribe: (() => void) | null = null;
-
-    getBillByShareCode(code)
+    getPublicBillByShareCode(code)
       .then(async (found) => {
         if (!found) {
           const recoverableBill = findRecoverableBill(code);
           if (recoverableBill) {
-            if (!user) {
-              setError("Found this bill on this device. Reopen this page in a moment so Partake can finish reconnecting and restore it.");
-              setLoading(false);
-              return;
-            }
+            const user = await ensureAnonymousUser();
+            setWriteUser(user);
             const restoredBill: Bill = {
               ...recoverableBill,
               shareCode: code,
@@ -218,16 +313,11 @@ function SharedBillContent() {
                 : new Date(recoverableBill.createdAt),
               sharedWithUserIds: Array.from(new Set([...(recoverableBill.sharedWithUserIds ?? []), user.uid])),
             };
+            const { saveBill } = await import("@/services/firestore");
             await saveBill(restoredBill);
             setBill(restoredBill);
             saveBillToHistory(restoredBill);
             setLoading(false);
-            unsubscribe = listenToBill(restoredBill.id, (updated) => {
-              if (updated) {
-                setBill(updated);
-                saveBillToHistory(updated);
-              }
-            });
             return;
           }
           setError("Bill not found. The link may be invalid or expired.");
@@ -237,31 +327,26 @@ function SharedBillContent() {
         setBill(found);
         saveBillToHistory(found);
         setLoading(false);
-        unsubscribe = listenToBill(found.id, (updated) => {
-          if (updated) {
-            setBill(updated);
-            saveBillToHistory(updated);
-          }
-        });
       })
       .catch(() => {
         setError("Failed to load bill. Please try again.");
         setLoading(false);
       });
-
-    return () => {
-      unsubscribe?.();
-    };
-  }, [code, user]);
+  }, [code]);
 
   useEffect(() => {
     const allItemsClaimed = !!bill?.items.length && bill.items.every((item) => item.claimedBy.length > 0);
     if (!bill || bill.status === "settled" || allItemsClaimed || !nameConfirmed || !guestName.trim()) return;
     const participant = resolveGuestParticipant(bill, guestName);
-    const joinKey = `${bill.id}:${participant.id}:${user?.uid ?? "local"}`;
+    const joinKey = `${bill.id}:${participant.id}`;
     if (joinedBillKey.current === joinKey) return;
     joinedBillKey.current = joinKey;
-    joinSharedBill(bill.id, participant, user?.uid)
+    ensureAnonymousUser()
+      .then(async (user) => {
+        setWriteUser(user);
+        const { joinSharedBill } = await import("@/services/firestore");
+        return joinSharedBill(bill.id, participant, user.uid);
+      })
       .then((updatedBill) => {
         setBill(updatedBill);
         saveBillToHistory(updatedBill);
@@ -269,7 +354,7 @@ function SharedBillContent() {
       .catch(() => {
         joinedBillKey.current = null;
       });
-  }, [bill?.id, guestName, nameConfirmed, user?.uid]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [bill?.id, guestName, nameConfirmed]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!code) {
     return (
@@ -282,7 +367,7 @@ function SharedBillContent() {
     );
   }
 
-  if (!firebaseConfigured) {
+  if (!FIRESTORE_PROJECT_ID) {
     return (
       <div className="min-h-dvh flex items-center justify-center p-4">
         <Card className="max-w-sm text-center">
@@ -316,7 +401,10 @@ function SharedBillContent() {
     setBill(updatedBill);
     saveBillToHistory(updatedBill);
     try {
-      const savedBill = await toggleBillItemClaim(bill.id, item.id, participant, name, user?.uid);
+      const user = writeUser ?? await ensureAnonymousUser();
+      setWriteUser(user);
+      const { toggleBillItemClaim } = await import("@/services/firestore");
+      const savedBill = await toggleBillItemClaim(bill.id, item.id, participant, name, user.uid);
       setBill(savedBill);
       saveBillToHistory(savedBill);
     } catch {
