@@ -11,18 +11,31 @@ const BILL_KEYS = ["partake_bills", "partake_active_session"];
 function findLocalBills(): Bill[] {
   const found: Bill[] = [];
   const seenIds = new Set<string>();
+  function addCandidate(candidate: unknown) {
+    if (!candidate || typeof candidate !== "object") return;
+    const maybeBill = candidate as Partial<Bill>;
+    if (!maybeBill.id || !Array.isArray(maybeBill.items) || !Array.isArray(maybeBill.participants)) return;
+    if (seenIds.has(maybeBill.id)) return;
+    seenIds.add(maybeBill.id);
+    found.push(maybeBill as Bill);
+  }
+
+  function inspectValue(value: unknown) {
+    if (Array.isArray(value)) {
+      value.forEach(inspectValue);
+      return;
+    }
+    if (!value || typeof value !== "object") return;
+    addCandidate(value);
+    const maybeSession = value as { bill?: unknown };
+    if (maybeSession.bill) addCandidate(maybeSession.bill);
+  }
+
   try {
     for (const key of BILL_KEYS) {
       const raw = localStorage.getItem(key);
       if (!raw) continue;
-      const parsed = JSON.parse(raw);
-      const arr = Array.isArray(parsed) ? parsed : [parsed];
-      for (const b of arr) {
-        if (b && b.id && !seenIds.has(b.id)) {
-          seenIds.add(b.id);
-          found.push(b as Bill);
-        }
-      }
+      inspectValue(JSON.parse(raw));
     }
     // Also scan all keys for anything that looks like a bill
     for (let i = 0; i < localStorage.length; i++) {
@@ -31,14 +44,8 @@ function findLocalBills(): Bill[] {
       try {
         const raw = localStorage.getItem(key);
         if (!raw) continue;
-        const parsed = JSON.parse(raw);
-        const items = Array.isArray(parsed) ? parsed : [parsed];
-        for (const item of items) {
-          if (item?.id && item?.items && item?.shareCode && !seenIds.has(item.id)) {
-            seenIds.add(item.id);
-            found.push(item as Bill);
-          }
-        }
+        if (!raw.includes("shareCode") && !raw.includes("claimedBy")) continue;
+        inspectValue(JSON.parse(raw));
       } catch {
         // not JSON, skip
       }
