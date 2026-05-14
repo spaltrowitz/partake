@@ -309,30 +309,6 @@ export function BillSplitter({
     setSettledIds((prev) => new Set([...prev, split.participantId]));
   }
 
-  async function handleRequestAllPayments(requestSplits: BillSplit[], paymentWindows: (Window | null)[]) {
-    const lockedBill = await lockClaims();
-    if (!lockedBill) {
-      paymentWindows.forEach((paymentWindow) => paymentWindow?.close());
-      setClaimLockError("Couldn't prepare payment requests. Check your connection and try again.");
-      return;
-    }
-    setClaimLockError(null);
-    try { localStorage.setItem("partake_active_session", JSON.stringify({ bill: lockedBill })); } catch {}
-
-    requestSplits.forEach((split, index) => {
-      const url = getPaymentUrl(split, lockedBill);
-      const paymentWindow = paymentWindows[index];
-      if (url && paymentWindow) {
-        paymentWindow.location.href = url;
-      } else if (url) {
-        window.open(url, "_blank");
-      } else {
-        paymentWindow?.close();
-      }
-    });
-    setSettledIds((prev) => new Set([...prev, ...requestSplits.map((split) => split.participantId)]));
-  }
-
   if (showSettlement) {
     return (
       <Settlement
@@ -342,7 +318,6 @@ export function BillSplitter({
         payingGroups={payingGroups}
         myName={getUserProfile()?.name}
         onPayment={handlePayment}
-        onRequestAll={handleRequestAllPayments}
         onCopy={async (split) => {
           const lockedBill = await lockClaims();
           if (!lockedBill) {

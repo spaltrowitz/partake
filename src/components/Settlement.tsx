@@ -54,7 +54,6 @@ export function Settlement({
   payingGroups,
   myName,
   onPayment,
-  onRequestAll,
   onCopy,
   onDone,
   onHome,
@@ -66,7 +65,6 @@ export function Settlement({
   payingGroups?: { payerId: string; memberIds: string[] }[];
   myName?: string;
   onPayment: (split: BillSplit) => void;
-  onRequestAll?: (splits: BillSplit[], paymentWindows: (Window | null)[]) => void;
   onCopy: (split: BillSplit) => void;
   onDone: () => void;
   onHome?: () => void;
@@ -77,19 +75,6 @@ export function Settlement({
 
   const groups = payingGroups ?? [];
 
-  // Splits that have a payment app and owe money (for "Request all") — exclude yourself
-  const payableSplits = splits.filter((s) => {
-    if (s.total <= 0 || settledIds.has(s.participantId)) return false;
-    if (myName && s.participantName.toLowerCase() === myName.toLowerCase()) return false;
-    const participant = bill.participants.find((p) => p.id === s.participantId);
-    return !!(s.venmoUsername || participant?.cashAppUsername);
-  });
-
-  function handleRequestAll() {
-    const paymentWindows = payableSplits.map(() => window.open("about:blank", "_blank"));
-    onRequestAll?.(payableSplits, paymentWindows);
-  }
-
   return (
     <div className="p-4 pb-safe overflow-y-auto">
       <div className="text-center mb-6">
@@ -99,19 +84,11 @@ export function Settlement({
         <p className="text-[#8A7353]">${bill.total.toFixed(2)} total</p>
       </div>
 
-      {payableSplits.length > 1 && (
-        <div className="mb-4">
-          <p className="mb-2 text-center text-xs text-[#8A7353]">
-            💡 Best on desktop — on mobile, tap individual requests if only the first app link opens.
-          </p>
-          <button
-            onClick={handleRequestAll}
-            className="w-full py-3 rounded-xl text-white font-semibold gradient-bg hover:opacity-90 transition-opacity"
-          >
-            Request all {payableSplits.length} via Venmo
-          </button>
-        </div>
-      )}
+      <Card className="mb-4">
+        <p className="text-center text-xs text-[#8A7353]">
+          Venmo may block rapid or repeated requests. Send these one at a time and finish each Venmo screen before opening the next.
+        </p>
+      </Card>
 
       <div className="flex flex-col gap-4">
         {splits.map((split) => {
