@@ -13,7 +13,7 @@ import { getBillHistory, saveBillToHistory, deleteBillFromHistory } from "@/serv
 import { getUserProfile, saveUserProfile } from "@/services/userProfile";
 import type { UserProfile } from "@/services/userProfile";
 import { useAuthContext } from "@/components/AuthProvider";
-import { getContacts, listenToUserBills, saveBill, saveContact, saveUser } from "@/services/firestore";
+import { getBillByShareCode, getContacts, listenToUserBills, saveBill, saveContact, saveUser } from "@/services/firestore";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 
 type Step = "landing" | "participants" | "scan" | "edit" | "split";
@@ -107,6 +107,10 @@ function mergeBills(existing: Bill[], incoming: Bill[]): Bill[] {
   return Array.from(billsById.values())
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 50);
+}
+
+function countClaims(bill: Bill): number {
+  return bill.items.reduce((sum, item) => sum + item.claimedBy.length, 0);
 }
 
 function contactsFromParticipants(participants: Participant[], createdBy: string): SavedContact[] {
@@ -239,6 +243,36 @@ export default function Home() {
     }
     syncBillToCloud(billToSync);
   }, [user, bill]);
+
+  useEffect(() => {
+    if (!bill?.shareCode) return;
+    let cancelled = false;
+
+    getBillByShareCode(bill.shareCode)
+      .then((cloudBill) => {
+        if (cancelled || !cloudBill) return;
+        const cloudClaims = countClaims(cloudBill);
+        const localClaims = countClaims(bill);
+        if (cloudClaims <= localClaims) return;
+
+        const restoredBill = {
+          ...cloudBill,
+          createdAt: cloudBill.createdAt instanceof Date
+            ? cloudBill.createdAt
+            : new Date(cloudBill.createdAt),
+        };
+        setBill(restoredBill);
+        setReceipt(reconstructReceiptFromBill(restoredBill));
+        setParticipants(restoredBill.participants);
+        saveBillToHistory(restoredBill);
+        try { localStorage.setItem("partake_active_session", JSON.stringify({ bill: restoredBill })); } catch {}
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [bill?.id, bill?.shareCode]);
 
   async function handleGoogleSignIn() {
     setSigningIn(true);
