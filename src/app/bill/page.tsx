@@ -215,7 +215,8 @@ function SharedBillContent() {
   }, [code, user]);
 
   useEffect(() => {
-    if (!bill || bill.status === "settled" || !nameConfirmed || !guestName.trim()) return;
+    const allItemsClaimed = !!bill?.items.length && bill.items.every((item) => item.claimedBy.length > 0);
+    if (!bill || bill.status === "settled" || allItemsClaimed || !nameConfirmed || !guestName.trim()) return;
     const participant = resolveGuestParticipant(bill, guestName);
     const joinKey = `${bill.id}:${participant.id}:${user?.uid ?? "local"}`;
     if (joinedBillKey.current === joinKey) return;
@@ -253,7 +254,8 @@ function SharedBillContent() {
   }
 
   async function toggleClaim(item: BillItem) {
-    if (!bill || bill.status === "settled" || !nameConfirmed || !guestName.trim()) return;
+    const allItemsClaimed = !!bill?.items.length && bill.items.every((billItem) => billItem.claimedBy.length > 0);
+    if (!bill || bill.status === "settled" || allItemsClaimed || !nameConfirmed || !guestName.trim()) return;
     const name = guestName.trim();
     const participant = resolveGuestParticipant(bill, name);
     const isClaimed = item.claimedBy.includes(participant.id) || item.claimedBy.includes(name);
@@ -317,7 +319,9 @@ function SharedBillContent() {
   if (!bill) return null;
 
   const owes = calculateOwes(bill);
+  const allItemsClaimed = bill.items.length > 0 && bill.items.every((item) => item.claimedBy.length > 0);
   const claimsLocked = bill.status === "settled";
+  const reviewOnly = claimsLocked || allItemsClaimed;
 
   return (
     <div className="min-h-dvh flex flex-col p-4 pb-safe max-w-lg md:max-w-2xl mx-auto w-full">
@@ -331,7 +335,12 @@ function SharedBillContent() {
       </div>
 
       {/* Name input */}
-      {!nameConfirmed ? (
+      {reviewOnly ? (
+        <Card className="mb-6">
+          <p className="text-sm font-semibold text-[#2D2416]">Item assignments are ready</p>
+          <p className="mt-1 text-sm text-[#8A7353]">Review who owes what below — no need to join or claim items.</p>
+        </Card>
+      ) : !nameConfirmed ? (
         <Card className="mb-6">
           <p className="text-sm text-[#8A7353] mb-3">
             Enter your name to claim items
@@ -387,7 +396,7 @@ function SharedBillContent() {
             <button
               key={item.id}
               onClick={() => toggleClaim(item)}
-              disabled={!nameConfirmed || claimsLocked}
+              disabled={!nameConfirmed || reviewOnly}
               className={`w-full text-left p-3 rounded-xl border transition-colors touch-target ${
                 isMine
                   ? "bg-[#FDE68A] border-[#D97706]"
