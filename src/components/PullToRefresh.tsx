@@ -37,6 +37,9 @@ export function PullToRefresh({ children }: { children: React.ReactNode }) {
   const pullDistanceRef = useRef(0);
 
   useEffect(() => {
+    // Runs once on mount; touch/standalone checks touch window/navigator which
+    // aren't available during SSR.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setEnabled(isTouchDevice() && isStandaloneMode());
   }, []);
 

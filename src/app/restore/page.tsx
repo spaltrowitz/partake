@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import type { Bill } from "@/types";
 import { saveBill } from "@/services/firestore";
 import { firebaseConfigured } from "@/lib/firebase";
@@ -68,6 +69,9 @@ export default function RestorePage() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
+    // Runs once on mount; localStorage is unavailable during SSR, so this
+    // can't be a lazy useState initializer.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBills(findLocalBills());
   }, []);
 
@@ -241,7 +245,7 @@ export default function RestorePage() {
               {bills.length - successCount} failed — try again or check your connection.
             </p>
           )}
-          <a href="/" className="text-[#D4A574] underline text-sm">← Back to Partake</a>
+          <Link href="/" className="text-[#D4A574] underline text-sm">← Back to Partake</Link>
         </div>
       )}
     </main>

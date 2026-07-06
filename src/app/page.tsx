@@ -229,6 +229,7 @@ export default function Home() {
       for (const localBill of localBills) {
         if (localBill.createdBy === "local" || localBill.createdBy === user.uid) {
           const billToSync = { ...localBill, createdBy: user.uid, sharedWithUserIds: [user.uid, ...(localBill.sharedWithUserIds ?? []).filter((id: string) => id !== user.uid)] };
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           syncBillToCloud(billToSync).catch(() => {});
         } else {
           // Bill created by someone else — just associate without overwriting
@@ -266,6 +267,9 @@ export default function Home() {
       sharedWithUserIds,
     };
     if (billToSync.createdBy !== bill.createdBy || sharedWithUserIds.length !== (bill.sharedWithUserIds ?? []).length) {
+      // Normalizes the bill once; converges because the guard only fires when
+      // the normalized copy actually differs from the current one.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setBill(billToSync);
       saveBillToHistory(billToSync);
     }
@@ -302,6 +306,9 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
+    // Intentionally keyed on bill id/shareCode only; reruns on full bill object
+    // would refetch on every claim change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bill?.id, bill?.shareCode]);
 
   // Auto-save the in-progress flow (draft) so a refresh, browser back, or

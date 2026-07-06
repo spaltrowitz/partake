@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import type { Bill, BillSplit, CoveredReimbursement, PayingGroup, SplitMethod } from "@/types";
 import { calculateSplits, calculateEvenSplit, calculatePercentageSplit, calculateSharesSplit, calculateExactSplit } from "@/services/splitCalculator";
-import { requestPayment, getPaymentLink, copyToClipboard } from "@/services/venmo";
+import { getPaymentLink, copyToClipboard } from "@/services/venmo";
 import { getUserProfile } from "@/services/userProfile";
 import { saveBillToHistory } from "@/services/billHistory";
 import { PrimaryButton, TopBarButton } from "./UI";
@@ -111,6 +111,9 @@ export function BillSplitter({
   }, [initialBill]);
 
   useEffect(() => {
+    // Mirror externally-managed payingGroups into the bill; converges because
+    // it only sets state when the serialized groups actually differ.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBill((prev) => {
       const current = JSON.stringify(prev.payingGroups ?? []);
       const next = JSON.stringify(payingGroups);
