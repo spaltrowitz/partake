@@ -163,6 +163,63 @@ describe("calculateSplits", () => {
     expect(alice.total).toBeCloseTo(65, 2);
     expect(bob.total).toBeCloseTo(0, 2);
   });
+
+  it("applies a discount so itemized totals sum to the discounted bill total", () => {
+    const bill = makeBill({
+      subtotal: 27, // $30 of items − $3 discount
+      tax: 3,
+      tipAmount: 6,
+      total: 36,
+      items: [
+        makeItem({ id: "i1", name: "Burger", price: 20, claimedBy: ["p1"] }),
+        makeItem({ id: "i2", name: "Salad", price: 10, claimedBy: ["p2"] }),
+      ],
+    });
+
+    const splits = calculateSplits(bill);
+    const sum = splits.reduce((s, x) => s + x.total, 0);
+    expect(sum).toBeCloseTo(36, 2);
+    // Alice claimed 20/30 of items → 0.9 discount factor → $18 + $2 tax + $4 tip
+    expect(splits.find((s) => s.participantId === "p1")!.total).toBeCloseTo(24, 2);
+  });
+
+  it("reconciles pennies so an uneven itemized split sums exactly to the total", () => {
+    const bill = makeBill({
+      subtotal: 10,
+      tax: 10,
+      tipAmount: 0,
+      total: 20,
+      participants: [
+        { id: "p1", name: "Alice", isAppUser: false },
+        { id: "p2", name: "Bob", isAppUser: false },
+        { id: "p3", name: "Carol", isAppUser: false },
+      ],
+      items: [
+        makeItem({ id: "i1", name: "Shared platter", price: 10, claimedBy: ["p1", "p2", "p3"] }),
+      ],
+    });
+
+    const splits = calculateSplits(bill);
+    const sum = splits.reduce((s, x) => s + x.total, 0);
+    expect(sum).toBeCloseTo(20, 2);
+  });
+
+  it("does not lose money when a claim references a removed/non-participant", () => {
+    const bill = makeBill({
+      subtotal: 20,
+      tax: 0,
+      tipAmount: 0,
+      total: 20,
+      items: [
+        makeItem({ id: "i1", name: "Wine", price: 20, claimedBy: ["p1", "ghost"] }),
+      ],
+    });
+
+    const splits = calculateSplits(bill);
+    const alice = splits.find((s) => s.participantId === "p1")!;
+    // Ghost is ignored, Alice absorbs the full item — no fraction billed to nobody.
+    expect(alice.total).toBeCloseTo(20, 2);
+  });
 });
 
 // --------------- calculateEvenSplit ---------------

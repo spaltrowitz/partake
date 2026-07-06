@@ -207,12 +207,7 @@ function recoverBillsFromLocalStorage(): Bill[] {
 function findRecoverableBill(code: string): Bill | null {
   const normalizedCode = code.trim().toLowerCase();
   const bills = recoverBillsFromLocalStorage();
-  return (
-    bills.find((b) => b.shareCode?.toLowerCase() === normalizedCode) ??
-    bills.find((b) => b.restaurantName?.toLowerCase().includes("golden") || b.name?.toLowerCase().includes("golden")) ??
-    bills.find((b) => Math.abs((b.total ?? 0) - 427.85) < 0.01) ??
-    null
-  );
+  return bills.find((b) => b.shareCode?.toLowerCase() === normalizedCode) ?? null;
 }
 
 type PublicOwesBreakdown = {
@@ -354,8 +349,7 @@ function SharedBillContent() {
   }, [code]);
 
   useEffect(() => {
-    const allItemsClaimed = !!bill?.items.length && bill.items.every((item) => item.claimedBy.length > 0);
-    if (!bill || bill.status === "settled" || allItemsClaimed || !nameConfirmed || !guestName.trim()) return;
+    if (!bill || bill.status === "settled" || !nameConfirmed || !guestName.trim()) return;
     const participant = resolveGuestParticipant(bill, guestName);
     const joinKey = `${bill.id}:${participant.id}`;
     if (joinedBillKey.current === joinKey) return;
@@ -427,8 +421,7 @@ function SharedBillContent() {
   }
 
   async function toggleClaim(item: BillItem) {
-    const allItemsClaimed = !!bill?.items.length && bill.items.every((billItem) => billItem.claimedBy.length > 0);
-    if (!bill || bill.status === "settled" || allItemsClaimed || !nameConfirmed || !guestName.trim()) return;
+    if (!bill || bill.status === "settled" || !nameConfirmed || !guestName.trim()) return;
     const name = guestName.trim();
     const participant = resolveGuestParticipant(bill, name);
     const isClaimed = item.claimedBy.includes(participant.id) || item.claimedBy.includes(name);
@@ -502,9 +495,8 @@ function SharedBillContent() {
 
   const owes = calculateOwes(bill);
   const claimedSubtotal = owes.reduce((sum, e) => sum + e.itemsSubtotal, 0);
-  const allItemsClaimed = bill.items.length > 0 && bill.items.every((item) => item.claimedBy.length > 0);
   const claimsLocked = bill.status === "settled";
-  const reviewOnly = claimsLocked || allItemsClaimed;
+  const reviewOnly = claimsLocked;
 
   return (
     <div className="min-h-dvh flex flex-col p-4 pb-safe max-w-lg md:max-w-2xl mx-auto w-full">

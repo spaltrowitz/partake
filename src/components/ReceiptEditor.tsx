@@ -20,6 +20,12 @@ export function ReceiptEditor({
   const [editName, setEditName] = useState("");
   const [editPrice, setEditPrice] = useState("");
   const [editQty, setEditQty] = useState("");
+  // Raw string state for the money fields so typing decimals (e.g. "1.5")
+  // isn't fought by an on-every-keystroke toFixed(2) reformat.
+  const [taxInput, setTaxInput] = useState("");
+  const [tipInput, setTipInput] = useState("");
+  const [discountInput, setDiscountInput] = useState("");
+  const [focusedMoneyField, setFocusedMoneyField] = useState<"tax" | "tip" | "discount" | null>(null);
   const isManualEntry = receipt.items.length === 0 && !receipt.restaurantName;
   const warnings = receipt.warnings ?? [];
 
@@ -114,6 +120,11 @@ export function ReceiptEditor({
   function updateTip(value: string) {
     const tip = parseFloat(value);
     onChange({ ...receipt, tip: isNaN(tip) ? undefined : tip });
+  }
+
+  function updateDiscount(value: string) {
+    const val = parseFloat(value);
+    onChange({ ...receipt, discount: isNaN(val) || val <= 0 ? undefined : val });
   }
 
   const subtotal = receipt.items.reduce((s, i) => s + i.price * i.quantity, 0);
@@ -294,8 +305,10 @@ export function ReceiptEditor({
                 type="number"
                 inputMode="decimal"
                 step="0.01"
-                value={receipt.tax != null ? receipt.tax.toFixed(2) : ""}
-                onChange={(e) => updateTax(e.target.value)}
+                value={focusedMoneyField === "tax" ? taxInput : (receipt.tax != null ? receipt.tax.toFixed(2) : "")}
+                onFocus={() => { setFocusedMoneyField("tax"); setTaxInput(receipt.tax != null ? String(receipt.tax) : ""); }}
+                onChange={(e) => { setTaxInput(e.target.value); updateTax(e.target.value); }}
+                onBlur={() => setFocusedMoneyField(null)}
                 placeholder="0.00"
                 aria-label="Tax amount"
                 className="min-h-11 min-w-24 rounded-lg bg-white px-2 text-right text-sm font-bold outline-none placeholder:text-[#B8A078] placeholder:font-normal focus:ring-2 focus:ring-[#D97706]"
@@ -332,8 +345,10 @@ export function ReceiptEditor({
                 inputMode="decimal"
                 step="0.01"
                 min="0"
-                value={receipt.tip != null ? receipt.tip.toFixed(2) : ""}
-                onChange={(e) => updateTip(e.target.value)}
+                value={focusedMoneyField === "tip" ? tipInput : (receipt.tip != null ? receipt.tip.toFixed(2) : "")}
+                onFocus={() => { setFocusedMoneyField("tip"); setTipInput(receipt.tip != null ? String(receipt.tip) : ""); }}
+                onChange={(e) => { setTipInput(e.target.value); updateTip(e.target.value); }}
+                onBlur={() => setFocusedMoneyField(null)}
                 placeholder="0.00"
                 aria-label="Tip amount"
                 className="min-h-11 min-w-24 rounded-lg bg-white px-2 text-right text-sm font-bold outline-none placeholder:text-[#B8A078] placeholder:font-normal focus:ring-2 focus:ring-[#D97706]"
@@ -354,11 +369,10 @@ export function ReceiptEditor({
                 inputMode="decimal"
                 step="0.01"
                 min="0"
-                value={receipt.discount != null ? receipt.discount.toFixed(2) : ""}
-                onChange={(e) => {
-                  const val = parseFloat(e.target.value);
-                  onChange({ ...receipt, discount: isNaN(val) || val <= 0 ? undefined : val });
-                }}
+                value={focusedMoneyField === "discount" ? discountInput : (receipt.discount != null ? receipt.discount.toFixed(2) : "")}
+                onFocus={() => { setFocusedMoneyField("discount"); setDiscountInput(receipt.discount != null ? String(receipt.discount) : ""); }}
+                onChange={(e) => { setDiscountInput(e.target.value); updateDiscount(e.target.value); }}
+                onBlur={() => setFocusedMoneyField(null)}
                 placeholder="0.00"
                 aria-label="Discount amount"
                 className="min-h-11 min-w-24 rounded-lg bg-white px-2 text-right text-sm font-bold outline-none placeholder:text-[#B8A078] placeholder:font-normal focus:ring-2 focus:ring-[#D97706]"

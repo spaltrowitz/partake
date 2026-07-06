@@ -1,5 +1,29 @@
 import type { Bill, BillItem, BillSplit, PartnerGroup } from "@/types";
 
+// Adjust the per-person `total` values by whole cents so they sum exactly to
+// the target (largest remainders absorb the leftover pennies). Keeps every
+// split mode reconciled to the bill instead of leaking a cent here and there.
+function reconcileTotals(splits: BillSplit[], target: number): BillSplit[] {
+  if (splits.length === 0) return splits;
+  const targetCents = Math.round(target * 100);
+  const currentCents = splits.reduce((sum, s) => sum + Math.round(s.total * 100), 0);
+  let diff = targetCents - currentCents;
+  if (diff === 0) return splits;
+  const step = diff > 0 ? 1 : -1;
+  // Give/take cents from the largest totals first so adjustments are least noticeable.
+  const order = splits
+    .map((s, i) => i)
+    .sort((a, b) => splits[b].total - splits[a].total);
+  let idx = 0;
+  while (diff !== 0 && order.length > 0) {
+    const s = splits[order[idx % order.length]];
+    s.total = Math.round((s.total + step * 0.01) * 100) / 100;
+    diff -= step;
+    idx++;
+  }
+  return splits;
+}
+
 export function calculateSplits(
   bill: Bill,
   partnerGroup?: PartnerGroup
@@ -14,10 +38,12 @@ export function calculateSplits(
 
   // Calculate per-person item subtotals
   for (const item of bill.items) {
-    if (item.claimedBy.length === 0) continue;
-    const perPerson = (item.price * item.quantity) / item.claimedBy.length;
-    for (const claimerId of item.claimedBy) {
-      if (!itemTotals[claimerId]) continue;
+    // Only divide among claimers who are still actual participants, so a
+    // removed/stale claimer never causes a fraction of the item to vanish.
+    const validClaimers = item.claimedBy.filter((id) => itemTotals[id]);
+    if (validClaimers.length === 0) continue;
+    const perPerson = (item.price * item.quantity) / validClaimers.length;
+    for (const claimerId of validClaimers) {
       itemTotals[claimerId].subtotal += perPerson;
       itemTotals[claimerId].items.push(item);
     }
@@ -83,27 +109,38 @@ export function calculateSplits(
     }));
   }
 
-  return bill.participants
+  // Discounts are baked into bill.subtotal (subtotal = full item sum − discount)
+  // but items keep their full prices. Scale each person's claimed subtotal by the
+  // same factor so the itemized split reflects the discount instead of overcharging.
+  const fullItemsSum = bill.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const discountFactor =
+    fullItemsSum > 0 ? Math.min(1, bill.subtotal / fullItemsSum) : 1;
+
+  const splits = bill.participants
     .map((p) => {
       const data = itemTotals[p.id] ?? { subtotal: 0, items: [] };
       const proportion = data.subtotal / totalItemsSubtotal;
+      const discountedSubtotal = data.subtotal * discountFactor;
       const taxShare = Math.round(bill.tax * proportion * 100) / 100;
       const tipShare = Math.round(bill.tipAmount * proportion * 100) / 100;
       const total =
-        Math.round((data.subtotal + taxShare + tipShare) * 100) / 100;
+        Math.round((discountedSubtotal + taxShare + tipShare) * 100) / 100;
 
       return {
         participantId: p.id,
         participantName: p.name,
-        itemsSubtotal: Math.round(data.subtotal * 100) / 100,
+        itemsSubtotal: Math.round(discountedSubtotal * 100) / 100,
         taxShare,
         tipShare,
         total,
         items: data.items,
         venmoUsername: p.venmoUsername,
       };
-    })
-    .sort((a, b) => b.total - a.total);
+    });
+
+  const targetTotal =
+    totalItemsSubtotal * discountFactor + bill.tax + bill.tipAmount;
+  return reconcileTotals(splits, targetTotal).sort((a, b) => b.total - a.total);
 }
 
 // Even split: everyone pays the same, with remainder distributed
@@ -137,7 +174,7 @@ export function calculatePercentageSplit(
 ): BillSplit[] {
   const totalPct = Object.values(percentages).reduce((s, v) => s + v, 0);
 
-  return bill.participants
+  const splits = bill.participants
     .map((p) => {
       // Normalize so percentages always sum to 100%
       const pct = totalPct > 0 ? (percentages[p.id] ?? 0) / totalPct : 0;
@@ -151,8 +188,8 @@ export function calculatePercentageSplit(
         items: [],
         venmoUsername: p.venmoUsername,
       };
-    })
-    .sort((a, b) => b.total - a.total);
+    });
+  return reconcileTotals(splits, totalPct > 0 ? bill.total : 0).sort((a, b) => b.total - a.total);
 }
 
 // Shares split: weighted portions (e.g., 2 shares vs 1 share)
@@ -163,7 +200,7 @@ export function calculateSharesSplit(
   const totalShares = Object.values(sharesMap).reduce((s, v) => s + v, 0);
   if (totalShares === 0) return calculateEvenSplit(bill);
 
-  return bill.participants
+  const splits = bill.participants
     .map((p) => {
       const proportion = (sharesMap[p.id] ?? 0) / totalShares;
       return {
@@ -176,8 +213,8 @@ export function calculateSharesSplit(
         items: [],
         venmoUsername: p.venmoUsername,
       };
-    })
-    .sort((a, b) => b.total - a.total);
+    });
+  return reconcileTotals(splits, bill.total).sort((a, b) => b.total - a.total);
 }
 
 // Exact amounts: enter each person's total directly

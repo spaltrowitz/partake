@@ -24,14 +24,57 @@ function ensureDb() {
 }
 
 // Bills
+//
+// Owner writes go through a transaction that merges against the current cloud
+// copy instead of blindly overwriting it. The owner stays authoritative for
+// bill structure (items, prices, tax, tip, totals, status), but any item
+// claims a guest added concurrently are preserved, and paying groups set on
+// another device aren't clobbered by a stale save.
 export async function saveBill(bill: Bill): Promise<void> {
   ensureDb();
-  // Serialize Date to ISO string for Firestore compatibility
-  const data = {
+  const billRef = doc(db, "bills", bill.id);
+  const ownerData = {
     ...bill,
     createdAt: bill.createdAt instanceof Date ? bill.createdAt.toISOString() : bill.createdAt,
   };
-  await setDoc(doc(db, "bills", bill.id), data);
+
+  await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(billRef);
+    if (!snap.exists()) {
+      transaction.set(billRef, ownerData);
+      return;
+    }
+
+    const cloud = snap.data() as Bill;
+
+    // Only recognize claims from participants the owner still has, so a
+    // participant the owner deliberately removed isn't resurrected while a
+    // guest's claim on a known participant is still preserved.
+    const knownParticipantIds = new Set(bill.participants.map((p) => p.id));
+    const cloudItemsById = new Map(cloud.items.map((i) => [i.id, i]));
+    const items = bill.items.map((item) => {
+      const cloudItem = cloudItemsById.get(item.id);
+      if (!cloudItem) return item;
+      const extraClaims = cloudItem.claimedBy.filter(
+        (claim) => knownParticipantIds.has(claim) && !item.claimedBy.includes(claim)
+      );
+      return extraClaims.length
+        ? { ...item, claimedBy: [...item.claimedBy, ...extraClaims] }
+        : item;
+    });
+
+    const sharedWithUserIds = Array.from(
+      new Set([...(bill.sharedWithUserIds ?? []), ...(cloud.sharedWithUserIds ?? [])])
+    );
+
+    // Keep whichever copy has more paying-group members (guards against a
+    // stale second device wiping groups set elsewhere).
+    const cloudGroupMembers = (cloud.payingGroups ?? []).reduce((s, g) => s + g.memberIds.length, 0);
+    const ownGroupMembers = (bill.payingGroups ?? []).reduce((s, g) => s + g.memberIds.length, 0);
+    const payingGroups = cloudGroupMembers > ownGroupMembers ? cloud.payingGroups : bill.payingGroups;
+
+    transaction.set(billRef, { ...ownerData, items, sharedWithUserIds, payingGroups });
+  });
 }
 
 export async function getBill(id: string): Promise<Bill | null> {

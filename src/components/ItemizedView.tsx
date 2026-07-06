@@ -14,8 +14,9 @@ export function ItemizedParticipantBar({
   onSelectParticipant: (id: string) => void;
 }) {
   return (
-    <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scroll-px-4 p-4 bg-[#FFFFFF]">
-      {participants.map((p, i) => (
+    <div className="relative bg-[#FFFFFF]">
+      <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scroll-px-4 p-4">
+        {participants.map((p, i) => (
         <button
           key={p.id}
           onClick={() => onSelectParticipant(p.id)}
@@ -47,7 +48,16 @@ export function ItemizedParticipantBar({
             {p.name}
           </span>
         </button>
-      ))}
+        ))}
+      </div>
+      {participants.length > 4 && (
+        <>
+          <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-white to-transparent" />
+          <span className="pointer-events-none absolute right-2 top-1 text-[10px] font-medium text-[#B8A078]">
+            swipe →
+          </span>
+        </>
+      )}
     </div>
   );
 }

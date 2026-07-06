@@ -357,7 +357,7 @@ export function parseReceiptText(lines: string[]): ParsedReceipt {
     addWarning("Found receipt totals but no line items. Please add items manually.");
   }
 
-  return { items, tax, tip, subtotal, total, restaurantName, warnings: warnings.length > 0 ? warnings : undefined };
+  return { items, tax, tip, discount, subtotal, total, restaurantName, warnings: warnings.length > 0 ? warnings : undefined };
 }
 
 function extractPrice(text: string): number | undefined {

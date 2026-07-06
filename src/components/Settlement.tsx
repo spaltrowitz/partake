@@ -4,7 +4,8 @@ import { useState } from "react";
 import type { Bill, BillSplit, CoveredReimbursement } from "@/types";
 import { copyToClipboard } from "@/services/venmo";
 import { Avatar } from "./Avatar";
-import { Card, TopBarButton } from "./UI";
+import { Card, PrimaryButton, TopBarButton } from "./UI";
+import { FeedbackWidget } from "./FeedbackWidget";
 
 function ShareLinkButton({ shareCode, billName, cloudSynced }: { shareCode: string; billName: string; cloudSynced?: boolean }) {
   const [copied, setCopied] = useState(false);
@@ -285,20 +286,27 @@ export function Settlement({
         </div>
       )}
 
-      <TopBarButton
-        onClick={onDone}
-        className="mt-6 w-full"
-      >
-        ← Back to bill
-      </TopBarButton>
-      {onHome && (
-        <TopBarButton
-          onClick={onHome}
-          className="mt-3 w-full"
-        >
-          Done — back home
+      {onHome ? (
+        <>
+          <PrimaryButton onClick={onHome} className="mt-6 w-full">
+            Done — back to home
+          </PrimaryButton>
+          <button
+            onClick={onDone}
+            className="mt-3 min-h-11 w-full rounded-full text-center text-sm font-medium text-[#8A7353] transition-colors hover:bg-[#FDE68A]/60"
+          >
+            ← Back to the bill
+          </button>
+        </>
+      ) : (
+        <TopBarButton onClick={onDone} className="mt-6 w-full">
+          ← Back to the bill
         </TopBarButton>
       )}
+
+      <div className="mt-6 flex justify-center border-t border-[#FDE68A] pt-4">
+        <FeedbackWidget />
+      </div>
     </div>
   );
 }

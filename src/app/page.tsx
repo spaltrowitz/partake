@@ -50,12 +50,14 @@ function participantFromProfile(profile: UserProfile): Participant {
 function getInitialHomeState(): {
   step: Step;
   bill: Bill | null;
+  receipt: ParsedReceipt | null;
   participants: Participant[];
   savedContacts: SavedContact[];
   billHistory: Bill[];
   myProfile: UserProfile | null;
 } {
   let bill: Bill | null = null;
+  let receipt: ParsedReceipt | null = null;
   let participants: Participant[] = [];
   let step: Step = "landing";
 
@@ -64,11 +66,24 @@ function getInitialHomeState(): {
       ? localStorage.getItem("partake_active_session")
       : null;
     if (saved) {
-      const session = JSON.parse(saved) as { bill?: Bill };
+      const session = JSON.parse(saved) as {
+        bill?: Bill;
+        receipt?: ParsedReceipt;
+        participants?: Participant[];
+        step?: Step;
+      };
       if (session.bill) {
         bill = { ...session.bill, createdAt: new Date(session.bill.createdAt) };
         participants = session.bill.participants;
-        step = "split";
+        receipt = session.receipt ?? reconstructReceiptFromBill(bill);
+        step = session.step && session.step !== "landing" ? session.step : "split";
+      } else if (session.step && session.step !== "landing") {
+        // In-progress draft before a bill exists (scan / edit / participants)
+        step = session.step;
+        participants = session.participants ?? [];
+        receipt = session.receipt ?? null;
+        // Can't restore into edit/split without a receipt
+        if (!receipt && (step === "edit" || step === "split")) step = "scan";
       }
     }
   } catch {}
@@ -76,6 +91,7 @@ function getInitialHomeState(): {
   return {
     step,
     bill,
+    receipt,
     participants,
     savedContacts: getSavedContacts(),
     billHistory: getBillHistory(),
@@ -117,13 +133,6 @@ function countPayerGroupMembers(bill: Bill): number {
   return (bill.payingGroups ?? []).reduce((sum, group) => sum + group.memberIds.length, 0);
 }
 
-function billWithBestPayerGroups(candidate: Bill, cloudBill: Bill | null): Bill {
-  if (!cloudBill) return candidate;
-  return countPayerGroupMembers(cloudBill) >= countPayerGroupMembers(candidate)
-    ? { ...candidate, payingGroups: cloudBill.payingGroups }
-    : candidate;
-}
-
 function contactsFromParticipants(participants: Participant[], createdBy: string): SavedContact[] {
   return participants.map((participant) => ({
     id: `contact-${participant.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || participant.id}`,
@@ -157,12 +166,13 @@ function getAuthErrorMessage(error: unknown): string {
 
 export default function Home() {
   const addPersonButtonRef = useRef<HTMLButtonElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
   const [initialState] = useState(getInitialHomeState);
   const [step, setStep] = useState<Step>(initialState.step);
   const [participants, setParticipants] = useState<Participant[]>(initialState.participants);
   const [newName, setNewName] = useState("");
   const [newVenmo, setNewVenmo] = useState("");
-  const [receipt, setReceipt] = useState<ParsedReceipt | null>(null);
+  const [receipt, setReceipt] = useState<ParsedReceipt | null>(initialState.receipt);
   const [bill, setBill] = useState<Bill | null>(initialState.bill);
   const [tipPercent] = useState(20);
   const [savedContacts, setSavedContacts] = useState<SavedContact[]>(initialState.savedContacts);
@@ -180,10 +190,9 @@ export default function Home() {
     setCloudSynced(false);
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        const cloudBill = billToSync.shareCode
-          ? await getBillByShareCode(billToSync.shareCode).catch(() => null)
-          : null;
-        await saveBill(billWithBestPayerGroups(billToSync, cloudBill));
+        // saveBill runs a transaction that merges concurrent guest claims,
+        // so no pre-fetch/merge is needed here.
+        await saveBill(billToSync);
         setCloudSynced(true);
         return;
       } catch {
@@ -295,6 +304,58 @@ export default function Home() {
     };
   }, [bill?.id, bill?.shareCode]);
 
+  // Auto-save the in-progress flow (draft) so a refresh, browser back, or
+  // accidental navigation never loses the receipt or people the user entered.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (step === "landing") {
+      try { localStorage.removeItem("partake_active_session"); } catch {}
+      return;
+    }
+    try {
+      localStorage.setItem(
+        "partake_active_session",
+        JSON.stringify({ step, bill, receipt, participants })
+      );
+    } catch {}
+  }, [step, bill, receipt, participants]);
+
+  // Make the browser back button navigate between in-app steps instead of
+  // leaving the app (and losing the current bill).
+  const suppressHistoryPush = useRef(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.history.replaceState({ partakeStep: step }, "");
+    function onPopState(event: PopStateEvent) {
+      const restored = (event.state?.partakeStep as Step | undefined) ?? "landing";
+      suppressHistoryPush.current = true;
+      setStep(restored);
+    }
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const didMountHistory = useRef(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!didMountHistory.current) {
+      didMountHistory.current = true;
+      return;
+    }
+    if (suppressHistoryPush.current) {
+      suppressHistoryPush.current = false;
+      return;
+    }
+    window.history.pushState({ partakeStep: step }, "");
+  }, [step]);
+
+  // Always start a newly opened screen at the top.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.scrollTo(0, 0);
+  }, [step]);
+
   async function handleGoogleSignIn() {
     setSigningIn(true);
     setAuthError(null);
@@ -404,13 +465,30 @@ export default function Home() {
     setParticipants((prev) => [...prev, p]);
     setNewName("");
     setNewVenmo("");
-    if (document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
-    }
+    // Keep the form open and refocus so several people can be added in a row.
+    nameInputRef.current?.focus();
   }
 
   function removeParticipant(id: string) {
     setParticipants((prev) => prev.filter((p) => p.id !== id));
+    // Also strip the removed person from any claims/groups so their share
+    // isn't silently dropped from the split (money would otherwise vanish).
+    setBill((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        items: prev.items.map((item) =>
+          item.claimedBy.includes(id)
+            ? { ...item, claimedBy: item.claimedBy.filter((c) => c !== id) }
+            : item
+        ),
+        payingGroups: (prev.payingGroups ?? [])
+          .filter((g) => g.payerId !== id)
+          .map((g) => ({ ...g, memberIds: g.memberIds.filter((m) => m !== id) }))
+          .filter((g) => g.memberIds.length > 0),
+        birthdayPersonId: prev.birthdayPersonId === id ? undefined : prev.birthdayPersonId,
+      };
+    });
   }
 
   function createBill() {
@@ -618,12 +696,19 @@ export default function Home() {
                     ☁️
                   </div>
                   <div>
-                    <p className="text-base font-bold text-[#2D2416]">Save bills across devices</p>
+                    <p className="text-base font-bold text-[#2D2416]">Back up your bills</p>
                     <p className="mt-1 text-sm leading-5 text-[#6B4F2A]">
-                      Keep splitting instantly as a guest, or connect Google to bring your history and friends with you.
+                      {billHistory.length > 0
+                        ? "Your bills are saved on this device only — reinstalling or clearing your browser will erase them. Sign in with Google to back them up and keep them across devices."
+                        : "Keep splitting instantly as a guest, or connect Google to back up your history and friends and keep them across devices."}
                     </p>
                   </div>
                 </div>
+                {billHistory.length > 0 && (
+                  <div className="relative rounded-2xl border border-[#FBBF24] bg-white/80 px-3 py-2 text-xs font-semibold text-[#D97706]">
+                    ⚠️ {billHistory.length} bill{billHistory.length !== 1 ? "s" : ""} on this device aren&apos;t backed up yet
+                  </div>
+                )}
                 <div className="relative grid grid-cols-2 gap-2 text-xs font-medium text-[#6B4F2A]">
                   <div className="rounded-2xl border border-white/80 bg-white/70 px-3 py-2">✓ Guest mode stays on</div>
                   <div className="rounded-2xl border border-white/80 bg-white/70 px-3 py-2">✓ Sync when you sign in</div>
@@ -874,7 +959,7 @@ export default function Home() {
         {unusedContacts.length > 0 && (
           <div className="mb-6">
             <p className="text-sm text-[#8A7353] mb-2 text-center">Tap to add</p>
-            <div className="flex gap-3 overflow-x-auto pb-2 justify-center">
+            <div className={`flex gap-3 overflow-x-auto pb-2 ${unusedContacts.length > 4 ? "justify-start px-1" : "justify-center"}`}>
               {unusedContacts.map((contact, i) => (
                 <button
                   key={contact.id}
@@ -907,6 +992,7 @@ export default function Home() {
               type="text"
               placeholder="Their name"
               value={newName}
+              ref={nameInputRef}
               onChange={(e) => setNewName(e.target.value)}
               className="px-4 py-3 rounded-xl border border-[#FBBF24] bg-white text-center focus:outline-none focus:ring-2 focus:ring-[#D97706]"
               autoFocus
@@ -940,7 +1026,7 @@ export default function Home() {
               )}
             </div>
             <PrimaryButton
-              onClick={() => { addParticipant(); setShowAddForm(false); }}
+              onClick={addParticipant}
               disabled={!newName.trim()}
             >
               Add {newName.trim() || "friend"}
@@ -954,7 +1040,7 @@ export default function Home() {
               }}
               className="min-h-11 rounded-full text-center text-sm text-[#8A7353] hover:bg-white/60"
             >
-              Cancel
+              Done adding people
             </button>
           </div>
         ) : (

@@ -16,7 +16,6 @@ import { ExactSplitView } from "./ExactSplitView";
 import { TipSelector } from "./TipSelector";
 import { Settlement } from "./Settlement";
 import { PartnerGroupSelector } from "./PartnerPairSelector";
-import { FeedbackWidget } from "./FeedbackWidget";
 
 function countPayerGroupMembers(bill: Bill): number {
   return (bill.payingGroups ?? []).reduce((sum, group) => sum + group.memberIds.length, 0);
@@ -393,23 +392,16 @@ export function BillSplitter({
 
   return (
     <div className="flex flex-col h-full">
-      {(onBack || onHome) && (
+      {(onBack || onHome || onEditReceipt) && (
         <div className="p-3 bg-[#FFFFFF] flex flex-col items-stretch gap-3 border-b border-[#FDE68A] sm:flex-row sm:items-center sm:justify-between">
-          {onHome ? (
-            <TopBarButton onClick={goHome}>
-              ← Home
-            </TopBarButton>
-          ) : claimsLocked ? (
+          {claimsLocked ? (
             <span className="inline-flex min-h-11 items-center rounded-full border border-[#FBBF24] bg-[#FDE68A] px-4 py-2 text-sm font-semibold text-[#6B4F2A]">
               Locked
             </span>
-          ) : onBack ? (
-            <TopBarButton onClick={onBack}>
-              ← Back to people
-            </TopBarButton>
-          ) : null}
+          ) : (
+            <span aria-hidden />
+          )}
           <div className="flex flex-wrap gap-2 sm:justify-end">
-            <FeedbackWidget />
             {onBack && !claimsLocked && (
               <TopBarButton onClick={onBack}>
                 Edit people
@@ -462,14 +454,22 @@ export function BillSplitter({
                 const item = prev.items.find((i) => i.id === itemId);
                 if (!item || item.quantity <= 1) return prev;
                 const totalPrice = item.price * item.quantity;
-                const perItemPrice = Math.round((totalPrice / count) * 100) / 100;
-                const newItems = Array.from({ length: count }, (_, idx) => ({
-                  id: idx === 0 ? item.id : crypto.randomUUID(),
-                  name: item.name,
-                  price: perItemPrice,
-                  claimedBy: idx === 0 ? item.claimedBy : [],
-                  quantity: 1,
-                }));
+                const totalCents = Math.round(totalPrice * 100);
+                const baseCents = Math.floor(totalCents / count);
+                let remainderCents = totalCents - baseCents * count;
+                const newItems = Array.from({ length: count }, (_, idx) => {
+                  // Spread the leftover cents across the first units so the
+                  // split pieces sum back to the original price exactly.
+                  const cents = baseCents + (remainderCents > 0 ? 1 : 0);
+                  if (remainderCents > 0) remainderCents--;
+                  return {
+                    id: idx === 0 ? item.id : crypto.randomUUID(),
+                    name: item.name,
+                    price: Math.round(cents) / 100,
+                    claimedBy: idx === 0 ? item.claimedBy : [],
+                    quantity: 1,
+                  };
+                });
                 const index = prev.items.findIndex((i) => i.id === itemId);
                 const updated = [...prev.items];
                 updated.splice(index, 1, ...newItems);
@@ -548,6 +548,14 @@ export function BillSplitter({
         <PrimaryButton onClick={() => setShowSettlement(true)}>
           See the split
         </PrimaryButton>
+        {onHome && (
+          <button
+            onClick={goHome}
+            className="mt-3 min-h-11 w-full rounded-full text-center text-sm font-medium text-[#8A7353] transition-colors hover:bg-[#FDE68A]/60"
+          >
+            ← Home
+          </button>
+        )}
       </div>
     </div>
   );
