@@ -5,7 +5,6 @@ import type { Bill, BillSplit, CoveredReimbursement } from "@/types";
 import { copyToClipboard } from "@/services/venmo";
 import { Avatar } from "./Avatar";
 import { Card, PrimaryButton, TopBarButton } from "./UI";
-import { FeedbackWidget } from "./FeedbackWidget";
 
 function ShareLinkButton({ shareCode, billName, cloudSynced }: { shareCode: string; billName: string; cloudSynced?: boolean }) {
   const [copied, setCopied] = useState(false);
@@ -303,10 +302,6 @@ export function Settlement({
           ← Back to the bill
         </TopBarButton>
       )}
-
-      <div className="mt-6 flex justify-center border-t border-[#FDE68A] pt-4">
-        <FeedbackWidget />
-      </div>
     </div>
   );
 }

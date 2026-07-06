@@ -15,14 +15,14 @@ export function ItemizedParticipantBar({
 }) {
   return (
     <div className="relative bg-[#FFFFFF]">
-      <div className="flex gap-2 overflow-x-auto snap-x snap-mandatory scroll-px-4 p-4">
+      <div className="flex flex-wrap justify-center gap-2 p-4">
         {participants.map((p, i) => (
         <button
           key={p.id}
           onClick={() => onSelectParticipant(p.id)}
           aria-label={`Assign items to ${p.name}`}
           aria-pressed={selectedParticipant === p.id}
-          className="flex min-h-[90px] min-w-[80px] snap-start flex-col items-center justify-center gap-2 rounded-xl p-2 transition-colors hover:bg-[#FDE68A] focus:outline-none focus:ring-2 focus:ring-[#D97706]"
+          className="flex min-h-[90px] min-w-[80px] flex-col items-center justify-center gap-2 rounded-xl p-2 transition-colors hover:bg-[#FDE68A] focus:outline-none focus:ring-2 focus:ring-[#D97706]"
         >
           <div
              className={`rounded-full transition-all ${
@@ -50,14 +50,6 @@ export function ItemizedParticipantBar({
         </button>
         ))}
       </div>
-      {participants.length > 4 && (
-        <>
-          <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-white to-transparent" />
-          <span className="pointer-events-none absolute right-2 top-1 text-[10px] font-medium text-[#B8A078]">
-            swipe →
-          </span>
-        </>
-      )}
     </div>
   );
 }
