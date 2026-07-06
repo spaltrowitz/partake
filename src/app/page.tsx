@@ -631,7 +631,7 @@ export default function Home() {
               <h2 className="text-3xl font-black leading-[0.95] tracking-[-0.04em] text-[#2D2416]">
                 Split dinner without the group-chat math.
               </h2>
-              <p className="mt-3 text-base leading-6 text-[#6B4F2A]">
+              <p className="mt-3 text-base leading-6 text-[#6B4F2A] text-pretty">
                 Scan a receipt, claim items, and send Venmo requests.
               </p>
             </div>
@@ -684,9 +684,9 @@ export default function Home() {
                   <path d="M55 82C58 68 65 60 76 60C86 60 93 68 96 82Z" fill="#FBBF24" />
                 </svg>
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-sm font-black text-[#2D2416]">Built for group dinners</p>
-                <p className="mt-1 whitespace-nowrap text-xs leading-5 text-[#6B4F2A] sm:text-sm">
+                <p className="mt-1 text-xs leading-5 text-[#6B4F2A] text-pretty sm:text-sm">
                   Add everyone, claim items, and send Venmo requests.
                 </p>
               </div>
