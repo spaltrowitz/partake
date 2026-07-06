@@ -30,50 +30,56 @@ function ensureDb() {
 // bill structure (items, prices, tax, tip, totals, status), but any item
 // claims a guest added concurrently are preserved, and paying groups set on
 // another device aren't clobbered by a stale save.
+// Merge an owner's local bill against the current cloud copy. The owner stays
+// authoritative for bill structure, but concurrent guest claims, shared users,
+// and richer paying groups from the cloud are preserved. Pure so it can be
+// unit-tested without a Firestore emulator.
+export function mergeBillForSave(owner: Bill, cloud: Bill): Bill {
+  // Only recognize claims from participants the owner still has, so a
+  // participant the owner deliberately removed isn't resurrected while a
+  // guest's claim on a known participant is still preserved.
+  const knownParticipantIds = new Set(owner.participants.map((p) => p.id));
+  const cloudItemsById = new Map(cloud.items.map((i) => [i.id, i]));
+  const items = owner.items.map((item) => {
+    const cloudItem = cloudItemsById.get(item.id);
+    if (!cloudItem) return item;
+    const extraClaims = cloudItem.claimedBy.filter(
+      (claim) => knownParticipantIds.has(claim) && !item.claimedBy.includes(claim)
+    );
+    return extraClaims.length
+      ? { ...item, claimedBy: [...item.claimedBy, ...extraClaims] }
+      : item;
+  });
+
+  const sharedWithUserIds = Array.from(
+    new Set([...(owner.sharedWithUserIds ?? []), ...(cloud.sharedWithUserIds ?? [])])
+  );
+
+  // Keep whichever copy has more paying-group members (guards against a
+  // stale second device wiping groups set elsewhere).
+  const cloudGroupMembers = (cloud.payingGroups ?? []).reduce((s, g) => s + g.memberIds.length, 0);
+  const ownGroupMembers = (owner.payingGroups ?? []).reduce((s, g) => s + g.memberIds.length, 0);
+  const payingGroups = cloudGroupMembers > ownGroupMembers ? cloud.payingGroups : owner.payingGroups;
+
+  return { ...owner, items, sharedWithUserIds, payingGroups };
+}
+
 export async function saveBill(bill: Bill): Promise<void> {
   ensureDb();
   const billRef = doc(db, "bills", bill.id);
-  const ownerData = {
-    ...bill,
-    createdAt: bill.createdAt instanceof Date ? bill.createdAt.toISOString() : bill.createdAt,
-  };
+  const serialize = (b: Bill) => ({
+    ...b,
+    createdAt: b.createdAt instanceof Date ? b.createdAt.toISOString() : b.createdAt,
+  });
 
   await runTransaction(db, async (transaction) => {
     const snap = await transaction.get(billRef);
     if (!snap.exists()) {
-      transaction.set(billRef, ownerData);
+      transaction.set(billRef, serialize(bill));
       return;
     }
-
-    const cloud = snap.data() as Bill;
-
-    // Only recognize claims from participants the owner still has, so a
-    // participant the owner deliberately removed isn't resurrected while a
-    // guest's claim on a known participant is still preserved.
-    const knownParticipantIds = new Set(bill.participants.map((p) => p.id));
-    const cloudItemsById = new Map(cloud.items.map((i) => [i.id, i]));
-    const items = bill.items.map((item) => {
-      const cloudItem = cloudItemsById.get(item.id);
-      if (!cloudItem) return item;
-      const extraClaims = cloudItem.claimedBy.filter(
-        (claim) => knownParticipantIds.has(claim) && !item.claimedBy.includes(claim)
-      );
-      return extraClaims.length
-        ? { ...item, claimedBy: [...item.claimedBy, ...extraClaims] }
-        : item;
-    });
-
-    const sharedWithUserIds = Array.from(
-      new Set([...(bill.sharedWithUserIds ?? []), ...(cloud.sharedWithUserIds ?? [])])
-    );
-
-    // Keep whichever copy has more paying-group members (guards against a
-    // stale second device wiping groups set elsewhere).
-    const cloudGroupMembers = (cloud.payingGroups ?? []).reduce((s, g) => s + g.memberIds.length, 0);
-    const ownGroupMembers = (bill.payingGroups ?? []).reduce((s, g) => s + g.memberIds.length, 0);
-    const payingGroups = cloudGroupMembers > ownGroupMembers ? cloud.payingGroups : bill.payingGroups;
-
-    transaction.set(billRef, { ...ownerData, items, sharedWithUserIds, payingGroups });
+    const merged = mergeBillForSave(bill, snap.data() as Bill);
+    transaction.set(billRef, serialize(merged));
   });
 }
 
